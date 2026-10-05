@@ -10,17 +10,21 @@
     "typecheck": "pnpm --filter web typecheck && tsc --noEmit",
     "test": "vitest run",
     "test:e2e": "playwright test",
-    "db:reset": "supabase db reset --linked"
+    "db:reset": "supabase db reset --linked",
+    "smoke": "tsx scripts/smoke/run.ts"
   },
   "devDependencies": {
+    "@google/genai": "^2.27.0",
     "@playwright/test": "^1.63.0",
     "@types/node": "^24.19.1",
     "eslint": "^9.39.5",
     "eslint-config-next": "16.3.8",
     "prettier": "^3.9.9",
     "supabase": "^2.119.0",
+    "tsx": "^4.23.15",
     "typescript": "^5.9.3",
     "vite": "^8.3.2",
-    "vitest": "^5.0.3"
+    "vitest": "^5.0.3",
+    "zod": "^4.6.5"
   }
 }

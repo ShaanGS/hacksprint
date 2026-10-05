@@ -4,6 +4,11 @@ packages:
 # pnpm 11 stops an install when a dependency wants to run a build script
 # that nobody has approved. These are the ones in our tree.
 allowBuilds:
+  # tsx and Vite need esbuild's platform binary check.
   esbuild: true
+  # Not needed: genai's prepare script is for its own repo (the published build is compiled),
+  # protobufjs only prints a version warning, and the others fetch optional binaries we don't use.
+  "@google/genai": false
+  protobufjs: false
   sharp: false
   unrs-resolver: false
