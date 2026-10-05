@@ -1,0 +1,14 @@
+{
+  "hooks": {
+    "Stop": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "cd \"$CLAUDE_PROJECT_DIR\" && { pnpm -s typecheck && pnpm -s lint; } >&2 || { echo 'Typecheck or lint failed. Fix the errors before finishing.' >&2; exit 2; }"
+          }
+        ]
+      }
+    ]
+  }
+}
