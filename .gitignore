@@ -1,0 +1,30 @@
+# Project instructions are shared with the team, even if a global gitignore hides them.
+!CLAUDE.md
+!.claude/
+.claude/settings.local.json
+
+# dependencies
+node_modules/
+
+# next.js
+.next/
+out/
+build/
+next-env.d.ts
+*.tsbuildinfo
+
+# env files: real keys stay on each machine, the example is committed
+.env*
+!.env.example
+
+# test and smoke output
+coverage/
+playwright-report/
+test-results/
+.smoke/
+
+# misc
+.DS_Store
+*.pem
+*.log
+.vercel
