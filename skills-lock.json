@@ -1,0 +1,17 @@
+{
+  "version": 1,
+  "skills": {
+    "speech-to-text": {
+      "source": "sarvamai/skills",
+      "sourceType": "github",
+      "skillPath": "speech-to-text/SKILL.md",
+      "computedHash": "dcc8361a0c1391fa70a55304ebdde6eb9c4bf325e014d0badd046180add1c345"
+    },
+    "text-to-speech": {
+      "source": "sarvamai/skills",
+      "sourceType": "github",
+      "skillPath": "text-to-speech/SKILL.md",
+      "computedHash": "7b393d072a41b104cd352dd068d2af1f83fc8e8337b7d73f54f386d78396a470"
+    }
+  }
+}
