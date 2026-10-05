@@ -1,0 +1,9 @@
+packages:
+  - apps/*
+
+# pnpm 11 stops an install when a dependency wants to run a build script
+# that nobody has approved. These are the ones in our tree.
+allowBuilds:
+  esbuild: true
+  sharp: false
+  unrs-resolver: false
