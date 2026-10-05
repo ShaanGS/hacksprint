@@ -2,6 +2,9 @@
 !CLAUDE.md
 !.claude/
 .claude/settings.local.json
+# Written by `next dev` when an AI agent starts it; generated, not team-authored.
+apps/web/AGENTS.md
+apps/web/CLAUDE.md
 
 # dependencies
 node_modules/

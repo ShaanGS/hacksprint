@@ -1,0 +1,8 @@
+# Team documents and installed skills stay exactly as written.
+CLAUDE.md
+docs/
+.claude/
+skills-lock.json
+
+# Generated
+pnpm-lock.yaml
