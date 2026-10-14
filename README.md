@@ -177,6 +177,8 @@ design/            screen references and design tokens
 | Variable                               | Checked             | Used for                                                      | Where to get it                                                                |
 | -------------------------------------- | ------------------- | ------------------------------------------------------------- | ------------------------------------------------------------------------------ |
 | `APP_URL`                              | at startup          | Public base URL: Paytm callbacks, QR codes                    | `http://localhost:3000` locally; the deployed https URL                        |
+| `OWNER_PIN`                            | at startup          | The owner app's 4-digit PIN                                   | Choose one; share it only with the owner                                       |
+| `SESSION_SECRET`                       | at startup          | Signs the owner and customer session cookies                  | `openssl rand -hex 32`                                                         |
 | `NEXT_PUBLIC_SUPABASE_URL`             | at startup          | Database                                                      | Supabase dashboard > Project Settings > Data API                               |
 | `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY` | at startup          | Browser access (Realtime)                                     | Supabase dashboard > Project Settings > API Keys (`sb_publishable_...`)        |
 | `SUPABASE_SECRET_KEY`                  | at startup          | Server database access; bypasses RLS, never sent to a browser | Supabase dashboard > Project Settings > API Keys (`sb_secret_...`)             |

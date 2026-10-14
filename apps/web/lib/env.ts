@@ -19,6 +19,9 @@ const httpUrl = () => text().pipe(z.url({ protocol: /^https?$/, error: "must be 
 
 const appSchema = z.object({
   APP_URL: httpUrl(),
+  OWNER_PIN: text().regex(/^\d{4}$/, "must be 4 digits"),
+  // Signs the owner and customer session cookies.
+  SESSION_SECRET: text().min(32, "must be at least 32 characters (openssl rand -hex 32)"),
 });
 
 const supabaseSchema = z.object({
