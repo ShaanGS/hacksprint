@@ -49,7 +49,7 @@ export const kn: CustomerText = {
   orderAgain: "ಮತ್ತೆ ಆರ್ಡರ್ ಮಾಡಿ",
   owe: (amount) => `ಈಗ ನಿಮ್ಮ ಬಾಕಿ ${amount}`,
   orderNumber: (number) => `ಆರ್ಡರ್ #${number}`,
-  greeting: (name) => `ನಮಸ್ಕಾರ ${name}! ಇವತ್ತು ಏನು ಬೇಕು?`,
+  greeting: (name) => `ನಮಸ್ಕಾರ ${name}. ಇವತ್ತು ಏನು ಬೇಕು?`,
   didntCatch: "ಕ್ಷಮಿಸಿ, ಸರಿಯಾಗಿ ಕೇಳಿಸಲಿಲ್ಲ. ಮತ್ತೊಮ್ಮೆ ಹೇಳಿ.",
   fallback: "ಕ್ಷಮಿಸಿ, ಏನೋ ತಪ್ಪಾಯಿತು. ಮತ್ತೊಮ್ಮೆ ಹೇಳಿ.",
   noted: "ಸರಿ. ಇನ್ನೇನಾದರೂ ಬೇಕೇ?",

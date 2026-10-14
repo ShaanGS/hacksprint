@@ -47,7 +47,7 @@ export const en = {
   orderAgain: "Order again",
   owe: (amount: string) => `You now owe ${amount}`,
   orderNumber: (number: number) => `Order #${number}`,
-  greeting: (name: string) => `Hello ${name}! What would you like today?`,
+  greeting: (name: string) => `Hello ${name}. What would you like today?`,
   didntCatch: "Sorry, I didn't catch that. Please say it again.",
   fallback: "Sorry, something went wrong. Please say it again.",
   noted: "Done. Anything else?",

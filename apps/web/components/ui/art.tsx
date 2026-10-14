@@ -23,6 +23,11 @@ export const artNames = [
 
 export type ArtName = (typeof artNames)[number];
 
+/** Product rows store their art name as text; anything unknown shows the shopping bag. */
+export function toArtName(value: string): ArtName {
+  return artNames.find((name) => name === value) ?? "bag";
+}
+
 export const bannerNames = ["voice", "approve", "bill", "night"] as const;
 
 export type BannerName = (typeof bannerNames)[number];

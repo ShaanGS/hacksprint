@@ -49,7 +49,7 @@ export const hi: CustomerText = {
   orderAgain: "फिर से ऑर्डर करें",
   owe: (amount) => `अब आपका बकाया ${amount} है`,
   orderNumber: (number) => `ऑर्डर #${number}`,
-  greeting: (name) => `नमस्ते ${name}! आज क्या चाहिए?`,
+  greeting: (name) => `नमस्ते ${name}. आज क्या चाहिए?`,
   didntCatch: "माफ़ कीजिए, ठीक से सुनाई नहीं दिया। फिर से बोलिए।",
   fallback: "माफ़ कीजिए, कुछ गड़बड़ हुई। फिर से बोलिए।",
   noted: "ठीक है। और कुछ चाहिए?",

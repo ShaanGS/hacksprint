@@ -73,6 +73,19 @@ export const sarvamEnv = () => parse("Sarvam", sarvamSchema);
 export const paytmEnv = () => parse("Paytm", paytmSchema);
 export const n8nEnv = () => parse("n8n", n8nSchema);
 
+// The keys that connect the app to its services. With none of them set, the app runs as a
+// preview: the screens work on sample data, so the team can see them before the keys exist.
+const serviceKeys = [
+  "NEXT_PUBLIC_SUPABASE_URL",
+  "SUPABASE_SECRET_KEY",
+  "GEMINI_API_KEY",
+  "SARVAM_API_KEY",
+];
+
+export function isPreview(): boolean {
+  return serviceKeys.every((key) => !process.env[key]);
+}
+
 /** Checks every service the app cannot start without, and reports all problems at once. */
 export function assertStartupEnv(): void {
   const problems = [appEnv, supabaseEnv, geminiEnv, sarvamEnv].flatMap((check) => {

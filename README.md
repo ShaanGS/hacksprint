@@ -163,7 +163,7 @@ design/            screen references and design tokens
    ```bash
    pnpm smoke
    ```
-6. Start the app at http://localhost:3000. It refuses to start until the required variables are set, and names each missing one.
+6. Start the app at http://localhost:3000. With no keys at all it runs as a preview on sample data. Once any key is set, it refuses to start until all the required ones are, and names each missing one.
    ```bash
    pnpm dev
    ```

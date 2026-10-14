@@ -6,7 +6,7 @@ import { cn } from "@/lib/cn";
 
 export type MicState = "idle" | "listening" | "thinking";
 
-const labels: Record<MicState, string> = {
+const englishLabels: Record<MicState, string> = {
   idle: "Hold to talk",
   listening: "Listening, let go to send",
   thinking: "Working on it",
@@ -14,17 +14,20 @@ const labels: Record<MicState, string> = {
 
 /**
  * The customer's hold-to-talk button. It only reports the press; recording lives with the
- * voice page. While listening, a ring pulses: the one looping motion in the app, because the
+ * voice page, which must ignore a second release (touch screens can send two). While listening, a ring pulses: the one looping motion in the app, because the
  * customer must see the shop is listening.
  */
 export function MicButton({
   state,
   onHoldStart,
   onHoldEnd,
+  labels = englishLabels,
 }: {
   state: MicState;
   onHoldStart: () => void;
   onHoldEnd: () => void;
+  /** What the button says in each state, in the customer's language. */
+  labels?: Record<MicState, string>;
 }) {
   const busy = state === "thinking";
   return (
@@ -43,11 +46,13 @@ export function MicButton({
           aria-label={labels[state]}
           aria-pressed={state === "listening"}
           disabled={busy}
-          onPointerDown={onHoldStart}
-          onPointerUp={onHoldEnd}
-          onPointerLeave={() => {
-            if (state === "listening") onHoldEnd();
+          onPointerDown={(event) => {
+            // Keeps the press on the button if the finger drifts while speaking, so the
+            // release always arrives here.
+            event.currentTarget.setPointerCapture(event.pointerId);
+            onHoldStart();
           }}
+          onPointerUp={onHoldEnd}
           onPointerCancel={onHoldEnd}
           onContextMenu={(event) => event.preventDefault()}
           className={cn(

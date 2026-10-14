@@ -1,5 +1,5 @@
 import { describe, expect, it, vi } from "vitest";
-import { assertStartupEnv, EnvError, paytmEnv } from "@/lib/env";
+import { assertStartupEnv, EnvError, isPreview, paytmEnv } from "@/lib/env";
 
 const startupEnv = {
   APP_URL: "http://localhost:3000",
@@ -33,6 +33,20 @@ function startupError(): EnvError {
   }
   throw new Error("expected assertStartupEnv to throw");
 }
+
+describe("preview mode", () => {
+  it("is on only when no service key is set", () => {
+    useEnv({
+      NEXT_PUBLIC_SUPABASE_URL: undefined,
+      SUPABASE_SECRET_KEY: undefined,
+      GEMINI_API_KEY: undefined,
+      SARVAM_API_KEY: undefined,
+    });
+    expect(isPreview()).toBe(true);
+    vi.stubEnv("GEMINI_API_KEY", "test-gemini-key");
+    expect(isPreview()).toBe(false);
+  });
+});
 
 describe("startup env", () => {
   it("accepts a complete env", () => {
