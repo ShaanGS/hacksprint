@@ -1,4 +1,5 @@
 import type { Metadata, Viewport } from "next";
+import { colors } from "@design/tokens";
 import { AppFrame } from "@/components/app/app-frame";
 import "./globals.css";
 
@@ -11,7 +12,7 @@ export const viewport: Viewport = {
   width: "device-width",
   initialScale: 1,
   viewportFit: "cover",
-  themeColor: "#ffffff",
+  themeColor: colors.surface,
 };
 
 export default function RootLayout({
