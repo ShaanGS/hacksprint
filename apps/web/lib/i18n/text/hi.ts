@@ -55,4 +55,6 @@ export const hi: CustomerText = {
   noted: "ठीक है। और कुछ चाहिए?",
   readBack: (items, total) => `${items}। कुल ${total}।`,
   added: (item) => `${item} जोड़ दिया।`,
+  anythingElse: "और कुछ चाहिए?",
+  seePrices: "सारे दाम आपकी स्क्रीन पर दिखेंगे।",
 };

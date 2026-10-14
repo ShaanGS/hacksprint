@@ -55,4 +55,6 @@ export const kn: CustomerText = {
   noted: "ಸರಿ. ಇನ್ನೇನಾದರೂ ಬೇಕೇ?",
   readBack: (items, total) => `${items}. ಒಟ್ಟು ${total}.`,
   added: (item) => `${item} ಸೇರಿಸಿದೆ.`,
+  anythingElse: "ಇನ್ನೇನಾದರೂ ಬೇಕೇ?",
+  seePrices: "ಎಲ್ಲಾ ಬೆಲೆಗಳು ನಿಮ್ಮ ಪರದೆಯ ಮೇಲೆ ಕಾಣುತ್ತವೆ.",
 };

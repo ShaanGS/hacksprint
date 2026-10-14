@@ -6,9 +6,13 @@ import { MAX_QTY_PER_LINE } from "@/lib/orders/quantity";
 const moneyWords =
   /₹|\brs\b|\brupees?\b|\binr\b|\bpaise\b|\bhundred\b|ரூபாய்|ரூ\.|நூறு|ரூபா|रुपय|रुपए|रुपये|पैसे|सौ|ರೂಪಾಯಿ|ರೂ\.|ನೂರು/i;
 
+// "250 grams" and "500 ml" are how people say quantities, not prices.
+const measured =
+  /\d+(?:\.\d+)?\s*(?:g|gm|gms|grams?|ml|கிராம்|மில்லி|ग्राम|मिली|ಗ್ರಾಂ|ಮಿಲಿ)(?![\p{L}\p{M}])/giu;
+
 /** True when a reply mentions money, or a number too big to be a quantity on one line. */
 export function looksLikeMoney(reply: string): boolean {
   if (moneyWords.test(reply)) return true;
-  const numbers = reply.match(/\d+(?:\.\d+)?/g) ?? [];
+  const numbers = reply.replace(measured, "").match(/\d+(?:\.\d+)?/g) ?? [];
   return numbers.some((n) => Number(n) > MAX_QTY_PER_LINE);
 }

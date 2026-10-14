@@ -53,6 +53,8 @@ export const en = {
   noted: "Done. Anything else?",
   readBack: (items: string, total: string) => `${items}. Total ${total}.`,
   added: (item: string) => `Added ${item}.`,
+  anythingElse: "Anything else?",
+  seePrices: "You can see every price on your screen.",
 };
 
 export type CustomerText = typeof en;

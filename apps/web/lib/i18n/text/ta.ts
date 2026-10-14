@@ -55,4 +55,6 @@ export const ta: CustomerText = {
   noted: "சரி. வேறு ஏதாவது வேண்டுமா?",
   readBack: (items, total) => `${items}. மொத்தம் ${total}.`,
   added: (item) => `${item} சேர்த்தோம்.`,
+  anythingElse: "வேறு ஏதாவது வேண்டுமா?",
+  seePrices: "எல்லா விலையும் உங்கள் திரையில் தெரியும்.",
 };
