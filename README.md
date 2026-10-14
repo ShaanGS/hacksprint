@@ -72,8 +72,8 @@ flowchart LR
     core --> sarvam["Sarvam<br/>speech to text, text to speech"]
     core --> gemini["Gemini<br/>agent and bill reading"]
     core --> db[("Supabase<br/>Postgres, Realtime, Storage")]
-    core -- "signed webhooks" --> n8n["n8n<br/>payment links, nightly report, reorders"]
-    n8n --> paytm["Paytm<br/>payment links"]
+    core --> paytm["Paytm<br/>payment links"]
+    core -- "signed webhooks" --> n8n["n8n<br/>nightly report, reorders"]
     paytm -- "payment callback" --> api
 ```
 
@@ -87,7 +87,7 @@ sequenceDiagram
     participant G as Gemini
     participant D as Supabase
     actor O as Owner
-    participant P as Paytm via n8n
+    participant P as Paytm
 
     C->>A: Hold to talk, in Tamil
     A->>S: Audio clip
@@ -108,12 +108,12 @@ sequenceDiagram
 
 ### Each sponsor does a real job
 
-| Sponsor       | Job in the product                                                                                  |
-| ------------- | --------------------------------------------------------------------------------------------------- |
-| **Sarvam AI** | Speech to text (Saaras, code-mixed Indian languages) and text to speech (Bulbul) for the voice loop |
-| **Google**    | Gemini runs the conversation through function calling, and reads distributor bill photos            |
-| **n8n**       | Runs side effects in order: payment link creation, the nightly report, distributor reorders         |
-| **Paytm**     | Payment links and payment status callbacks                                                          |
+| Sponsor       | Job in the product                                                                                     |
+| ------------- | ------------------------------------------------------------------------------------------------------ |
+| **Sarvam AI** | Speech to text (Saaras, code-mixed Indian languages) and text to speech (Bulbul) for the voice loop    |
+| **Google**    | Gemini runs the conversation through function calling, and reads distributor bill photos               |
+| **n8n**       | Runs the nightly report and distributor reorders, outside the order path so the demo never waits on it |
+| **Paytm**     | Payment links and payment status callbacks                                                             |
 
 ### Guardrails
 
@@ -222,7 +222,7 @@ The idea round is followed by a 24-hour build on October 17-18, 2026. Each miles
 | **1. Setup**           | Tooling, env validation, database schema, smoke tests for every service            | Built; live checks wait on API keys |
 | **2. Data**            | Demo shop with 40 real products, aliases in English, Tamil, Hindi and Kannada      | Built (seeded in milestone 1)       |
 | **3. Voice slice**     | QR voice page, push to talk, agent tools, order reaches the owner                  | Next                                |
-| **4. Money slice**     | Owner order card, Paytm link through n8n, paid callback reduces stock, credit path | Planned                             |
+| **4. Money slice**     | Owner order card, Paytm link on approval, paid callback reduces stock, credit path | Planned                             |
 | **5. Bill and report** | Bill photo to confirmed stock; nightly voice report and one-tap reorder            | Planned                             |
 | **6. Demo hardening**  | Ten scripted calls per language, fallbacks, demo recording and architecture image  | Planned                             |
 

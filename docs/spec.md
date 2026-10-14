@@ -45,8 +45,8 @@ An AI manager for one kirana shop that does the jobs the owner has no time for.
 **Sponsor roles:**
 - **Sarvam:** speech to text and text to speech in Indian languages (the voice conversation).
 - **Gemini:** the conversational agent via function calling, and reading bill photos.
-- **n8n:** runs side effects in order: Paytm link creation, nightly report, distributor reorder.
-- **Paytm:** payment links and payment status.
+- **n8n:** runs the side effects outside the order path: the nightly report and distributor reorders.
+- **Paytm:** payment links (created by the app when the owner approves) and payment status.
 
 ## 4. Decisions and why (read before changing direction)
 
@@ -61,6 +61,12 @@ An AI manager for one kirana shop that does the jobs the owner has no time for.
 | Push-to-talk voice, one turn at a time | Reliable on venue Wi-Fi, simpler to build and explain | Streaming interruptible voice: v2 |
 | QR code opens a browser voice page for the demo | No telephony setup risk | Real phone number in v1 |
 | No "10 minute delivery" claim | Not believable for a kirana; invites holes in Q&A | Competing on speed |
+| The app creates the Paytm link when the owner approves (15 Oct) | The demo never waits on a third service, and n8n must not hold logic the app needs | n8n creating the link |
+| The AI never sees a price, total or stock number (15 Oct) | It cannot say a wrong amount; every amount on screen or in audio comes from code templates | Checking the model's sentences after the fact |
+| Every voice step has a tap fallback: choice chips, quantity buttons, typing (15 Oct) | Venue noise or an accent cannot block an order | Voice only |
+| Owner signs in with a 4-digit PIN (15 Oct) | Fast on stage, and judges cannot approve from their own phones | A secret owner link; full accounts |
+| Customer gives name and phone once, at the start (15 Oct) | The agent greets them by name, and credit knows whose account it is | Asking only when sending |
+| Screens refresh every 2 seconds instead of Supabase Realtime (15 Oct) | One mechanism that survives venue Wi-Fi and meets the 2-second target | Realtime websockets plus a polling fallback |
 
 ## 5. Known weaknesses and how we handle them
 
@@ -113,24 +119,25 @@ An AI manager for one kirana shop that does the jobs the owner has no time for.
 
 **Stack:** Next.js 16 App Router, React 19, TypeScript strict, Tailwind, Supabase (Postgres, Realtime, Storage), Gemini via `@google/genai`, Sarvam, n8n, Paytm, Zod, Vitest, Playwright, pnpm. Hosting: Vercel for the app, n8n cloud or Railway for n8n.
 
-**Architecture:** one Next.js app serves the customer voice page, the owner app and the API. It is the only component that talks to the model and the database. n8n handles payment links, the nightly report and reorders. Paytm confirms payment back to the app.
+**Architecture:** one Next.js app serves the customer voice page, the owner app and the API. It is the only component that talks to the model and the database. The app creates Paytm links when the owner approves; n8n runs the nightly report and reorders. Paytm confirms payment back to the app.
 
-**Voice loop (v1):** browser records a push-to-talk clip, server sends it to Sarvam speech to text, Gemini decides the reply and tool calls, server runs the tools, Sarvam speaks the reply.
+**Voice loop (v1):** browser records a push-to-talk clip; the server sends it to Sarvam speech to text and returns the transcript at once; Gemini decides the reply and tool calls; the server runs the tools; the reply text shows, then Sarvam speaks it. Typed text and tapped choices skip speech to text.
 
-**Agent tools (the only way the model touches data):**
-- `search_products(query, language)`
-- `check_stock(product_id, qty)` returns available or substitutes
-- `add_item(product_id, qty)`, `remove_item(product_id)`
-- `get_order_summary()` with a server-computed total
-- `submit_order(payment_mode: link | credit)`
+**Agent tools (the only way the model touches data).** The prompt lists the 40 products as short codes with name, pack and unit, never prices or stock.
+- `add_item(code, qty)` returns added, out of stock with substitutes, or a choice to ask (brand or size)
+- `set_quantity(code, qty)`, `remove_item(code)`
+- `find_products(query)` for anything not in the list
+- `open_review()` opens the review sheet: the read-back and total are built by code templates, and the customer sends the order with a button
 
-**Data model:** shops, products (with multilingual aliases, stock, low-stock threshold), customers, orders, order_items (unit price copied at order time), payments, credit_ledger, bills (image path, parsed items, status), audit_log.
+**Data model:** shops, products (with multilingual aliases, stock, low-stock threshold), customers, orders (with a short order number), order_items (unit price copied at order time), payments, credit_ledger, bills (image path, parsed items, status), reorders, voice_turns (each turn's text and timings), audit_log.
 
-**Order states:** draft, pending_approval, rejected, awaiting_payment, paid, on_credit, delivered. Stock decrements on paid or on_credit.
+**Order states:** draft, pending_approval, rejected, awaiting_payment, paid, on_credit, delivered. Stock decrements on paid or on_credit, in one database transaction with the status change.
 
-**API surface:** `POST /api/voice/turn`, `POST /api/orders/{id}/approve`, `POST /api/orders/{id}/reject`, `POST /api/webhooks/paytm`, `POST /api/bills`, `POST /api/bills/{id}/confirm`, `GET /api/reports/daily`. n8n webhooks: order-approved, reorder-confirmed; n8n cron for the nightly report.
+**API surface:** `POST /api/voice/transcribe`, `POST /api/voice/turn`, `GET /api/voice/audio/{turnId}`, cart and send endpoints for the review sheet, `POST /api/orders/{id}/approve`, `POST /api/orders/{id}/reject`, `POST /api/orders/{id}/deliver`, `POST /api/webhooks/paytm`, `POST /api/bills`, `POST /api/bills/{id}/confirm`, `GET /api/reports/daily`. n8n webhook: reorder-confirmed; n8n cron for the nightly report.
 
-**Guardrails:** prices, totals and stock only from the database; schema validation on all model output (retry once, then ask the customer to repeat); owner approval for money and messages; verified, idempotent payment callbacks; everything logged to audit_log.
+**Access:** the owner signs in with a PIN (signed cookie); the customer's session is a signed cookie, and every order call checks the customer owns the order. A PIN-protected presenter page runs health checks, resets the demo data and switches between Paytm and the test payment page.
+
+**Guardrails:** prices, totals and stock only from the database, and never shown to the model; any model reply that mentions money is replaced by a template; schema validation on all model output (retry once, then ask the customer to repeat); owner approval for money and messages; verified, idempotent payment callbacks; everything logged to audit_log.
 
 **Targets:** voice turn under 4 seconds; owner card within 2 seconds of submission; no secrets in the repo.
 
@@ -151,9 +158,9 @@ UI quality and consistency are a top priority. The team supplies Dribbble and Pi
 
 1. **Setup:** tooling, env validation, Supabase schema and seed, smoke tests for Sarvam, Gemini, Paytm, README skeleton.
 2. **Data:** seed one shop with 40 real products and aliases in English, Tamil, Hindi.
-3. **Voice slice:** QR page, push-to-talk, agent tools, order reaches pending_approval.
-4. **Money slice:** owner card, n8n creates Paytm link, callback marks paid and drops stock; credit path.
-5. **Bill and report:** bill photo to confirmed stock; nightly report and reorder in n8n.
+3. **Voice slice:** QR page, push-to-talk, agent tools, order reaches pending_approval. Deployed to Vercel early: the mic needs https and real phones.
+4. **Money slice:** owner card, the app creates the Paytm link on approval, callback marks paid and drops stock; credit path.
+5. **Report and bill:** nightly report and reorder in n8n first (they are in the definition of done), then bill photo to confirmed stock.
 6. **Demo hardening:** 10 scripted calls per language pass, fallbacks, README with demo GIF and architecture image.
 
 **Risks:** Paytm keys delayed (mock client); latency on venue Wi-Fi (hotspot, short replies); misheard items (read-back plus approval); bill parse errors (owner edits rows).
