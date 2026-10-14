@@ -11,6 +11,12 @@ create unique index products_shop_code_idx on public.products (shop_id, code);
 alter table public.orders add column number bigint generated always as identity;
 create unique index orders_number_idx on public.orders (number);
 alter table public.orders add column submitted_at timestamptz;
+-- A customer's cart is their one draft order; two requests racing to create it get the same one.
+create unique index orders_one_draft_per_customer_idx
+  on public.orders (customer_id) where status = 'draft';
+
+-- Cart lines stay in the order they were added.
+alter table public.order_items add column created_at timestamptz not null default now();
 
 -- Reasons are codes, so the customer's screen can show them in the customer's language.
 create type public.reject_reason as enum ('out_of_stock', 'shop_closed', 'cannot_deliver', 'other');
