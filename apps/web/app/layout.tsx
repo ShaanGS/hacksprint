@@ -1,9 +1,17 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
+import { AppFrame } from "@/components/app/app-frame";
 import "./globals.css";
 
 export const metadata: Metadata = {
   title: "App",
   description: "AI manager for a kirana shop",
+};
+
+export const viewport: Viewport = {
+  width: "device-width",
+  initialScale: 1,
+  viewportFit: "cover",
+  themeColor: "#ffffff",
 };
 
 export default function RootLayout({
@@ -13,7 +21,9 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
-      <body>{children}</body>
+      <body>
+        <AppFrame>{children}</AppFrame>
+      </body>
     </html>
   );
 }
