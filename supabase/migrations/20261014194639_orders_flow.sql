@@ -38,6 +38,8 @@ create table public.voice_turns (
   lang text not null,
   source text not null check (source in ('voice', 'typed', 'chip', 'agent', 'template')),
   choices jsonb not null default '[]',
+  -- Product cards shown with the shop's reply: what it added and what is out of stock.
+  items jsonb not null default '[]',
   stt_ms integer,
   agent_ms integer,
   created_at timestamptz not null default now()

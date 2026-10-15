@@ -1,13 +1,15 @@
 "use client";
 
-import { ChevronUp, Keyboard, SendHorizontal } from "lucide-react";
+import { Keyboard, Mic, SendHorizontal } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
+import { CartDock } from "@/components/customer/cart-dock";
 import { CartSheet } from "@/components/customer/cart-sheet";
 import { Conversation } from "@/components/customer/conversation";
+import { TalkHero } from "@/components/customer/talk-hero";
+import { Art } from "@/components/ui/art";
 import { MicButton, type MicState } from "@/components/ui/mic-button";
-import { Ticker } from "@/components/ui/ticker";
 import type { CustomerBackend, TurnResult } from "@/lib/customer/backend";
-import type { Lang } from "@/lib/i18n/languages";
+import { langInfo, type Lang } from "@/lib/i18n/languages";
 import { textFor } from "@/lib/i18n/text";
 import type { Cart } from "@/lib/orders/cart";
 import type { PaymentMode } from "@/lib/orders/submit";
@@ -16,7 +18,7 @@ import type { VoiceTurn } from "@/lib/voice/turns";
 // A press shorter than this is a tap, not speech: the customer is told to hold while speaking.
 const MIN_HOLD_MS = 300;
 
-/** C1: the voice order. Hold to talk, or type; the cart pill opens the cart and review. */
+/** C1: the voice order. Hold to talk, or type; the cart dock opens the cart and review. */
 export function Talk({
   lang,
   shopName,
@@ -109,11 +111,11 @@ export function Talk({
     });
   }
 
-  function sendTyped() {
-    const text = draft.trim();
-    if (!text) return;
+  function say(text: string) {
+    const clean = text.trim();
+    if (!clean || mic === "thinking") return;
     setDraft("");
-    run(() => backend.say(text, "typed"));
+    run(() => backend.say(clean, "typed"));
   }
 
   async function changeQuantity(code: string, qty: number) {
@@ -127,50 +129,49 @@ export function Talk({
     onSent(number);
   }
 
-  const count = cart.lines.length;
+  const started = turns.some((turn) => turn.role === "customer");
+  const greeting = turns.find((turn) => turn.role === "shop")?.text ?? "";
   return (
     <main lang={lang} className="flex h-full flex-col">
-      <header className="px-4 pt-8 pb-3">
-        <h1 className="text-title font-bold">{shopName}</h1>
-        <p className="mt-1 text-base text-ink-muted">{t.trySaying}</p>
+      <header className="flex shrink-0 items-center gap-3 px-4 pt-4 pb-3">
+        <Art name="shop" size={44} />
+        <div className="min-w-0">
+          <h1 className="truncate text-lg leading-tight font-extrabold tracking-tight">
+            {shopName}
+          </h1>
+          <p className="text-sm text-ink-muted">{langInfo[lang].name}</p>
+        </div>
       </header>
 
-      <div className="min-h-0 flex-1 overflow-y-auto px-4 py-2">
-        <Conversation
-          turns={turns}
-          lang={lang}
-          thinking={mic === "thinking"}
-          choicesOpen={choicesOpen}
-          onChoose={(turnId, index) => {
-            setChoicesOpen(false);
-            run(() => backend.choose(turnId, index));
-          }}
-          onDismissChoices={() => setChoicesOpen(false)}
-        />
+      <div className="min-h-0 flex-1 overflow-y-auto px-4 pt-1 pb-4">
+        {started || !greeting ? (
+          <Conversation
+            turns={turns}
+            lang={lang}
+            thinking={mic === "thinking"}
+            choicesOpen={choicesOpen}
+            onChoose={(turnId, index) => {
+              setChoicesOpen(false);
+              run(() => backend.choose(turnId, index));
+            }}
+            onDismissChoices={() => setChoicesOpen(false)}
+          />
+        ) : (
+          <TalkHero lang={lang} greeting={greeting} onTry={say} />
+        )}
         <div ref={bottom} />
       </div>
 
-      <footer className="border-t border-border px-4 pt-3 pb-6">
-        {count > 0 && (
-          <button
-            type="button"
-            onClick={() => setSheetOpen(true)}
-            className="flex min-h-14 w-full items-center justify-between rounded-xl bg-surface-muted px-4"
-          >
-            <span className="flex items-center gap-2 text-base font-medium">
-              <ChevronUp aria-hidden className="size-5" />
-              {t.items(count)}
-            </span>
-            <Ticker paise={cart.totalPaise} className="text-lg font-bold" />
-          </button>
+      <footer className="pb-safe shrink-0 px-4 pt-2">
+        {cart.lines.length > 0 && (
+          <CartDock cart={cart} lang={lang} onOpen={() => setSheetOpen(true)} />
         )}
-
         {typing ? (
           <form
             className="mt-3 flex items-center gap-2"
             onSubmit={(event) => {
               event.preventDefault();
-              sendTyped();
+              say(draft);
             }}
           >
             <input
@@ -178,7 +179,7 @@ export function Talk({
               onChange={(event) => setDraft(event.target.value)}
               placeholder={t.typeHere}
               aria-label={t.typeHere}
-              className="min-h-14 flex-1 rounded-lg bg-surface-muted px-4 text-lg outline-none focus:outline-2 focus:outline-ink"
+              className="min-h-14 flex-1 rounded-lg bg-surface-muted px-4 text-lg outline-none placeholder:text-ink-faint focus:outline-2 focus:outline-ink"
             />
             <button
               type="submit"
@@ -190,7 +191,7 @@ export function Talk({
             </button>
           </form>
         ) : (
-          <div className="mt-4">
+          <div className="mt-3">
             <MicButton
               state={mic}
               onHoldStart={holdStarted}
@@ -200,16 +201,20 @@ export function Talk({
           </div>
         )}
         {hint && (
-          <p role="status" className="mt-2 text-center text-sm font-medium text-danger">
+          <p role="status" className="mt-1 text-center text-sm font-medium text-danger">
             {hint}
           </p>
         )}
         <button
           type="button"
           onClick={() => setTyping((on) => !on)}
-          className="mx-auto mt-2 flex min-h-11 items-center gap-2 px-3 text-base font-medium text-ink-muted"
+          className="mx-auto mt-1 flex min-h-11 items-center gap-2 px-3 text-base font-medium text-ink-muted"
         >
-          <Keyboard aria-hidden className="size-5" />
+          {typing ? (
+            <Mic aria-hidden className="size-5" />
+          ) : (
+            <Keyboard aria-hidden className="size-5" />
+          )}
           {typing ? t.holdToTalk : t.typeInstead}
         </button>
       </footer>

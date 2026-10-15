@@ -1,9 +1,10 @@
 import type { FunctionDeclaration } from "@google/genai";
 import type { SupabaseClient } from "@supabase/supabase-js";
 import { z } from "zod";
+import { choiceFor, itemFor } from "@/lib/agent/cards";
 import type { Product } from "@/lib/catalog";
 import { addToCart, removeFromCart, setCartQuantity, type CartChange } from "@/lib/orders/cart";
-import type { Choice } from "@/lib/voice/turns";
+import type { Choice, TurnItem } from "@/lib/voice/turns";
 
 const code = { type: "string", description: "A product code from the list" };
 const qty = {
@@ -63,6 +64,8 @@ export type ToolOutcome = {
   response: Record<string, unknown>;
   /** Answers the customer can tap. */
   choices: Choice[];
+  /** Product cards to show with the reply. */
+  items: TurnItem[];
   /** The product this call put in the order or changed, so it is not offered again. */
   changedCode?: string;
   review?: boolean;
@@ -94,12 +97,12 @@ export async function runTool(ctx: ToolContext, name: string, args: unknown): Pr
   }
   if (name === "find_products") return findProducts(ctx, args);
   if (name === "open_review")
-    return { response: { result: "review_shown" }, choices: [], review: true };
+    return { response: { result: "review_shown" }, choices: [], items: [], review: true };
   return told({ error: `there is no tool called ${name}` });
 }
 
 function told(response: Record<string, unknown>): ToolOutcome {
-  return { response, choices: [] };
+  return { response, choices: [], items: [] };
 }
 
 function fromChange(change: CartChange, requestedQty: number): ToolOutcome {
@@ -110,12 +113,14 @@ function fromChange(change: CartChange, requestedQty: number): ToolOutcome {
       return {
         response: { result: change.status, product, qty_in_order: change.qty },
         choices: [],
+        items: [itemFor(change.product, change.qty, "added")],
         changedCode: change.product.code,
       };
     case "removed":
       return {
         response: { result: "removed", product },
         choices: [],
+        items: [],
         changedCode: change.product.code,
       };
     case "invalid_quantity":
@@ -127,11 +132,8 @@ function fromChange(change: CartChange, requestedQty: number): ToolOutcome {
           product,
           substitutes: change.substitutes.map((p) => ({ code: p.code, name: p.name })),
         },
-        choices: change.substitutes.map((p) => ({
-          label: p.name,
-          code: p.code,
-          qty: requestedQty,
-        })),
+        choices: change.substitutes.map((p) => choiceFor(p, requestedQty)),
+        items: [itemFor(change.product, requestedQty, "out_of_stock")],
       };
   }
 }
@@ -154,8 +156,7 @@ async function findProducts(ctx: ToolContext, args: unknown): Promise<ToolOutcom
     response: {
       matches: found.map((p) => ({ code: p.code, name: p.name, in_stock: p.stockQty > 0 })),
     },
-    choices: found
-      .filter((p) => p.stockQty > 0)
-      .map((p) => ({ label: p.name, code: p.code, qty: wanted })),
+    choices: found.filter((p) => p.stockQty > 0).map((p) => choiceFor(p, wanted)),
+    items: [],
   };
 }

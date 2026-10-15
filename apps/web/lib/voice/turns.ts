@@ -1,12 +1,31 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
 import { z } from "zod";
 import { langs, type Lang } from "@/lib/i18n/languages";
+import type { ProductUnit } from "@/lib/orders/quantity";
 
 // The conversation on an order: what the customer said, typed or tapped, and what the shop said
 // back. Shop turns are what the audio endpoint reads aloud.
 
 /** A tappable answer the shop offers: add this product at this quantity. */
-export type Choice = { label: string; code: string; qty: number };
+export type Choice = {
+  label: string;
+  code: string;
+  qty: number;
+  unit: ProductUnit;
+  art: string;
+  /** What this line would cost, worked out by code from the stored price. */
+  linePaise: number;
+};
+
+/** A product shown with the shop's reply: what it just added, or what is out of stock. */
+export type TurnItem = {
+  code: string;
+  name: string;
+  art: string;
+  qty: number;
+  unit: ProductUnit;
+  state: "added" | "out_of_stock";
+};
 
 export type TurnSource = "voice" | "typed" | "chip" | "agent" | "template";
 
@@ -17,11 +36,14 @@ export type VoiceTurn = {
   lang: Lang;
   source: TurnSource;
   choices: Choice[];
+  items: TurnItem[];
 };
 
 export type NewTurn = Omit<VoiceTurn, "id"> & { sttMs?: number; agentMs?: number };
 
-const COLUMNS = "id, role, text, lang, source, choices";
+const COLUMNS = "id, role, text, lang, source, choices, items";
+
+const unit = z.enum(["kg", "litre", "pack", "piece"]);
 
 const turnRow = z.object({
   id: z.coerce.number(),
@@ -29,7 +51,26 @@ const turnRow = z.object({
   text: z.string(),
   lang: z.enum(langs),
   source: z.enum(["voice", "typed", "chip", "agent", "template"]),
-  choices: z.array(z.object({ label: z.string(), code: z.string(), qty: z.number() })),
+  choices: z.array(
+    z.object({
+      label: z.string(),
+      code: z.string(),
+      qty: z.number(),
+      unit: unit,
+      art: z.string(),
+      linePaise: z.number().int(),
+    }),
+  ),
+  items: z.array(
+    z.object({
+      code: z.string(),
+      name: z.string(),
+      art: z.string(),
+      qty: z.number(),
+      unit: unit,
+      state: z.enum(["added", "out_of_stock"]),
+    }),
+  ),
 });
 
 export async function recordTurns(
@@ -47,6 +88,7 @@ export async function recordTurns(
         lang: turn.lang,
         source: turn.source,
         choices: turn.choices,
+        items: turn.items,
         stt_ms: turn.sttMs ?? null,
         agent_ms: turn.agentMs ?? null,
       })),

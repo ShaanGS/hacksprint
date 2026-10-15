@@ -1,3 +1,4 @@
+import { choiceFor, itemFor } from "@/lib/agent/cards";
 import type { CustomerBackend, OrderView, TurnResult } from "@/lib/customer/backend";
 import type { Lang } from "@/lib/i18n/languages";
 import { quantityPhrase, readBack } from "@/lib/i18n/speech";
@@ -8,20 +9,17 @@ import type { PaymentMode } from "@/lib/orders/submit";
 import { lineTotalPaise, orderTotalPaise } from "@/lib/orders/totals";
 import { PREVIEW_ORDER_NUMBER, previewProduct } from "@/lib/preview/data";
 import { creditRows, previewOwnerOrders } from "@/lib/preview/owner";
-import type { Choice, TurnSource, VoiceTurn } from "@/lib/voice/turns";
+import type { Choice, TurnItem, TurnSource, VoiceTurn } from "@/lib/voice/turns";
 
 // The customer side of the preview: the demo conversation from docs/PRODUCT-PLAN.md (flow 1),
 // played in memory, so every screen can be tried before the keys exist. Whatever the customer
 // says, the shop answers with the next line of the script.
 
-const said: Record<"order" | "done", Record<Lang, string>> = {
-  order: {
-    ta: "ரெண்டு Maggi, ஒரு butter, அரை கிலோ சர்க்கரை",
-    hi: "दो Maggi, एक butter, आधा किलो चीनी",
-    kn: "ಎರಡು Maggi, ಒಂದು butter, ಅರ್ಧ ಕೆಜಿ ಸಕ್ಕರೆ",
-    en: "Two Maggi, one butter and half a kilo of sugar",
-  },
-  done: { ta: "அவ்வளவுதான்", hi: "बस, इतना ही", kn: "ಅಷ್ಟೇ", en: "That's all" },
+const done: Record<Lang, string> = {
+  ta: "அவ்வளவுதான்",
+  hi: "बस, इतना ही",
+  kn: "ಅಷ್ಟೇ",
+  en: "That's all",
 };
 
 const offerJaggery: Record<Lang, string> = {
@@ -43,11 +41,30 @@ export function previewCustomer(lang: Lang, customerName: string): CustomerBacke
   const quantities = new Map<string, number>();
   const turns: VoiceTurn[] = [];
   let step: "order" | "done" = "order";
-  let sent: { at: number; mode: PaymentMode; totalPaise: number; items: number } | null = null;
+  let sent: {
+    at: number;
+    mode: PaymentMode;
+    totalPaise: number;
+    items: number;
+    arts: string[];
+  } | null = null;
   let paidAt: number | null = null;
 
-  function turn(role: VoiceTurn["role"], text: string, source: TurnSource, choices: Choice[] = []) {
-    const added: VoiceTurn = { id: turns.length + 1, role, text, lang, source, choices };
+  function turn(
+    role: VoiceTurn["role"],
+    text: string,
+    source: TurnSource,
+    extras: { choices?: Choice[]; items?: TurnItem[] } = {},
+  ) {
+    const added: VoiceTurn = {
+      id: turns.length + 1,
+      role,
+      text,
+      lang,
+      source,
+      choices: extras.choices ?? [],
+      items: extras.items ?? [],
+    };
     turns.push(added);
     return added;
   }
@@ -55,7 +72,6 @@ export function previewCustomer(lang: Lang, customerName: string): CustomerBacke
   function cart(): Cart {
     const lines = [...quantities].map(([code, qty]) => {
       const product = previewProduct(code);
-      const priced = { qty, unitPricePaise: product.pricePaise };
       return {
         code,
         name: product.name,
@@ -64,7 +80,7 @@ export function previewCustomer(lang: Lang, customerName: string): CustomerBacke
         art: product.art,
         qty,
         unitPricePaise: product.pricePaise,
-        lineTotalPaise: lineTotalPaise(priced),
+        lineTotalPaise: lineTotalPaise({ qty, unitPricePaise: product.pricePaise }),
       };
     });
     return { lines, totalPaise: orderTotalPaise(lines) };
@@ -82,14 +98,15 @@ export function previewCustomer(lang: Lang, customerName: string): CustomerBacke
 
   return {
     async start() {
-      if (turns.length > 0) return result(turns);
+      // A copy: handing out the list itself would let later turns appear on screen twice.
+      if (turns.length > 0) return result([...turns]);
       const first = customerName.trim().split(/\s+/)[0] ?? customerName;
       return result([turn("shop", t.greeting(first), "template")]);
     },
 
     async transcribe() {
       await wait(500);
-      return said[step][lang];
+      return step === "order" ? t.exampleOrder : done[lang];
     },
 
     async say(text, source) {
@@ -99,8 +116,13 @@ export function previewCustomer(lang: Lang, customerName: string): CustomerBacke
         step = "done";
         setQty("maggi", 2);
         setQty("butter", 1);
-        const choice = { label: previewProduct("jaggery").name, code: "jaggery", qty: 0.5 };
-        return result([customer, turn("shop", offerJaggery[lang], "agent", [choice])]);
+        const items = [
+          itemFor(previewProduct("maggi"), 2, "added"),
+          itemFor(previewProduct("butter"), 1, "added"),
+          itemFor(previewProduct("sugar"), 0.5, "out_of_stock"),
+        ];
+        const choices = [choiceFor(previewProduct("jaggery"), 0.5)];
+        return result([customer, turn("shop", offerJaggery[lang], "agent", { items, choices })]);
       }
       const current = cart();
       if (current.lines.length === 0) return result([customer, turn("shop", t.noted, "template")]);
@@ -117,7 +139,9 @@ export function previewCustomer(lang: Lang, customerName: string): CustomerBacke
       const item = `${quantityPhrase(choice.qty, product.unit, lang)} ${product.name}`;
       return result([
         turn("customer", choice.label, "chip"),
-        turn("shop", `${t.added(item)} ${t.anythingElse}`, "template"),
+        turn("shop", `${t.added(item)} ${t.anythingElse}`, "template", {
+          items: [itemFor(product, choice.qty, "added")],
+        }),
       ]);
     },
 
@@ -134,6 +158,7 @@ export function previewCustomer(lang: Lang, customerName: string): CustomerBacke
         mode,
         totalPaise: current.totalPaise,
         items: current.lines.length,
+        arts: current.lines.slice(0, 3).map((line) => line.art),
       };
       return { number: PREVIEW_ORDER_NUMBER };
     },
@@ -150,6 +175,7 @@ export function previewCustomer(lang: Lang, customerName: string): CustomerBacke
         status: "pending_approval",
         paymentMode: sent.mode,
         itemCount: sent.items,
+        arts: sent.arts,
         totalPaise: sent.totalPaise,
         rejectReason: null,
         balancePaise: null,

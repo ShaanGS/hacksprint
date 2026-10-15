@@ -11,7 +11,6 @@ export const en = {
   listening: "Listening. Let go to send.",
   thinking: "One moment",
   holdLonger: "Hold the button while you speak",
-  trySaying: "Try saying: two Maggi, one butter",
   typeInstead: "Type instead",
   typeHere: "Type your order",
   sendText: "Send",
@@ -55,6 +54,15 @@ export const en = {
   added: (item: string) => `Added ${item}.`,
   anythingElse: "Anything else?",
   seePrices: "You can see every price on your screen.",
+  tryLabel: "Try saying",
+  exampleOrder: "Two Maggi, one butter and half a kilo of sugar",
+  outOfStock: "Out of stock",
+  addedTag: "Added",
+  useInstead: (item: string) => `Use ${item}`,
+  back: "Back",
+  oneLess: (item: string) => `One less ${item}`,
+  oneMore: (item: string) => `One more ${item}`,
+  removeItem: (item: string) => `Remove ${item}`,
 };
 
 export type CustomerText = typeof en;

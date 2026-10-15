@@ -59,9 +59,12 @@ body {
   overscroll-behavior: none;
 }
 
-:focus-visible {
-  outline: 2px solid var(--color-ink);
-  outline-offset: 2px;
+/* In the base layer, so a field that draws its own focus ring (outline-none) can opt out. */
+@layer base {
+  :focus-visible {
+    outline: 2px solid var(--color-ink);
+    outline-offset: 2px;
+  }
 }
 
 /* On a phone the app fills the screen. On a laptop or projector it sits in a 390 x 844
@@ -96,6 +99,11 @@ body {
       0 0 0 11px #2c2c31,
       0 40px 80px rgb(0 0 0 / 0.25);
   }
+}
+
+/* Bottom bars clear the phone's home indicator. */
+@utility pb-safe {
+  padding-bottom: max(env(safe-area-inset-bottom), 1rem);
 }
 
 .scroll {

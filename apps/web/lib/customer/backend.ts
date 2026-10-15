@@ -17,6 +17,8 @@ export type OrderView = {
   status: SubmittedStatus;
   paymentMode: PaymentMode;
   itemCount: number;
+  /** Pictures of up to three things in the order. */
+  arts: string[];
   totalPaise: number;
   rejectReason: RejectReason | null;
   /** What the customer owes the shop once this order is on their account. */

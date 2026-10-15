@@ -10,7 +10,7 @@ import { looksLikeMoney } from "@/lib/agent/guard";
 import { toolDeclarations, type ToolOutcome } from "@/lib/agent/tools";
 import type { Lang } from "@/lib/i18n/languages";
 import { textFor } from "@/lib/i18n/text";
-import type { Choice, VoiceTurn } from "@/lib/voice/turns";
+import type { Choice, TurnItem, VoiceTurn } from "@/lib/voice/turns";
 
 // One customer turn through the model. At most three calls, so a turn stays inside its time
 // budget; the last call is not allowed to use tools, so it has to answer.
@@ -32,6 +32,8 @@ export type AgentTurn = {
   /** What the shop says back; "review" means the order review opens and the read-back is said. */
   outcome: { kind: "reply"; text: string; source: "agent" | "template" } | { kind: "review" };
   choices: Choice[];
+  /** Product cards for the reply: what was added and what is out of stock. */
+  items: TurnItem[];
   toolCalls: ToolCallRecord[];
   /** Why the model's answer was not used, for the audit log. */
   problem?: string;
@@ -61,6 +63,7 @@ export async function runAgentTurn(
   const done = (outcome: AgentTurn["outcome"], problem?: string): AgentTurn => ({
     outcome,
     choices: choicesFrom(outcomes),
+    items: itemsFrom(outcomes),
     toolCalls,
     problem,
   });
@@ -151,4 +154,11 @@ function choicesFrom(outcomes: ToolOutcome[]): Choice[] {
       return true;
     })
     .slice(0, 3);
+}
+
+/** One card per product, showing where it ended up after every call in the turn. */
+function itemsFrom(outcomes: ToolOutcome[]): TurnItem[] {
+  const byCode = new Map<string, TurnItem>();
+  for (const item of outcomes.flatMap((o) => o.items)) byCode.set(item.code, item);
+  return [...byCode.values()];
 }
