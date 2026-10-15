@@ -1,77 +1,104 @@
 "use client";
 
+import { Check } from "lucide-react";
+import { motion } from "motion/react";
 import { useState } from "react";
 import { qtyLabel } from "@/components/owner/order-card";
 import { Art, toArtName } from "@/components/ui/art";
-import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Card } from "@/components/ui/card";
+import { FeatureCard } from "@/components/ui/feature-card";
+import { Tile } from "@/components/ui/tile";
+import { Ticker } from "@/components/ui/ticker";
+import type { ArtName } from "@/components/ui/art";
 import { cn } from "@/lib/cn";
-import { formatMoney } from "@/lib/money";
+import { snappy } from "@/lib/motion";
 import type { DaySummary, ReorderLine } from "@/lib/owner/types";
 
-/** O5: how the day went, and the restock order for the distributor. */
+/** O5: how the day went, told as one sentence, the numbers behind it, and tomorrow's restock. */
 export function TodayTab({
-  shopName,
   distributorName,
   summary,
+  report,
   reorder,
 }: {
-  shopName: string;
   distributorName: string;
   summary: DaySummary;
+  /** The day in a sentence, built by code from the numbers. */
+  report: string;
   reorder: ReorderLine[];
 }) {
   const [sent, setSent] = useState(false);
-  const tiles = [
-    { label: "Orders", value: String(summary.orders), good: false },
-    { label: "Collected", value: formatMoney(summary.collectedPaise), good: true },
-    { label: "On credit today", value: formatMoney(summary.creditPaise), good: false },
-    { label: "Owed in total", value: formatMoney(summary.owedPaise), good: false },
+  const tiles: { art: ArtName; label: string; paise?: number; count?: number; good?: boolean }[] = [
+    { art: "bag", label: "Orders", count: summary.orders },
+    { art: "savings", label: "Collected", paise: summary.collectedPaise, good: true },
+    { art: "khata", label: "On account today", paise: summary.creditPaise },
+    { art: "coins", label: "Owed in total", paise: summary.owedPaise },
   ];
   return (
-    <main className="px-4 pt-8 pb-6">
-      <h1 className="text-title font-bold">Today</h1>
-      <p className="mt-1 text-base text-ink-muted">{shopName}</p>
+    <main className="px-4 pt-6 pb-32">
+      <h1 className="text-title font-extrabold tracking-tight">Today</h1>
+      <FeatureCard banner="night" title="Tonight's report" text={report} className="mt-4" />
 
       <div className="mt-4 grid grid-cols-2 gap-3">
         {tiles.map((tile) => (
-          <Card key={tile.label}>
-            <p className="text-sm text-ink-muted">{tile.label}</p>
-            <p className={cn("mt-1 text-2xl font-bold tabular-nums", tile.good && "text-success")}>
-              {tile.value}
-            </p>
-          </Card>
+          <Tile key={tile.label} art={tile.art} artSize={72} size="sm">
+            {tile.paise === undefined ? (
+              <p className="text-2xl font-extrabold tracking-tight tabular-nums">{tile.count}</p>
+            ) : (
+              <Ticker
+                paise={tile.paise}
+                className={cn(
+                  "block text-2xl font-extrabold tracking-tight",
+                  tile.good && "text-success",
+                )}
+              />
+            )}
+            <p className="mt-0.5 text-sm font-medium text-ink-muted">{tile.label}</p>
+          </Tile>
         ))}
       </div>
 
-      <h2 className="mt-8 text-xl font-bold">Order from {distributorName}</h2>
-      {reorder.length === 0 ? (
-        <p className="mt-2 text-base text-ink-muted">Nothing is running low.</p>
-      ) : (
-        <>
-          <ul className="mt-3 space-y-2">
+      <section className="relative mt-6 overflow-hidden rounded-3xl bg-surface-muted p-4">
+        <Art name="crate" size={96} className="absolute -top-2 -right-2" />
+        <h2 className="pr-24 text-xl leading-tight font-extrabold tracking-tight">
+          Order from {distributorName}
+        </h2>
+        <p className="mt-1 pr-24 text-sm text-ink-muted">Back up to twice the low-stock level</p>
+        {reorder.length === 0 ? (
+          <p className="mt-4 text-base font-medium">Nothing is running low.</p>
+        ) : (
+          <ul className="mt-4 space-y-2">
             {reorder.map((line) => (
-              <li key={line.code} className="flex min-h-14 items-center gap-3">
-                <Art name={toArtName(line.art)} size={48} />
-                <span className="flex-1 text-lg">{line.name}</span>
-                <span className="text-lg font-medium tabular-nums">
+              <li key={line.code} className="flex items-center gap-3">
+                <Art name={toArtName(line.art)} size={44} />
+                <span className="min-w-0 flex-1 truncate text-base font-medium">{line.name}</span>
+                <span className="text-base font-bold tabular-nums">
                   {qtyLabel(line.qty, line.unit)}
                 </span>
               </li>
             ))}
           </ul>
+        )}
+        {reorder.length > 0 && (
           <div className="mt-4">
             {sent ? (
-              <Badge tone="success">Sent to {distributorName}</Badge>
+              <motion.p
+                initial={{ scale: 0.9 }}
+                animate={{ scale: 1 }}
+                transition={snappy}
+                className="flex min-h-14 items-center justify-center gap-2 rounded-xl bg-success/15 text-base font-semibold text-success"
+              >
+                <Check aria-hidden className="size-5" strokeWidth={3} />
+                Sent to {distributorName}
+              </motion.p>
             ) : (
               <Button wide onClick={() => setSent(true)}>
                 Send to {distributorName}
               </Button>
             )}
           </div>
-        </>
-      )}
+        )}
+      </section>
     </main>
   );
 }

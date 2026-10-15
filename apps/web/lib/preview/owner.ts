@@ -26,7 +26,7 @@ export function creditRows(orders: OwnerOrder[]): CreditRow[] {
     if (order.status !== "on_credit" && order.status !== "delivered") continue;
     const row = owed.get(order.customer) ?? {
       customer: order.customer,
-      since: "Today",
+      since: "today",
       owedPaise: 0,
     };
     owed.set(order.customer, { ...row, owedPaise: row.owedPaise + order.totalPaise });

@@ -1,51 +1,54 @@
-import { ArrowRight } from "lucide-react";
-import Link from "next/link";
-import { Banner, type BannerName } from "@/components/ui/art";
+import { Art, type ArtName } from "@/components/ui/art";
+import { FeatureCard } from "@/components/ui/feature-card";
 import { previewShop } from "@/lib/preview/data";
 
-const entries: { href: string; banner: BannerName; title: string; text: string; action: string }[] =
-  [
-    {
-      href: "/order",
-      banner: "voice",
-      title: "Order by voice",
-      text: "Speak in Tamil, Hindi, Kannada or English. The shop approves in one tap.",
-      action: "Start an order",
-    },
-    {
-      href: "/owner",
-      banner: "approve",
-      title: "Run the shop",
-      text: "Approve orders, collect by Paytm link, and keep stock and credit in one place.",
-      action: "Open the shop app",
-    },
-  ];
+const howItWorks: { art: ArtName; title: string; text: string }[] = [
+  { art: "mic", title: "Say it", text: "In Tamil, Hindi, Kannada or English, the way you talk." },
+  { art: "shop", title: "The shop approves", text: "One tap on the owner's phone." },
+  {
+    art: "phone-pay",
+    title: "Pay or put it on account",
+    text: "A Paytm link, or the credit book.",
+  },
+];
 
-/** The front door: one way in for customers, one for the owner. */
+/** The front door: one way in for customers, one for the owner, and how the two meet. */
 export default function Home() {
   return (
-    <main className="px-4 pt-8 pb-6">
-      <h1 className="text-title font-bold">{previewShop.name}</h1>
-      <p className="mt-1 text-base text-ink-muted">Your kirana, on your phone</p>
+    <main className="px-4 pt-8 pb-10">
+      <p className="text-sm font-semibold text-ink-muted">Your kirana, on your phone</p>
+      <h1 className="text-display font-extrabold tracking-tight">{previewShop.name}</h1>
+
       <div className="mt-6 space-y-4">
-        {entries.map((entry) => (
-          <Link
-            key={entry.href}
-            href={entry.href}
-            className="block rounded-2xl bg-surface-muted p-3"
-          >
-            <Banner name={entry.banner} />
-            <div className="px-1 pt-3 pb-1">
-              <p className="text-xl font-bold">{entry.title}</p>
-              <p className="mt-1 text-base text-ink-muted">{entry.text}</p>
-              <p className="mt-3 flex items-center gap-2 text-base font-semibold">
-                {entry.action}
-                <ArrowRight aria-hidden className="size-5" />
-              </p>
-            </div>
-          </Link>
-        ))}
+        <FeatureCard
+          banner="voice"
+          title="Order by voice"
+          text="Speak your order in your own language. We read it back before it goes."
+          action="Start an order"
+          href="/order"
+        />
+        <FeatureCard
+          banner="approve"
+          title="Run the shop"
+          text="Approve orders, collect by Paytm link, and keep stock and credit in one place."
+          action="Open the shop app"
+          href="/owner"
+        />
       </div>
+
+      <h2 className="mt-10 text-xl font-extrabold tracking-tight">How it works</h2>
+      <ol className="mt-4 space-y-3">
+        {howItWorks.map((step, index) => (
+          <li key={step.title} className="flex items-center gap-4 rounded-2xl bg-surface-muted p-3">
+            <Art name={step.art} size={64} />
+            <div className="min-w-0 flex-1">
+              <p className="text-sm font-semibold text-ink-muted">Step {index + 1}</p>
+              <p className="text-lg leading-tight font-bold">{step.title}</p>
+              <p className="mt-0.5 text-sm text-ink-muted">{step.text}</p>
+            </div>
+          </li>
+        ))}
+      </ol>
     </main>
   );
 }

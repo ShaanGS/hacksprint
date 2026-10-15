@@ -10,7 +10,7 @@ const tabs: { id: OwnerTab; label: string; icon: LucideIcon }[] = [
   { id: "today", label: "Today", icon: Moon },
 ];
 
-/** The owner app's four places, always one tap away. */
+/** The owner app's four places, floating over the page so the content scrolls under it. */
 export function TabBar({
   tab,
   onChange,
@@ -22,27 +22,37 @@ export function TabBar({
   waiting: number;
 }) {
   return (
-    <nav className="grid grid-cols-4 border-t border-border bg-surface pb-4">
-      {tabs.map(({ id, label, icon: Icon }) => (
-        <button
-          key={id}
-          type="button"
-          aria-current={tab === id ? "page" : undefined}
-          onClick={() => onChange(id)}
-          className={cn(
-            "relative flex min-h-16 flex-col items-center justify-center gap-1 text-xs",
-            tab === id ? "font-bold text-ink" : "font-medium text-ink-muted",
-          )}
-        >
-          <Icon aria-hidden className="size-6" />
-          {label}
-          {id === "orders" && waiting > 0 && (
-            <span className="absolute top-2 left-1/2 ml-2 grid h-5 min-w-5 place-items-center rounded-full bg-accent px-1 text-xs font-bold text-accent-ink">
-              {waiting}
+    <nav className="pb-safe absolute inset-x-0 bottom-0 z-30 grid grid-cols-4 border-t border-border bg-surface/90 pt-2 backdrop-blur">
+      {tabs.map(({ id, label, icon: Icon }) => {
+        const active = tab === id;
+        return (
+          <button
+            key={id}
+            type="button"
+            aria-current={active ? "page" : undefined}
+            onClick={() => onChange(id)}
+            className={cn(
+              "flex min-h-14 flex-col items-center justify-center gap-1 text-xs",
+              active ? "font-bold text-ink" : "font-medium text-ink-faint",
+            )}
+          >
+            <span
+              className={cn(
+                "relative grid h-8 w-14 place-items-center rounded-full transition-colors",
+                active && "bg-surface-pressed",
+              )}
+            >
+              <Icon aria-hidden className="size-6" strokeWidth={active ? 2.5 : 2} />
+              {id === "orders" && waiting > 0 && (
+                <span className="absolute -top-1 right-1 grid h-5 min-w-5 place-items-center rounded-full bg-accent px-1 text-xs font-bold text-accent-ink">
+                  {waiting}
+                </span>
+              )}
             </span>
-          )}
-        </button>
-      ))}
+            {label}
+          </button>
+        );
+      })}
     </nav>
   );
 }

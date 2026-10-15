@@ -102,7 +102,7 @@ export function CartSheet({
                 artSize={64}
                 selected={mode === "link"}
                 onClick={() => setMode("link")}
-                className="min-h-32"
+                size="sm"
               >
                 <p className="text-base leading-snug font-semibold">{t.payByLink}</p>
               </Tile>
@@ -111,7 +111,7 @@ export function CartSheet({
                 artSize={64}
                 selected={mode === "credit"}
                 onClick={() => setMode("credit")}
-                className="min-h-32"
+                size="sm"
               >
                 <p className="text-base leading-snug font-semibold">{t.onAccount}</p>
               </Tile>

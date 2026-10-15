@@ -1,7 +1,7 @@
 import { cn } from "@/lib/cn";
 
 /** A customer's initials in a circle, so the owner recognises a regular at a glance. */
-export function Monogram({ name, className }: { name: string; className?: string }) {
+export function Monogram({ name, muted }: { name: string; muted?: boolean }) {
   const initials = name
     .trim()
     .split(/\s+/)
@@ -12,8 +12,8 @@ export function Monogram({ name, className }: { name: string; className?: string
     <span
       aria-hidden
       className={cn(
-        "grid size-11 shrink-0 place-items-center rounded-full bg-accent text-sm font-bold text-accent-ink",
-        className,
+        "grid size-11 shrink-0 place-items-center rounded-full text-sm font-bold",
+        muted ? "bg-surface-pressed text-ink-muted" : "bg-accent text-accent-ink",
       )}
     >
       {initials}

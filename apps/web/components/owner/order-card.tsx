@@ -1,12 +1,13 @@
 "use client";
 
+import { Repeat2 } from "lucide-react";
 import { useState } from "react";
 import { Amount } from "@/components/ui/amount";
 import { Art, toArtName } from "@/components/ui/art";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Card } from "@/components/ui/card";
 import { ListRow } from "@/components/ui/list-row";
+import { Monogram } from "@/components/ui/monogram";
 import { Sheet } from "@/components/ui/sheet";
 import { formatMoney } from "@/lib/money";
 import type { ProductUnit } from "@/lib/orders/quantity";
@@ -25,7 +26,7 @@ export function qtyLabel(qty: number, unit: ProductUnit): string {
   return unit === "kg" || unit === "litre" ? `${qty} ${unit}` : `${qty} ×`;
 }
 
-/** O1: one order waiting for the owner, with everything needed to decide in one look. */
+/** O1: the order in front of the owner, with everything needed to decide in one look. */
 export function OrderCard({
   order,
   onApprove,
@@ -40,41 +41,49 @@ export function OrderCard({
   const payment = order.paymentMode === "credit" ? "On account" : "Paytm link";
 
   return (
-    <Card className="space-y-3">
-      <div className="flex items-start justify-between gap-3">
-        <div className="min-w-0">
-          <p className="truncate text-lg font-bold">{order.customer}</p>
+    <article className="rounded-3xl bg-surface p-4 shadow-float ring-1 ring-border">
+      <header className="flex items-center gap-3">
+        <Monogram name={order.customer} />
+        <div className="min-w-0 flex-1">
+          <p className="truncate text-lg leading-tight font-bold">{order.customer}</p>
           <p className="text-sm text-ink-muted">
             #{order.number} · {order.placedAt} · {payment}
           </p>
         </div>
         {order.newCustomer ? (
-          <Badge>New customer</Badge>
+          <Badge tone="best">New</Badge>
         ) : (
           order.balancePaise > 0 && <Badge>Owes {formatMoney(order.balancePaise)}</Badge>
         )}
-      </div>
+      </header>
 
-      <ul className="space-y-2">
+      <ul className="mt-4 space-y-1">
         {order.lines.map((line) => (
           <li key={line.code} className="flex items-center gap-3">
-            <Art name={toArtName(line.art)} size={40} />
+            <Art name={toArtName(line.art)} size={48} />
             <span className="min-w-0 flex-1 truncate text-base">
-              {qtyLabel(line.qty, line.unit)} {line.name}
+              <span className="font-semibold tabular-nums">{qtyLabel(line.qty, line.unit)}</span>{" "}
+              {line.name}
             </span>
-            <Amount paise={line.lineTotalPaise} className="text-base" />
+            <Amount paise={line.lineTotalPaise} size="md" />
           </li>
         ))}
       </ul>
-      {order.note && <p className="text-sm text-ink-muted">{order.note}</p>}
 
-      <div className="flex items-baseline justify-between border-t border-border pt-3">
-        <span className="text-lg font-medium">Total</span>
-        <Amount paise={order.totalPaise} className="text-2xl font-bold" />
+      {order.note && (
+        <p className="mt-3 flex items-start gap-2 rounded-xl bg-tint-sand px-3 py-2 text-sm">
+          <Repeat2 aria-hidden className="mt-0.5 size-4 shrink-0" />
+          {order.note}
+        </p>
+      )}
+
+      <div className="mt-4 flex items-baseline justify-between border-t border-border pt-3">
+        <span className="text-lg font-semibold">Total</span>
+        <Amount paise={order.totalPaise} size="xl" />
       </div>
 
-      <div className="flex gap-3">
-        <Button variant="soft" onClick={() => setRejecting(true)}>
+      <div className="mt-4 flex items-center gap-2">
+        <Button variant="ghost" onClick={() => setRejecting(true)}>
           Reject
         </Button>
         <Button className="flex-1" onClick={onApprove}>
@@ -82,8 +91,25 @@ export function OrderCard({
         </Button>
       </div>
 
-      <Sheet open={rejecting} onOpenChange={setRejecting} title="Why can't you take it?">
-        <div className="space-y-1">
+      <Sheet
+        open={rejecting}
+        onOpenChange={setRejecting}
+        title="Why can't you take it?"
+        description={`${order.customer} sees the reason in their language.`}
+        footer={
+          <Button
+            variant="danger"
+            wide
+            onClick={() => {
+              setRejecting(false);
+              onReject(reason);
+            }}
+          >
+            Reject order #{order.number}
+          </Button>
+        }
+      >
+        <div className="-mx-3 space-y-1">
           {reasons.map((option) => (
             <ListRow
               key={option.code}
@@ -93,21 +119,7 @@ export function OrderCard({
             />
           ))}
         </div>
-        <p className="mt-3 text-center text-sm text-ink-muted">
-          {order.customer} sees this in their language.
-        </p>
-        <Button
-          variant="danger"
-          wide
-          className="mt-4"
-          onClick={() => {
-            setRejecting(false);
-            onReject(reason);
-          }}
-        >
-          Reject order #{order.number}
-        </Button>
       </Sheet>
-    </Card>
+    </article>
   );
 }

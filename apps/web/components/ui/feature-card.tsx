@@ -34,7 +34,8 @@ export function FeatureCard({
 }) {
   const body = (
     <>
-      <div className="h-40">
+      {/* The panel colour shows while the picture loads, so the card is never a white gap. */}
+      <div className={cn("h-40", panels[banner])}>
         <Banner name={banner} flush />
       </div>
       <div className={cn("px-4 pt-4 pb-5 text-accent-ink", panels[banner])}>

@@ -8,7 +8,8 @@ import { TabBar, type OwnerTab } from "@/components/owner/tab-bar";
 import { TodayTab } from "@/components/owner/today-tab";
 import type { SubmittedStatus } from "@/lib/customer/backend";
 import type { RejectReason } from "@/lib/orders/state";
-import { reorderList } from "@/lib/owner/stock";
+import { reportSentence } from "@/lib/owner/report";
+import { isLow, reorderList } from "@/lib/owner/stock";
 import type { OwnerOrder } from "@/lib/owner/types";
 import { previewProducts, previewShop } from "@/lib/preview/data";
 import { creditRows, daySummary, previewOwnerOrders } from "@/lib/preview/owner";
@@ -42,14 +43,18 @@ export function OwnerApp() {
     setTimeout(() => move(order.number, "awaiting_payment", "paid"), PREVIEW_PAYMENT_MS);
   }
 
+  const summary = daySummary(orders);
+  const low = previewProducts.filter(isLow).map((product) => product.name);
   const waiting = orders.filter((order) => order.status === "pending_approval").length;
   return (
-    <div className="flex h-full flex-col">
-      <div className="min-h-0 flex-1 overflow-y-auto">
+    <div className="relative h-full">
+      {/* Keyed on the tab, so each tab opens at its top. */}
+      <div key={tab} className="h-full overflow-y-auto">
         {tab === "orders" && (
           <OrdersTab
-            shopName={previewShop.name}
+            ownerName={previewShop.ownerName}
             orders={orders}
+            summary={summary}
             onApprove={approve}
             onReject={(order, reason) => move(order.number, "pending_approval", "rejected", reason)}
             onDeliver={(order) => move(order.number, order.status, "delivered")}
@@ -59,9 +64,9 @@ export function OwnerApp() {
         {tab === "credit" && <CreditTab rows={creditRows(orders)} />}
         {tab === "today" && (
           <TodayTab
-            shopName={previewShop.name}
             distributorName={previewShop.distributorName}
-            summary={daySummary(orders)}
+            summary={summary}
+            report={reportSentence(summary, low)}
             reorder={reorderList(previewProducts)}
           />
         )}

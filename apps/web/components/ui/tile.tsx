@@ -2,6 +2,9 @@ import type { ReactNode } from "react";
 import { Art, type ArtName } from "@/components/ui/art";
 import { cn } from "@/lib/cn";
 
+// Heights are a prop, not class overrides: cn() joins classes without merging them.
+const heights = { sm: "min-h-32", md: "min-h-36", lg: "min-h-40" } as const;
+
 /**
  * A grey tile with its art anchored in the top right corner, allowed to bleed off the edge; the
  * words sit at the bottom. Stats, stock and choices all use it.
@@ -9,6 +12,7 @@ import { cn } from "@/lib/cn";
 export function Tile({
   art,
   artSize = 88,
+  size = "md",
   selected,
   onClick,
   className,
@@ -16,6 +20,7 @@ export function Tile({
 }: {
   art?: ArtName;
   artSize?: number;
+  size?: keyof typeof heights;
   selected?: boolean;
   onClick?: () => void;
   className?: string;
@@ -28,7 +33,8 @@ export function Tile({
     </>
   );
   const classes = cn(
-    "relative flex min-h-36 flex-col justify-end overflow-hidden rounded-2xl bg-surface-muted p-4 text-left",
+    "relative flex flex-col justify-end overflow-hidden rounded-2xl bg-surface-muted p-4 text-left",
+    heights[size],
     selected && "outline-2 outline-ink",
     className,
   );
