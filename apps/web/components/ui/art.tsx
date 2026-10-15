@@ -3,12 +3,19 @@ import { cn } from "@/lib/cn";
 
 /** 3D toy art in public/art, all made from one prompt recipe (see design/DESIGN.md). */
 export const artNames = [
+  // The shop and its moments
   "shop",
   "mic",
   "bag",
   "khata",
   "bill",
   "coins",
+  "savings",
+  "phone-pay",
+  "scooter",
+  "clock",
+  "crate",
+  // Products
   "noodles",
   "butter",
   "sugar",
@@ -19,6 +26,28 @@ export const artNames = [
   "rice",
   "salt",
   "dal",
+  "sambar",
+  "chilli",
+  "turmeric",
+  "tea",
+  "coffee",
+  "curd",
+  "ghee",
+  "eggs",
+  "bread",
+  "batter",
+  "chips",
+  "biscuits",
+  "cola",
+  "water",
+  "toothpaste",
+  "soap",
+  "detergent",
+  "dishwash",
+  "matchbox",
+  "onion",
+  "tomato",
+  "coconut",
 ] as const;
 
 export type ArtName = (typeof artNames)[number];

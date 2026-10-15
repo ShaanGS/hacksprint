@@ -48,14 +48,14 @@ const rows: Row[] = [
   ["atta", "Aashirvaad Shudh Chakki Atta", "5 kg", "atta", "pack", 295, 12, 3, "atta"],
   ["salt", "Tata Salt", "1 kg", "salt", "pack", 28, 40, 10, "salt"],
   ["aavin-milk", "Aavin Toned Milk", "500 ml", "milk", "pack", 22, 30, 10, "milk"],
-  ["bread", "Britannia Milk Bread", "400 g", "bread", "pack", 50, 8, 3, "bag"],
-  ["eggs", "Eggs", null, "eggs", "piece", 6, 90, 30, "bag"],
-  ["chips", "Lay's Classic Salted", "50 g", "chips", "pack", 20, 24, 8, "bag"],
-  ["tea", "Tata Tea Premium", "250 g", "tea", "pack", 150, 10, 3, "bag"],
-  ["batter", "Idli Dosa Batter", "1 kg", "batter", "pack", 60, 10, 4, "bag"],
-  ["detergent", "Surf Excel Easy Wash", "1 kg", "detergent", "pack", 140, 8, 3, "bag"],
-  ["soap", "Hamam Neem Soap", "100 g", "soap", "pack", 38, 12, 4, "bag"],
-  ["toothpaste", "Colgate Strong Teeth", "100 g", "toothpaste", "pack", 55, 10, 3, "bag"],
+  ["bread", "Britannia Milk Bread", "400 g", "bread", "pack", 50, 8, 3, "bread"],
+  ["eggs", "Eggs", null, "eggs", "piece", 6, 90, 30, "eggs"],
+  ["chips", "Lay's Classic Salted", "50 g", "chips", "pack", 20, 24, 8, "chips"],
+  ["tea", "Tata Tea Premium", "250 g", "tea", "pack", 150, 10, 3, "tea"],
+  ["batter", "Idli Dosa Batter", "1 kg", "batter", "pack", 60, 10, 4, "batter"],
+  ["detergent", "Surf Excel Easy Wash", "1 kg", "detergent", "pack", 140, 8, 3, "detergent"],
+  ["soap", "Hamam Neem Soap", "100 g", "soap", "pack", 38, 12, 4, "soap"],
+  ["toothpaste", "Colgate Strong Teeth", "100 g", "toothpaste", "pack", 55, 10, 3, "toothpaste"],
 ];
 
 export const previewProducts: Product[] = rows.map(
