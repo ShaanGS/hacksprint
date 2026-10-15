@@ -2,7 +2,7 @@
 // This file is the source of truth. apps/web/app/globals.css mirrors the colours and text
 // sizes in its @theme block, and tests/unit/tokens.test.ts fails if the two drift apart.
 
-/** Colour comes from the art and from meaning; the interface itself is black, white and grey. */
+/** Colour comes from the art, the feature panels and meaning; the interface itself is black, white and grey. */
 export const colors = {
   surface: "#ffffff",
   surfaceMuted: "#f3f3f3",
@@ -15,15 +15,31 @@ export const colors = {
   success: "#0a7d44",
   /** Out of stock, rejected, overdue. */
   danger: "#c0341d",
+  /** Running low: the one warning colour. */
+  warning: "#9a5b00",
   border: "rgb(0 0 0 / 0.08)",
+  /** Placeholders, chevrons and inactive tabs. */
+  inkFaint: "#6f6f6f",
   /** The desk around the phone frame on a laptop or projector. */
   backdrop: "#e9e9e9",
+  /** Feature card panels: each the darkest strong colour of its banner, so the two read as one. */
+  panelVoice: "#203e34",
+  panelApprove: "#24485b",
+  panelBill: "#104247",
+  panelNight: "#1e385a",
+  /** Soft scenes behind hero art. At most one per screen, never to show status. */
+  tintSand: "#f6efe4",
+  tintMint: "#e7f3ec",
+  tintSky: "#e8f0fa",
+  tintLilac: "#efeaf8",
 } as const;
 
-/** Body text is 12 to 18px at weight 400 or 500; headings are 20 to 32px at weight 700. */
+/** Body text is 12 to 18px; headings are 20 to 40px, extra-bold with tight tracking. */
 export const textSizes = {
   title: "1.75rem",
   display: "2rem",
+  /** Big totals and stage headlines. */
+  hero: "2.5rem",
 } as const;
 
 /** Tailwind's own steps cover these: rounded-lg, rounded-xl, rounded-2xl, rounded-full. */
@@ -48,7 +64,8 @@ export const heights = {
   micButton: 88,
 } as const;
 
+/** Only things that float get a shadow: the cart dock, the tab bar and sheets. */
 export const shadows = {
-  floating: "0 4px 16px rgb(0 0 0 / 0.12)",
-  sheetEdge: "0 -4px 16px rgb(0 0 0 / 0.08)",
+  float: "0 8px 24px rgb(0 0 0 / 0.1)",
+  sheet: "0 -4px 16px rgb(0 0 0 / 0.08)",
 } as const;
