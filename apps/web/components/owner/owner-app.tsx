@@ -64,6 +64,7 @@ export function OwnerApp() {
         {tab === "credit" && <CreditTab rows={creditRows(orders)} />}
         {tab === "today" && (
           <TodayTab
+            shopName={previewShop.name}
             distributorName={previewShop.distributorName}
             summary={summary}
             report={reportSentence(summary, low)}

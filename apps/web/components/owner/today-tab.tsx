@@ -5,6 +5,7 @@ import { motion } from "motion/react";
 import { useState } from "react";
 import { qtyLabel } from "@/components/owner/order-card";
 import { Art, toArtName } from "@/components/ui/art";
+import { SchemesSection } from "@/components/owner/schemes-section";
 import { Button } from "@/components/ui/button";
 import { FeatureCard } from "@/components/ui/feature-card";
 import { Tile } from "@/components/ui/tile";
@@ -16,11 +17,13 @@ import type { DaySummary, ReorderLine } from "@/lib/owner/types";
 
 /** O5: how the day went, told as one sentence, the numbers behind it, and tomorrow's restock. */
 export function TodayTab({
+  shopName,
   distributorName,
   summary,
   report,
   reorder,
 }: {
+  shopName: string;
   distributorName: string;
   summary: DaySummary;
   /** The day in a sentence, built by code from the numbers. */
@@ -99,6 +102,8 @@ export function TodayTab({
           </div>
         )}
       </section>
+
+      <SchemesSection shopName={shopName} summary={summary} />
     </main>
   );
 }
