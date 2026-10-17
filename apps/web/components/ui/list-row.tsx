@@ -24,7 +24,7 @@ type ListRowProps = {
 
 const tones = {
   light: { muted: "text-ink-muted", press: "active:bg-surface-muted", chosen: "outline-accent" },
-  night: { muted: "text-night-muted", press: "active:bg-night-raised", chosen: "outline-lime" },
+  night: { muted: "text-night-muted", press: "active:bg-night-raised", chosen: "outline-yellow" },
 } as const;
 
 /** One flat row in a list: art on the left, words in the middle, the amount on the right. */

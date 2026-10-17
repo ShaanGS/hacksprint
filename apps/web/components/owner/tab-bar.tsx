@@ -16,7 +16,7 @@ const icons: Record<OwnerTab, LucideIcon> = {
 
 /**
  * The owner app's places on a floating white bar; the content scrolls under it and fades out
- * below it. The lime mic sits raised in the middle, so it can be held from any tab.
+ * below it. The yellow mic sits raised in the middle, so it can be held from any tab.
  */
 export function TabBar({
   tab,

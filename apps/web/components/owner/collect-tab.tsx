@@ -67,7 +67,7 @@ export function CollectTab() {
       </section>
 
       {late > 0 && (
-        <Button variant="lime" wide className="mt-5" onClick={() => openAgent("collect")}>
+        <Button variant="yellow" wide className="mt-5" onClick={() => openAgent("collect")}>
           <Bot aria-hidden className="size-5" />
           {agentWordsFor(lang).letAgentCollect}
         </Button>

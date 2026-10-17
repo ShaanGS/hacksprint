@@ -4,7 +4,7 @@ import { IconCircle, type IconTone } from "@/components/ui/icon-circle";
 const steps: { icon: LucideIcon; tone: IconTone; title: string; text: string }[] = [
   {
     icon: Mic,
-    tone: "lime",
+    tone: "yellow",
     title: "Say it, snap the bill",
     text: "Credit given, cash paid back, tonight's sales, a stock count. A photo of the supplier's bill.",
   },

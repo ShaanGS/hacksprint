@@ -113,7 +113,7 @@ export function VoiceSheet({
             {agentFor[card.answer.topic] ? (
               <Button
                 wide
-                variant="lime"
+                variant="yellow"
                 onClick={() => {
                   const agent = card.answer && agentFor[card.answer.topic];
                   if (agent) onAgent(agent);
@@ -125,7 +125,7 @@ export function VoiceSheet({
             ) : (
               <Button
                 wide
-                variant="lime"
+                variant="yellow"
                 onClick={() => {
                   if (card.answer) onOpen(tabFor[card.answer.topic]);
                   onDone();
@@ -144,7 +144,7 @@ export function VoiceSheet({
               {card.entry_id && label && !amountMissing && (
                 <Button
                   wide
-                  variant="lime"
+                  variant="yellow"
                   disabled={saving}
                   onClick={() => card.entry_id && save(card.entry_id)}
                 >

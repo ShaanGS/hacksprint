@@ -43,7 +43,7 @@ export function Orb({ size = 220, active = true }: { size?: number; active?: boo
       const radius = size * 0.38 * breath;
       const cos = Math.cos(angle);
       const sin = Math.sin(angle);
-      context.fillStyle = colors.lime;
+      context.fillStyle = colors.yellow;
       for (const [x, y, z] of points) {
         // A soft ripple over the surface makes it read as alive rather than a ball.
         const ripple = 1 + 0.07 * Math.sin(3 * y + time / 600) * Math.cos(2 * x + time / 900);

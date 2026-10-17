@@ -204,13 +204,13 @@ function OrderCard({
       </ul>
       <div className="mt-4 space-y-2">
         {!sent ? (
-          <Button wide variant="lime" disabled={busy} onClick={send}>
+          <Button wide variant="yellow" disabled={busy} onClick={send}>
             <Send aria-hidden className="size-5" />
             {words.sendTo(group.distributor)}
           </Button>
         ) : (
           <>
-            <p className="flex items-start gap-2 text-base font-semibold text-lime">
+            <p className="flex items-start gap-2 text-base font-semibold text-yellow">
               <Check aria-hidden className="mt-0.5 size-5 shrink-0" strokeWidth={3} />
               {words.sentTo(group.distributor)}
             </p>
@@ -224,7 +224,7 @@ function OrderCard({
                 {words.payTest(formatMoney(sent.total_paise))}
               </Button>
             ) : payment.paid ? (
-              <p className="flex items-start gap-2 text-base font-semibold text-lime">
+              <p className="flex items-start gap-2 text-base font-semibold text-yellow">
                 <Check aria-hidden className="mt-0.5 size-5 shrink-0" strokeWidth={3} />
                 {words.paidTest(formatMoney(payment.amount_paise))}
               </p>

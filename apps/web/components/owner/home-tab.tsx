@@ -128,7 +128,7 @@ export function HomeTab({ onTab }: { onTab: (tab: OwnerTab) => void }) {
           <button
             type="button"
             onClick={() => openAgent("collect")}
-            className="relative mt-4 inline-flex min-h-12 items-center gap-2 rounded-full bg-lime px-5 text-base font-semibold text-lime-ink transition-transform active:scale-98"
+            className="relative mt-4 inline-flex min-h-12 items-center gap-2 rounded-full bg-yellow px-5 text-base font-semibold text-yellow-ink transition-transform active:scale-98"
           >
             {agentWords.letAgentCollect}
             <ArrowRight aria-hidden className="size-5" />
@@ -144,7 +144,7 @@ export function HomeTab({ onTab }: { onTab: (tab: OwnerTab) => void }) {
             </p>
           ))}
           <p className="mt-2 flex items-center gap-2 text-sm text-ink-muted">
-            <span className="grid size-7 shrink-0 place-items-center rounded-full bg-lime text-lime-ink">
+            <span className="grid size-7 shrink-0 place-items-center rounded-full bg-yellow text-yellow-ink">
               <Mic aria-hidden className="size-4" />
             </span>
             {text.askHint}
@@ -294,7 +294,7 @@ function PillAction({
     <button
       type="button"
       onClick={onClick}
-      className="inline-flex min-h-12 min-w-0 flex-1 items-center justify-center gap-2 rounded-full bg-lime px-4 text-base font-semibold text-lime-ink transition-transform active:scale-98"
+      className="inline-flex min-h-12 min-w-0 flex-1 items-center justify-center gap-2 rounded-full bg-yellow px-4 text-base font-semibold text-yellow-ink transition-transform active:scale-98"
     >
       <Icon aria-hidden className="size-5 shrink-0" />
       <span className="truncate">{children}</span>
@@ -316,7 +316,7 @@ function RoundAction({
       type="button"
       onClick={onClick}
       aria-label={label}
-      className="grid size-12 shrink-0 place-items-center rounded-full bg-lime text-lime-ink transition-transform active:scale-95"
+      className="grid size-12 shrink-0 place-items-center rounded-full bg-yellow text-yellow-ink transition-transform active:scale-95"
     >
       <Icon aria-hidden className="size-5" />
     </button>

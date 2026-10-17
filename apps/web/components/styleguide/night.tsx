@@ -12,7 +12,7 @@ import { Steps } from "@/components/ui/steps";
 
 const filters = ["This week", "Late payers", "Stock"] as const;
 
-/** The voice and agent layer: indigo, lime, the orb. */
+/** The voice and agent layer: indigo, yellow, the orb. */
 export function Night() {
   const [mic, setMic] = useState<MicState>("idle");
   const [filter, setFilter] = useState<(typeof filters)[number]>(filters[0]);
@@ -58,7 +58,7 @@ export function Night() {
         <p className="text-base font-semibold">Arjun Reddy</p>
         <p className="text-sm text-night-muted">₹4,200 · Kannada</p>
       </Card>
-      <Button variant="lime" wide onClick={() => setOpen(true)}>
+      <Button variant="yellow" wide onClick={() => setOpen(true)}>
         <Bot aria-hidden className="size-5" />
         Open a night sheet
       </Button>

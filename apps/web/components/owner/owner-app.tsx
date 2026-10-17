@@ -96,7 +96,7 @@ export function OwnerApp({
               {!voice.micOn && (
                 <Pill
                   key="mic"
-                  tone="lime"
+                  tone="yellow"
                   icon={<Mic aria-hidden className="size-4" />}
                   onClick={turnOnMic}
                 >

@@ -42,7 +42,7 @@ export function Listening({ state }: { state: ListeningState | null }) {
           <p className="mt-4 text-sm text-night-muted">{words.trySaying}</p>
           <p className="mt-1 text-2xl leading-snug font-semibold">{words.example}</p>
           <div className="mt-auto flex flex-col items-center gap-3 pb-12">
-            <span className="grid size-20 place-items-center rounded-full bg-lime text-lime-ink shadow-float">
+            <span className="grid size-20 place-items-center rounded-full bg-yellow text-yellow-ink shadow-float">
               <Mic aria-hidden className="size-9" />
             </span>
             <span className="min-h-5 text-sm text-night-muted">

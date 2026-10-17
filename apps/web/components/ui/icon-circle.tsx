@@ -6,7 +6,8 @@ const tones = {
   sand: "bg-tint-sand text-warning",
   sky: "bg-tint-sky text-indigo",
   lilac: "bg-tint-lilac text-indigo",
-  lime: "bg-lime text-lime-ink",
+  green: "bg-tint-mint text-success",
+  yellow: "bg-yellow text-yellow-ink",
 } as const;
 
 const sizes = {

@@ -178,10 +178,10 @@ function Collecting() {
                   )}
                 </div>
                 {paid > 0 ? (
-                  <Badge tone="lime">{words.paid(formatMoney(paid))}</Badge>
+                  <Badge tone="yellow">{words.paid(formatMoney(paid))}</Badge>
                 ) : (
                   <LinkButton
-                    variant={sent.has(id) ? "night" : "lime"}
+                    variant={sent.has(id) ? "night" : "yellow"}
                     href={job.reminder.whatsapp_url}
                     target="_blank"
                     rel="noopener noreferrer"

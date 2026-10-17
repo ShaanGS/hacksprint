@@ -78,7 +78,7 @@ export function StockTab({ onBank }: { onBank: () => void }) {
         )}
       </section>
 
-      <Button variant="lime" wide className="mt-5" onClick={() => openAgent("reorder")}>
+      <Button variant="yellow" wide className="mt-5" onClick={() => openAgent("reorder")}>
         <Bot aria-hidden className="size-5" />
         {agentWordsFor(lang).letAgentReorder}
       </Button>

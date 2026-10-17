@@ -49,7 +49,7 @@ export function LoanCheck({ onCollect }: { onCollect: () => void }) {
           aria-hidden
           className="absolute -top-16 -right-12 size-44 rounded-full bg-night-ink/10"
         />
-        <IconCircle icon={Landmark} tone="lime" size="lg" className="relative" />
+        <IconCircle icon={Landmark} tone="yellow" size="lg" className="relative" />
         <p className="relative mt-4 text-xl leading-snug font-bold">{text.loanTitle}</p>
         <p className="relative mt-1 text-sm text-night-ink/80">{text.loanText}</p>
         <div className="relative mt-4 flex flex-wrap gap-2">
@@ -83,7 +83,7 @@ export function LoanCheck({ onCollect }: { onCollect: () => void }) {
               },
             )
           }
-          className="relative mt-4 flex min-h-14 w-full items-center justify-center rounded-full bg-lime text-base font-semibold text-lime-ink transition-transform active:scale-98 disabled:opacity-60"
+          className="relative mt-4 flex min-h-14 w-full items-center justify-center rounded-full bg-yellow text-base font-semibold text-yellow-ink transition-transform active:scale-98 disabled:opacity-60"
         >
           {busy && !answer ? text.working : text.check}
         </button>

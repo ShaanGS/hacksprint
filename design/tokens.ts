@@ -1,4 +1,4 @@
-// The app's look in numbers: a white page, black ink and pills, lime highlights and violet promo
+// The app's look in numbers: a white page, black ink and pills, yellow highlights and violet promo
 // cards (the owner's landing reference), and a dark layer for voice and the agents. This file is the source of truth.
 // apps/web/app/globals.css mirrors the colours and text sizes in its @theme block, and
 // tests/unit/tokens.test.ts fails if the two drift apart.
@@ -19,9 +19,9 @@ export const colors = {
   accentInk: "#ffffff",
   /** Selected chips and the soft circles behind icons. */
   accentSoft: "#f0f0eb",
-  /** The mic and every action an agent takes. */
-  lime: "#d8f34b",
-  limeInk: "#111111",
+  /** The mic and every action an agent takes: the yellow of the team's banner. */
+  yellow: "#ffd94a",
+  yellowInk: "#111111",
   /** Paid, collected. */
   success: "#1a7f4b",
   /** Overdue, failed. */
@@ -29,8 +29,8 @@ export const colors = {
   /** Running low: the one warning colour. */
   warning: "#a35d00",
   border: "rgb(17 17 17 / 0.08)",
-  /** The front page's warm paper, behind the hand holding the phone. */
-  cream: "#f3efe6",
+  /** The front page's sparkles, from the team's banner (docs/banner.png). */
+  sparkle: "#bfe7cb",
   /** The desk around the phone frame on a laptop or projector. */
   backdrop: "#ecebe6",
   /** The voice and agent layer. */

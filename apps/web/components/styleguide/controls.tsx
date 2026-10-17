@@ -18,7 +18,7 @@ export function Controls() {
           <MessageCircle aria-hidden className="size-5" />
           Remind Arjun on WhatsApp
         </Button>
-        <Button variant="lime" wide>
+        <Button variant="yellow" wide>
           <Bot aria-hidden className="size-5" />
           Let the agent collect
         </Button>
@@ -47,7 +47,7 @@ export function Controls() {
         <Badge tone="success">Verified payment</Badge>
         <Badge>You said</Badge>
         <Badge tone="best">Festival order</Badge>
-        <Badge tone="lime">Agent</Badge>
+        <Badge tone="yellow">Agent</Badge>
       </div>
       <p className="flex items-baseline gap-2">
         <Amount paise={27400} />

@@ -103,7 +103,7 @@ export function ApplyAgent({
       tone="night"
       footer={
         <div className="pb-3">
-          <Button wide variant={done >= STEP_COUNT ? "lime" : "night"} onClick={onClose}>
+          <Button wide variant={done >= STEP_COUNT ? "yellow" : "night"} onClick={onClose}>
             {text.done}
           </Button>
         </div>

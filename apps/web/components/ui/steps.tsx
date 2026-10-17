@@ -27,9 +27,9 @@ const tones = {
   },
   night: {
     todo: "ring-night-raised",
-    current: "ring-lime",
-    dot: "bg-lime",
-    tick: "bg-lime text-lime-ink",
+    current: "ring-yellow",
+    dot: "bg-yellow",
+    tick: "bg-yellow text-yellow-ink",
     rail: "bg-night-raised",
     fill: "bg-indigo",
     title: "text-night-ink",
@@ -41,7 +41,7 @@ const tones = {
 /**
  * Where something is, step by step. A step ticks with a spring and the rail fills down to the
  * next one; steps that were already done when the screen opened just show as done. The agents
- * use the night tone: an indigo rail with lime ticks.
+ * use the night tone: an indigo rail with yellow ticks.
  */
 export function Steps({ steps, tone = "light" }: { steps: Step[]; tone?: keyof typeof tones }) {
   const look = tones[tone];

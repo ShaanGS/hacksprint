@@ -16,7 +16,7 @@ export default function StyleguidePage() {
       <header className="px-4 pt-8 pb-2">
         <h1 className="text-title font-bold tracking-tight">Styleguide</h1>
         <p className="mt-1 text-base text-ink-muted">
-          Light teal for the shop, indigo and lime for voice and the agents.
+          Light teal for the shop, indigo and yellow for voice and the agents.
         </p>
       </header>
       <Section title="Cards">

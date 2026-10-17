@@ -1,6 +1,6 @@
 # Design rules
 
-Two moods, one app. The owner's everyday screens are clean and calm, like the app in the owner's landing reference: a plain white page, black type and black pill buttons, lime pills for the things an agent does, violet promo cards, and real product photos. When he speaks, or hands a job to an agent, the app switches to a dark layer with a lime mic and a listening orb, after `references/11-indigo-voice.jpg`; the card and row shapes come from `references/10-teal-grocery.jpg`. Copy the references' visual language, never their wording or flows. Spec section 9 decides the screens; this file decides the look.
+Two moods, one app. The owner's everyday screens are clean and calm, like the app in the owner's landing reference: a plain white page, black type and black pill buttons, yellow pills for the things an agent does, violet promo cards, and real product photos. When he speaks, or hands a job to an agent, the app switches to a dark layer with a yellow mic and a listening orb, after `references/11-indigo-voice.jpg`; the card and row shapes come from `references/10-teal-grocery.jpg`. The yellow, the light headlines and the white front page come from the team's banner (`docs/banner.png`). Copy the references' visual language, never their wording or flows. Spec section 9 decides the screens; this file decides the look.
 
 Build from the primitives in `apps/web/components/ui/` and check them at `/styleguide`. Values live in `tokens.ts`.
 
@@ -8,7 +8,7 @@ Build from the primitives in `apps/web/components/ui/` and check them at `/style
 
 - A light screen is plain white (`canvas`), no gradients. Lists live in white cards with a soft shadow (`shadow-card`, radius 24); quieter panels are `surfaceMuted`.
 - Every screen opens with its big number, bold on white with a status chip above it, then one primary action. Never a page of same-weight rows.
-- One job per screen and one primary button: a full-width pill, black for the screen's own action, lime for anything an agent does. Its label names the choice ("Send to Murugan Traders"). A violet card carries the one thing worth doing next.
+- One job per screen and one primary button: a full-width pill, black for the screen's own action, yellow for anything an agent does. Its label names the choice ("Send to Murugan Traders"). A violet card carries the one thing worth doing next.
 - The header: the owner's initial in a black circle, the shop's name with a small date above it, the round language button; the page headline under it with the demo badge.
 - Mobile first at 390px. Tap targets at least 44px. Bottom bars respect the safe area. On a laptop or projector the app sits in a drawn iPhone at real proportions (`AppFrame`, `app/frame.css`), scaled down whole to fit the window, never squashed.
 - Messages (saved, paid, offline) rise as toasts just above the tab bar. Nothing ever covers a title.
@@ -16,12 +16,12 @@ Build from the primitives in `apps/web/components/ui/` and check them at `/style
 ## The night layer
 
 - Voice and the agents use `night` (page), `nightRaised` (cards), `indigo` (pills, the step rail, chosen chips) and `nightMuted` (secondary text). Text is white.
-- `lime` with `limeInk` is the one action colour there, and the mic everywhere.
-- Listening shows the orb (`Orb`), "I'm listening…", an example line in the owner's language, and the big lime mic. Answers show what he said in big white type, then the answer in a raised card.
+- `yellow` with `yellowInk` is the one action colour there, and the mic everywhere.
+- Listening shows the orb (`Orb`), "I'm listening…", an example line in the owner's language, and the big yellow mic. Answers show what he said in big white type, then the answer in a raised card.
 
 ## Look
 
-- **Colours:** black (`accent`) for actions and the active tab; lime for agent actions and the mic; violet (`indigo`) for the promo card; `accentSoft` greys for chips and icon circles. Green (`success`) only for paid and collected, amber (`warning`) only for running low, red (`danger`) only for overdue, failures and a short week. Status is a `Badge`, never a tinted card.
+- **Colours:** black (`accent`) for actions and the active tab; yellow for agent actions and the mic; violet (`indigo`) for the promo card; `accentSoft` greys for chips and icon circles. Green (`success`) only for paid and collected, amber (`warning`) only for running low, red (`danger`) only for overdue, failures and a short week. Status is a `Badge`, never a tinted card.
 - **Pictures:** every product shows its own photo (`ProductImage`, from `public/products`), like a quick-commerce listing. Ideas (money, bills, customers) are plain icons in soft circles (`IconCircle`). No toy art.
 - **Radius:** 24px cards and sheet tops, 16px inner tiles, full for buttons, inputs, chips, badges and avatars.
 - **Spacing:** a 4px grid, 16px side gutters, 12px between cards in a grid, 16px inside cards.

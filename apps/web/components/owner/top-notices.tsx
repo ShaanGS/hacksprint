@@ -19,7 +19,7 @@ export function TopNotices({ children }: { children: ReactNode }) {
 
 const tones = {
   ink: "bg-ink text-surface",
-  lime: "bg-lime text-lime-ink",
+  yellow: "bg-yellow text-yellow-ink",
 } as const;
 
 /** One message; with onClick it is a button. Lime asks the owner to do something. */

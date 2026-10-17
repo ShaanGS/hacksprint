@@ -10,7 +10,7 @@ const swatches = [
   { name: "ink-muted", className: "bg-ink-muted", value: colors.inkMuted },
   { name: "accent", className: "bg-accent", value: colors.accent },
   { name: "accent-soft", className: "bg-accent-soft", value: colors.accentSoft },
-  { name: "lime", className: "bg-lime", value: colors.lime },
+  { name: "yellow", className: "bg-yellow", value: colors.yellow },
   { name: "night", className: "bg-night", value: colors.night },
   { name: "night-raised", className: "bg-night-raised", value: colors.nightRaised },
   { name: "indigo", className: "bg-indigo", value: colors.indigo },

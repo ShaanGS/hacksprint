@@ -15,13 +15,13 @@
   --color-accent: #111111;
   --color-accent-ink: #ffffff;
   --color-accent-soft: #f0f0eb;
-  --color-lime: #d8f34b;
-  --color-lime-ink: #111111;
+  --color-yellow: #ffd94a;
+  --color-yellow-ink: #111111;
   --color-success: #1a7f4b;
   --color-danger: #d0402b;
   --color-warning: #a35d00;
   --color-border: rgb(17 17 17 / 0.08);
-  --color-cream: #f3efe6;
+  --color-sparkle: #bfe7cb;
   --color-backdrop: #ecebe6;
   --color-night: #101014;
   --color-night-raised: #1f1f26;
@@ -74,6 +74,9 @@ body {
     outline-offset: 2px;
   }
 }
+
+/* Windows tall enough for the front page's extra line under its buttons. */
+@custom-variant tall (@media (min-height: 800px));
 
 /* The front page's hand and phone fade into the page at the wrist, gone before the forearm
    reaches the picture's left edge (93% down), so no cut edge shows. */
