@@ -1,6 +1,7 @@
 "use client";
 
-import { ChevronRight } from "lucide-react";
+import { Check, ChevronRight } from "lucide-react";
+import { motion } from "motion/react";
 import { useCallback, useState } from "react";
 import { BillScan } from "@/components/owner/bill-scan";
 import { useLive } from "@/components/owner/live";
@@ -15,26 +16,39 @@ import { useDates } from "@/components/owner/use-dates";
 import { Amount } from "@/components/ui/amount";
 import { Art, toArtName } from "@/components/ui/art";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import { ListRow } from "@/components/ui/list-row";
 import { Ticker } from "@/components/ui/ticker";
+import { snappy } from "@/lib/motion";
 import type { ProductUnit } from "@/lib/orders/quantity";
 import { ownerApi, type ShelfRow } from "@/lib/owner/api";
 
 /**
  * B2, B3, C1, C2: today's bill photo, the festival order, money stuck in slow items, the items
  * to count by voice, and every item's estimate. Tapping an item shows the bill behind its cost.
+ * Plus distributor low-stock reorder section wired to /api/reorder.
  */
-export function StockTab({ onBank }: { onBank: () => void }) {
-  const { text } = useOwnerLanguage();
+export function StockTab({
+  shopName = "Lakshmi Stores",
+  onBank,
+}: {
+  shopName?: string;
+  onBank: () => void;
+}) {
+  const { lang, text } = useOwnerLanguage();
   const dates = useDates();
   const stock = useLive(ownerApi.stock, ["stock"]);
   const stuck = useLive(ownerApi.stuck, ["stock"]);
   const [priced, setPriced] = useState<string | null>(null);
+  const [sending, setSending] = useState(false);
+  const [sent, setSent] = useState(false);
+  const [failed, setFailed] = useState(false);
   const close = useCallback(() => setPriced(null), []);
 
   if (!stock.data) {
     return stock.failed ? <Failed art="crate" onRetry={stock.reload} /> : <Loading art="crate" />;
   }
+
   const { products, festival_order: order } = stock.data;
   const left = (row: ShelfRow) =>
     text.about(text.left(Math.round(row.estimate_qty), row.unit as ProductUnit));
@@ -47,6 +61,45 @@ export function StockTab({ onBank }: { onBank: () => void }) {
   const counted = (row: ShelfRow) =>
     row.counted_at ? text.countedOn(dates.day(row.counted_at)) : text.notCounted;
   const toCount = products.filter((row) => row.count_asked);
+
+  const distributorName = "Sri Balaji Agencies";
+  const lowItems = products.filter((row) => row.tags.includes("low"));
+
+  const reorderLines =
+    lowItems.length > 0
+      ? lowItems.map((line) => ({
+          name: line.name,
+          qty: Math.max(1, Math.round(line.estimate_qty <= 0 ? 5 : line.estimate_qty * 2)),
+          unit: line.unit,
+          art: line.art,
+        }))
+      : products.slice(0, 3).map((line) => ({
+          name: line.name,
+          qty: 5,
+          unit: line.unit,
+          art: line.art,
+        }));
+
+  async function sendReorder() {
+    setSending(true);
+    setFailed(false);
+    const response = await fetch("/api/reorder", {
+      method: "POST",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify({
+        shopName,
+        distributorName,
+        lines: reorderLines.map((line) => ({ name: line.name, qty: line.qty, unit: line.unit })),
+      }),
+    }).catch(() => null);
+    setSending(false);
+    if (response?.ok) {
+      setSent(true);
+      setTimeout(() => setSent(false), 5000);
+    } else {
+      setFailed(true);
+    }
+  }
 
   return (
     <main className="px-4 pt-2 pb-44">
@@ -105,12 +158,80 @@ export function StockTab({ onBank }: { onBank: () => void }) {
         </section>
       )}
 
+      {/* Distributor Reorder section */}
+      <section className="relative mt-6 overflow-hidden rounded-3xl bg-surface-muted p-4">
+        <Art name="crate" size={96} className="absolute -top-2 -right-2" />
+        <h2 className="pr-24 text-xl leading-tight font-extrabold tracking-tight">
+          {lang === "ta" ? `${distributorName} இடம் ஆர்டர் செய்க` : `Order from ${distributorName}`}
+        </h2>
+        <p className="mt-1 pr-24 text-sm text-ink-muted">
+          {lang === "ta"
+            ? "குறைந்த இருப்பு அளவுக்கு ஏற்ப மறுஆர்டர்"
+            : "Back up to twice the low-stock level"}
+        </p>
+        {reorderLines.length === 0 ? (
+          <p className="mt-4 text-base font-medium">
+            {lang === "ta" ? "எந்தப் பொருளும் குறைவாக இல்லை." : "Nothing is running low."}
+          </p>
+        ) : (
+          <ul className="mt-4 space-y-2">
+            {reorderLines.map((line) => (
+              <li key={line.name} className="flex items-center gap-3">
+                <Art name={toArtName(line.art, line.name)} size={44} />
+                <span className="min-w-0 flex-1 truncate text-base font-medium">{line.name}</span>
+                <span className="text-base font-bold tabular-nums">
+                  {line.unit === "kg" || line.unit === "litre"
+                    ? `${line.qty} ${line.unit}`
+                    : `${line.qty} ×`}
+                </span>
+              </li>
+            ))}
+          </ul>
+        )}
+        {reorderLines.length > 0 && (
+          <div className="mt-4">
+            {sent ? (
+              <motion.p
+                initial={{ scale: 0.9 }}
+                animate={{ scale: 1 }}
+                transition={snappy}
+                className="flex min-h-14 items-center justify-center gap-2 rounded-xl bg-success/15 text-base font-semibold text-success"
+              >
+                <Check aria-hidden className="size-5" strokeWidth={3} />
+                {lang === "ta"
+                  ? `${distributorName} க்கு அனுப்பப்பட்டது`
+                  : `Sent to ${distributorName}`}
+              </motion.p>
+            ) : (
+              <>
+                <Button wide disabled={sending} onClick={sendReorder}>
+                  {sending
+                    ? lang === "ta"
+                      ? "அனுப்புகிறது…"
+                      : "Sending…"
+                    : lang === "ta"
+                      ? `${distributorName} க்கு அனுப்புக`
+                      : `Send to ${distributorName}`}
+                </Button>
+                {failed && (
+                  <p className="mt-2 text-sm font-medium text-danger">
+                    {lang === "ta"
+                      ? `${distributorName} ஐ தொடர்பு கொள்ள முடியவில்லை. மீண்டும் முயற்சிக்கவும்.`
+                      : `Couldn't reach ${distributorName}. Try again.`}
+                  </p>
+                )}
+              </>
+            )}
+          </div>
+        )}
+      </section>
+
       {stuck.data && stuck.data.products.length > 0 && (
         <Section title={text.stuckTitle} total={stuck.data.stuck_paise} note={text.dontReorder}>
           {stuck.data.products.map((row) => (
             <li key={row.product_id}>
               <ListRow
-                art={<Art name={toArtName(row.art)} size={56} />}
+                art={<Art name={toArtName(row.art, row.name)} size={56} />}
                 title={row.name}
                 meta={`${left(row)} · ${lasts(row)}`}
                 trailing={row.value_paise !== null && <Amount paise={row.value_paise} size="md" />}
@@ -126,7 +247,7 @@ export function StockTab({ onBank }: { onBank: () => void }) {
           {toCount.map((row) => (
             <li key={row.product_id}>
               <ListRow
-                art={<Art name={toArtName(row.art)} size={44} />}
+                art={<Art name={toArtName(row.art, row.name)} size={44} />}
                 title={row.name}
                 meta={counted(row)}
               />
@@ -139,7 +260,7 @@ export function StockTab({ onBank }: { onBank: () => void }) {
         {products.map((row) => (
           <li key={row.product_id}>
             <ListRow
-              art={<Art name={toArtName(row.art)} size={56} />}
+              art={<Art name={toArtName(row.art, row.name)} size={56} />}
               tag={
                 row.tags.includes("low") ? (
                   <Badge tone="warning">{text.lowBadge}</Badge>

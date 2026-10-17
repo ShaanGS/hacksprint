@@ -8,6 +8,8 @@ if (!process.argv.includes("typegen") && !isPreview()) {
   assertStartupEnv();
 }
 
-const nextConfig: NextConfig = {};
+const nextConfig: NextConfig = {
+  devIndicators: false,
+};
 
 export default nextConfig;
