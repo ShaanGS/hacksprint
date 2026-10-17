@@ -65,4 +65,5 @@ export const hi: CustomerText = {
   oneLess: (item) => `${item} एक कम`,
   oneMore: (item) => `${item} एक और`,
   removeItem: (item) => `${item} हटाएँ`,
+  sentToShop: (shop) => `${shop} को भेज दिया। मंज़ूरी मिलते ही यहाँ दिखेगा।`,
 };

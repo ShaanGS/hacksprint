@@ -63,6 +63,7 @@ export const en = {
   oneLess: (item: string) => `One less ${item}`,
   oneMore: (item: string) => `One more ${item}`,
   removeItem: (item: string) => `Remove ${item}`,
+  sentToShop: (shop: string) => `Sent to ${shop}. You will see here when they approve.`,
 };
 
 export type CustomerText = typeof en;

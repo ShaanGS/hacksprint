@@ -65,4 +65,5 @@ export const ta: CustomerText = {
   oneLess: (item) => `${item} ஒன்று குறை`,
   oneMore: (item) => `${item} ஒன்று கூட்டு`,
   removeItem: (item) => `${item} நீக்கு`,
+  sentToShop: (shop) => `${shop}க்கு அனுப்பினோம். ஏற்றதும் இங்கே தெரியும்.`,
 };

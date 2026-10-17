@@ -65,4 +65,5 @@ export const kn: CustomerText = {
   oneLess: (item) => `${item} ಒಂದು ಕಡಿಮೆ`,
   oneMore: (item) => `${item} ಇನ್ನೊಂದು`,
   removeItem: (item) => `${item} ತೆಗೆಯಿರಿ`,
+  sentToShop: (shop) => `${shop}ಗೆ ಕಳುಹಿಸಿದೆ. ಒಪ್ಪಿದ ತಕ್ಷಣ ಇಲ್ಲಿ ಕಾಣುತ್ತದೆ.`,
 };

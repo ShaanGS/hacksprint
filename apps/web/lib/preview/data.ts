@@ -70,6 +70,7 @@ export const previewProducts: Product[] = rows.map(
     stockQty,
     lowStockThreshold,
     art,
+    priceSource: null,
   }),
 );
 

@@ -7,7 +7,8 @@ import {
   type Part,
 } from "@google/genai";
 import { looksLikeMoney } from "@/lib/agent/guard";
-import { toolDeclarations, type ToolOutcome } from "@/lib/agent/tools";
+import { toolDeclarations } from "@/lib/agent/tool-declarations";
+import type { ToolOutcome } from "@/lib/agent/tools";
 import type { Lang } from "@/lib/i18n/languages";
 import { textFor } from "@/lib/i18n/text";
 import type { Choice, TurnItem, VoiceTurn } from "@/lib/voice/turns";
@@ -29,8 +30,14 @@ export type RunTool = (name: string, args: unknown) => Promise<ToolOutcome>;
 export type ToolCallRecord = { name: string; args: unknown; response: Record<string, unknown> };
 
 export type AgentTurn = {
-  /** What the shop says back; "review" means the order review opens and the read-back is said. */
-  outcome: { kind: "reply"; text: string; source: "agent" | "template" } | { kind: "review" };
+  /**
+   * What the shop says back. "review" opens the order review and the read-back is said; "sent"
+   * means the order went to the shop.
+   */
+  outcome:
+    | { kind: "reply"; text: string; source: "agent" | "template" }
+    | { kind: "review" }
+    | { kind: "sent"; number: number };
   choices: Choice[];
   /** Product cards for the reply: what was added and what is out of stock. */
   items: TurnItem[];
@@ -85,6 +92,8 @@ export async function runAgentTurn(
         toolCalls.push({ name, args: fc.args ?? {}, response: outcome.response });
         results.push({ functionResponse: { id: fc.id, name, response: outcome.response } });
       }
+      const sent = outcomes.find((o) => o.sent !== undefined)?.sent;
+      if (sent !== undefined) return done({ kind: "sent", number: sent });
       if (outcomes.some((o) => o.review)) return done({ kind: "review" });
       if (!response.content) return done(template(input.lang, true), "model turn missing");
       // The model's own turn goes back unchanged: it carries the thought signature Gemini needs.

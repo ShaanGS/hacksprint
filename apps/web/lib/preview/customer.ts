@@ -180,6 +180,7 @@ export function previewCustomer(lang: Lang, customerName: string): CustomerBacke
         rejectReason: null,
         balancePaise: null,
         confirming: paidAt !== null && !paid,
+        payUrl: null,
       };
       if (!approved) return view;
       if (sent.mode === "credit") {

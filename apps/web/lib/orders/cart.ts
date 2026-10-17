@@ -1,6 +1,7 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
 import { z } from "zod";
 import { substitutesFor, type Product } from "@/lib/catalog";
+import type { Lang } from "@/lib/i18n/languages";
 import { normalizeQuantity, type ProductUnit } from "@/lib/orders/quantity";
 import { lineTotalPaise, orderTotalPaise } from "@/lib/orders/totals";
 
@@ -51,17 +52,22 @@ export async function findDraftId(db: SupabaseClient, customerId: string): Promi
   return data ? idRow.parse(data).id : null;
 }
 
-/** The customer's draft order, created the first time they need one. */
+/** The customer's draft order, created the first time they need one, in their language. */
 export async function openDraft(
   db: SupabaseClient,
   shopId: string,
   customerId: string,
+  lang: Lang,
 ): Promise<string> {
   const existing = await findDraftId(db, customerId);
-  if (existing) return existing;
+  if (existing) {
+    const { error } = await db.from("orders").update({ lang }).eq("id", existing);
+    if (error) throw new Error(`Could not update the cart: ${error.message}`);
+    return existing;
+  }
   const { data, error } = await db
     .from("orders")
-    .insert({ shop_id: shopId, customer_id: customerId })
+    .insert({ shop_id: shopId, customer_id: customerId, lang })
     .select("id")
     .single();
   if (!error) return idRow.parse(data).id;
@@ -136,7 +142,24 @@ export async function removeFromCart(
     .eq("order_id", orderId)
     .eq("product_id", product.id);
   if (error) throw new Error(`Could not remove ${product.code}: ${error.message}`);
+  await clearReview(db, orderId);
   return { status: "removed", product };
+}
+
+/** The order was just read back to the customer, so a spoken "send it" may now submit it. */
+export async function markReviewed(db: SupabaseClient, orderId: string): Promise<void> {
+  const { error } = await db
+    .from("orders")
+    .update({ reviewed_at: new Date().toISOString() })
+    .eq("id", orderId)
+    .eq("status", "draft");
+  if (error) throw new Error(`Could not mark the order read back: ${error.message}`);
+}
+
+/** A changed cart has not been read back yet (spec A5). */
+async function clearReview(db: SupabaseClient, orderId: string): Promise<void> {
+  const { error } = await db.from("orders").update({ reviewed_at: null }).eq("id", orderId);
+  if (error) throw new Error(`Could not update the order: ${error.message}`);
 }
 
 async function lineQty(db: SupabaseClient, orderId: string, productId: string): Promise<number> {
@@ -165,9 +188,11 @@ async function writeLine(
       product_id: product.id,
       qty: check.qty,
       unit_price_paise: product.pricePaise,
+      price_source: product.priceSource,
     },
     { onConflict: "order_id,product_id" },
   );
   if (error) throw new Error(`Could not save ${product.code}: ${error.message}`);
+  await clearReview(db, orderId);
   return { status, product, qty: check.qty };
 }

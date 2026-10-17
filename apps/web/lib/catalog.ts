@@ -14,6 +14,7 @@ const productRow = z.object({
   stock_qty: z.coerce.number(),
   low_stock_threshold: z.coerce.number(),
   art: z.string(),
+  price_source: z.string().nullable(),
 });
 
 export type Product = {
@@ -27,13 +28,15 @@ export type Product = {
   stockQty: number;
   lowStockThreshold: number;
   art: string;
+  /** The bill line that set the price, so any price on screen can show where it came from. */
+  priceSource: string | null;
 };
 
 export async function loadCatalog(db: SupabaseClient, shopId: string): Promise<Product[]> {
   const { data, error } = await db
     .from("products")
     .select(
-      "id, code, name, pack_size, category, unit, price_paise, stock_qty, low_stock_threshold, art",
+      "id, code, name, pack_size, category, unit, price_paise, stock_qty, low_stock_threshold, art, price_source",
     )
     .eq("shop_id", shopId)
     .order("name");
@@ -52,6 +55,7 @@ export async function loadCatalog(db: SupabaseClient, shopId: string): Promise<P
       stockQty: row.stock_qty,
       lowStockThreshold: row.low_stock_threshold,
       art: row.art,
+      priceSource: row.price_source,
     }));
 }
 

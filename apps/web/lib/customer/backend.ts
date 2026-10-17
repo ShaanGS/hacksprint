@@ -6,8 +6,11 @@ import type { VoiceTurn } from "@/lib/voice/turns";
 // What the customer screens need from the shop. The screens never fetch on their own, so the
 // same screens run on the live API or, before any keys exist, on the preview's sample data.
 
-/** New turns to show, and the cart after them. `review` opens the order review. */
-export type TurnResult = { turns: VoiceTurn[]; cart: Cart; review: boolean };
+/**
+ * New turns to show, and the cart after them. `review` opens the order review; `sent` is the
+ * order's number once a spoken "send it" has sent it.
+ */
+export type TurnResult = { turns: VoiceTurn[]; cart: Cart; review: boolean; sent?: number };
 
 export type SubmittedStatus =
   "pending_approval" | "rejected" | "awaiting_payment" | "paid" | "on_credit" | "delivered";
@@ -25,6 +28,8 @@ export type OrderView = {
   balancePaise: number | null;
   /** True between paying and the shop seeing the payment. */
   confirming: boolean;
+  /** Where to pay, once the shop has approved a link order. */
+  payUrl: string | null;
 };
 
 export type CustomerBackend = {

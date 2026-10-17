@@ -43,6 +43,9 @@ alter table public.order_items add column price_source uuid references public.bi
 -- The language a customer orders in, so the owner sees whose language it was (spec A2).
 alter table public.customers add column lang text check (lang in ('en', 'ta', 'hi', 'kn'));
 alter table public.orders add column lang text check (lang in ('en', 'ta', 'hi', 'kn'));
+-- When the order was last read back to the customer; a voice submit needs it (spec A5), and
+-- any change to the cart clears it.
+alter table public.orders add column reviewed_at timestamptz;
 
 create type public.purchase_order_status as enum ('draft', 'sent', 'delivered', 'checked');
 
