@@ -229,6 +229,8 @@ Contrast for the pitch: app loans like PhonePe's are repaid by a daily cut from 
 
 No customer names or phone numbers anywhere in the pack.
 
+**Apply agent (demo only, decided Oct 17):** after the loan check, an agent fills the loan application from his records on screen, step by step, and stops where his own Aadhaar OTP would be needed. It says plainly that it is a simulation and sends nothing to any portal or lender, so rule 8 holds. Submitting for him for real would make us a lending service provider.
+
 ## 11. Demo: three acts, about two and a half minutes
 
 Fewer live parts, each with a fallback. Acts 1 to 3 must run live.

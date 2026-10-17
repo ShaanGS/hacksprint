@@ -209,7 +209,29 @@ Card fields by kind:
 `needs` lists what is still missing: `customer` or `product` (name not matched: tap one of
 `choices`), `amount` or `qty` (not heard: say it again). `choices` are the shop's customers for a
 credit card, its products (`{id, name, art}`) for a stock count, and empty for a day close; the
-owner can also tap one to correct a wrong match. When the words are not understood:
+owner can also tap one to correct a wrong match.
+
+A question about his money, or a spoken list of items, comes back as `kind: "question"` with an
+answer written by code from the shop's numbers, in the language sent as the form field `lang`
+(`en` or `ta`; otherwise the shop's language). Nothing is saved.
+
+```json
+{
+  "entry_id": null,
+  "transcript": "Can I pay my bills this week?",
+  "kind": "question",
+  "card": null,
+  "needs": [],
+  "choices": [],
+  "answer": {
+    "topic": "week",
+    "text": "This week you are short by ₹36,500. Your bills need ₹95,500 and about ₹59,000 is likely to come in. Collecting from 3 late payers would bring ₹9,600."
+  }
+}
+```
+
+`answer.topic` is `week`, `collect`, `customer`, `stock`, `dues`, `loan` or `items` (a list of
+items priced at the shop's own selling prices). When the words are not understood:
 `200 {"entry_id": null, "transcript": "…", "kind": null, "card": null, "needs": [], "choices": []}`.
 
 ### POST /api/voice/owner/{entryId}/confirm
@@ -448,6 +470,28 @@ amount, the need is the approved Deepavali order (`supplier_bill`); with one, it
 
 When collecting is enough: `"loan_needed_paise": 0, "no_loan_needed": true, "scheme": null`,
 and the screen links the collect list.
+
+### POST /api/loan-apply
+
+The apply agent, only while `DEMO_MODE` is on (404 otherwise). A simulation: it returns the
+loan application as it would read, filled from the shop's records, and sends nothing to any
+portal or lender (spec rule 8). Request: `{ "loan_request_id": uuid }` from a loan-ready check
+that found a loan is needed.
+
+```json
+{
+  "simulated": true,
+  "shop": "Lakshmi Stores",
+  "owner": "Murugan",
+  "loan_paise": 2700000,
+  "purpose": "stock_rotation",
+  "band": "shishu",
+  "months": 3,
+  "monthly_sales": { "verified_paise": 6456700, "declared_paise": 15333300 },
+  "bills_paid_on_time": 78,
+  "documents": [{ "key": "pan", "status": "have" }, { "key": "udyam", "status": "missing" }]
+}
+```
 
 ### POST /api/loan-pack
 
