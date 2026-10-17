@@ -22,7 +22,7 @@ import type { OwnerOrder } from "@/lib/owner/types";
 const reasonCodes: RejectReason[] = ["out_of_stock", "shop_closed", "cannot_deliver", "other"];
 
 /** "2 ×" for packs and pieces, "0.5 kg" for loose goods. */
-export function qtyLabel(qty: number, unit: ProductUnit): string {
+function qtyLabel(qty: number, unit: ProductUnit): string {
   return unit === "kg" || unit === "litre" ? `${qty} ${unit}` : `${qty} ×`;
 }
 

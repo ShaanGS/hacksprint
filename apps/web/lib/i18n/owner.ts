@@ -103,6 +103,17 @@ export type OwnerText = {
   youPaid: (cost: string) => string;
   noBill: string;
   nothingYet: string;
+  owedToYou: string;
+  customersOnAccount: (count: number) => string;
+  sayCredit: string;
+  creditDraftTitle: string;
+  sayAmountAgain: string;
+  whoseAccount: string;
+  addCredit: (amount: string, name: string) => string;
+  creditAdded: (amount: string, name: string) => string;
+  nobodyOwes: string;
+  lastOn: (date: string) => string;
+  entryKinds: { credit_sale: string; repayment: string };
   /** What the phone says when an order arrives. */
   announce: (customer: string, items: string, total: string) => string;
 };
@@ -223,6 +234,18 @@ const en: OwnerText = {
   youPaid: (cost) => `You paid ${cost}`,
   noBill: "No bill has set this price yet.",
   nothingYet: "Nothing yet today.",
+  owedToYou: "Owed to you",
+  customersOnAccount: (count) =>
+    count === 1 ? "1 customer on account" : `${count} customers on account`,
+  sayCredit: 'Hold and say "Ramesh 200 on account"',
+  creditDraftTitle: "Add to the credit book",
+  sayAmountAgain: "No amount was heard. Hold the mic and say it again.",
+  whoseAccount: "Whose account?",
+  addCredit: (amount, name) => `Add ${amount} to ${name}`,
+  creditAdded: (amount, name) => `Added ${amount} to ${name}`,
+  nobodyOwes: "Nobody owes anything.",
+  lastOn: (date) => `Last on ${date}`,
+  entryKinds: { credit_sale: "On account", repayment: "Paid back" },
   announce: (customer, items, total) =>
     `New order from ${customer}: ${items}. Total ${total}. Approve?`,
 };
@@ -344,6 +367,17 @@ const ta: OwnerText = {
   youPaid: (cost) => `நீங்கள் கொடுத்தது ${cost}`,
   noBill: "இந்த விலைக்கு இன்னும் பில் இல்லை.",
   nothingYet: "இன்று இதுவரை எதுவும் இல்லை.",
+  owedToYou: "உங்களுக்கு வர வேண்டியது",
+  customersOnAccount: (count) => `${count} பேர் கணக்கில்`,
+  sayCredit: "அழுத்திப் பிடித்து “ரமேஷ் 200 கணக்கில்” சொல்லுங்கள்",
+  creditDraftTitle: "கடன் புத்தகத்தில் சேர்",
+  sayAmountAgain: "தொகை கேட்கவில்லை. மைக்கைப் பிடித்து மீண்டும் சொல்லுங்கள்.",
+  whoseAccount: "யார் கணக்கில்?",
+  addCredit: (amount, name) => `${name} கணக்கில் ${amount} சேர்`,
+  creditAdded: (amount, name) => `${name} கணக்கில் ${amount} சேர்க்கப்பட்டது`,
+  nobodyOwes: "யாரும் தர வேண்டியதில்லை.",
+  lastOn: (date) => `கடைசியாக ${date}`,
+  entryKinds: { credit_sale: "கணக்கில்", repayment: "திருப்பிக் கொடுத்தது" },
   announce: (customer, items, total) =>
     `${customer} புதிய ஆர்டர்: ${items}. மொத்தம் ${total}. ஏற்கலாமா?`,
 };

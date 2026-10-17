@@ -37,7 +37,9 @@ begin
     ('00000000-0000-4000-8000-0000000000c5', p_shop, 'Priya Natarajan', '+910000000015', 'ta'),
     ('00000000-0000-4000-8000-0000000000c6', p_shop, 'Imran Khan', '+910000000016', 'hi'),
     ('00000000-0000-4000-8000-0000000000c7', p_shop, 'Divya Shetty', '+910000000017', 'kn'),
-    ('00000000-0000-4000-8000-0000000000c8', p_shop, 'Karthik Subramanian', '+910000000018', 'en');
+    ('00000000-0000-4000-8000-0000000000c8', p_shop, 'Karthik Subramanian', '+910000000018', 'en'),
+    -- Buys at the counter on account, never through the voice page: the spoken credit regular.
+    ('00000000-0000-4000-8000-0000000000c9', p_shop, 'Ramesh Kumar', '+910000000019', 'ta');
 
   insert into public.distributors (shop_id, name, phone, payment_terms_days)
   values (p_shop, 'Sri Balaji Agencies', '+910000000002', 15)
@@ -195,6 +197,12 @@ begin
     and o.customer_id <> '00000000-0000-4000-8000-0000000000c1'
     and c.created_at < v_today - interval '7 days'
     and c.created_at + case when o.number % 5 = 0 then interval '18 days' else interval '7 days' end < now();
+
+  -- Ramesh Kumar's counter credit, said aloud by the owner (spec D1); ₹200 of it is still open.
+  insert into public.credit_ledger (shop_id, customer_id, kind, amount_paise, note, created_at)
+  values
+    (p_shop, '00000000-0000-4000-8000-0000000000c9', 'credit_sale', 35000, 'Said at the counter', v_today - interval '4 days' + interval '19 hours'),
+    (p_shop, '00000000-0000-4000-8000-0000000000c9', 'repayment', -15000, 'Paid at the counter', v_today - interval '1 day' + interval '10 hours');
 
   -- Weekly shelf counts for the products that run out fastest (spec B5).
   insert into public.shelf_counts (shop_id, product_id, counted_qty, counted_at)

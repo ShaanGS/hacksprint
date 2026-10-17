@@ -1,5 +1,6 @@
 import type { BillOutcome, ConfirmLine, ScannedBill } from "@/lib/bills/types";
 import type { Product } from "@/lib/catalog";
+import type { CreditBook, CreditDraft, CreditEntry } from "@/lib/credit/types";
 import type { PaymentMode } from "@/lib/orders/submit";
 import type { HomeNumbers, HomeSource, HomeSourceKind, PriceSource } from "@/lib/sources/types";
 import type { RejectReason } from "@/lib/orders/state";
@@ -56,4 +57,12 @@ export interface OwnerBackend {
   homeSource(kind: HomeSourceKind): Promise<HomeSource>;
   /** The bill line behind a product's price (spec E3). */
   priceSource(product: Product): Promise<PriceSource>;
+  /** Who owes the shop (spec D1). */
+  credit(): Promise<CreditBook>;
+  /** One customer's credit entries, which add up to what they owe (spec E3). */
+  creditEntries(customerId: string): Promise<CreditEntry[]>;
+  /** "Ramesh 200 on account" in; an entry out for the owner to confirm. */
+  hearCredit(audio: Blob): Promise<CreditDraft>;
+  /** The owner's yes to a spoken entry. */
+  addCredit(customerId: string, amountPaise: number, heard: string): Promise<void>;
 }

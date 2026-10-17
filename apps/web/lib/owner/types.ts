@@ -37,18 +37,3 @@ export type OwnerOrder = {
 };
 
 export type CreditRow = { customer: string; since: string; owedPaise: number };
-
-export type DaySummary = {
-  orders: number;
-  collectedPaise: number;
-  creditPaise: number;
-  owedPaise: number;
-};
-
-export type ReorderLine = {
-  code: string;
-  name: string;
-  art: string;
-  qty: number;
-  unit: ProductUnit;
-};

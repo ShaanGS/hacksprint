@@ -13,7 +13,6 @@ export const previewShop = {
   name: "Lakshmi Stores",
   ownerName: "Murugan",
   ownerLang: "ta" as const,
-  distributorName: "Sri Balaji Agencies",
 };
 
 type Row = [

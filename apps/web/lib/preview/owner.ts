@@ -1,5 +1,4 @@
-import { takings } from "@/lib/owner/summary";
-import type { CreditRow, DaySummary, OwnerOrder } from "@/lib/owner/types";
+import type { CreditRow, OwnerOrder } from "@/lib/owner/types";
 import { lineTotalPaise } from "@/lib/orders/totals";
 import {
   earlierCredit,
@@ -70,14 +69,5 @@ function toOwnerOrder(order: PreviewOrder): OwnerOrder {
     outOfStock: order.outOfStock ?? [],
     rejectReason: order.rejectReason ?? null,
     payUrl: null,
-  };
-}
-
-/** Today's numbers for the Today tab. */
-export function daySummary(orders: OwnerOrder[]): DaySummary {
-  return {
-    orders: orders.filter((order) => order.status !== "rejected").length,
-    ...takings(orders),
-    owedPaise: creditRows(orders).reduce((total, row) => total + row.owedPaise, 0),
   };
 }

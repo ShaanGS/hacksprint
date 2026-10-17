@@ -3,13 +3,13 @@
 import { Volume2, WifiOff } from "lucide-react";
 import { AnimatePresence, motion } from "motion/react";
 import { useState, type ReactNode } from "react";
-import { CreditTab } from "@/components/owner/credit-tab";
+import { CreditView } from "@/components/owner/credit-view";
 import { HomeTab } from "@/components/owner/home-tab";
 import { OrdersTab } from "@/components/owner/orders-tab";
 import { useOwnerLanguage } from "@/components/owner/owner-language";
 import { StockView } from "@/components/owner/stock-view";
 import { TabBar, type OwnerTab } from "@/components/owner/tab-bar";
-import { useHoldToDecide } from "@/components/owner/use-hold-to-decide";
+import { useHoldToTalk } from "@/components/owner/use-hold-to-talk";
 import { useNotice } from "@/components/owner/use-notice";
 import { useOwnerOrders } from "@/components/owner/use-owner-orders";
 import type { OwnerVoice } from "@/components/owner/use-owner-voice";
@@ -18,13 +18,9 @@ import { Art } from "@/components/ui/art";
 import { snappy } from "@/lib/motion";
 import type { OwnerBackend, VoiceDecision } from "@/lib/owner/backend";
 import { takings } from "@/lib/owner/summary";
-import { creditRows } from "@/lib/preview/owner";
 import { previewRecorder } from "@/lib/preview/owner-backend";
 
-// The live app gets the Credit tab with the credit book's API (spec section 11, step 5); the
-// preview shows every tab on sample data.
-const LIVE_TABS: OwnerTab[] = ["orders", "stock", "home"];
-const PREVIEW_TABS: OwnerTab[] = ["orders", "stock", "credit", "home"];
+const TABS: OwnerTab[] = ["orders", "stock", "credit", "home"];
 
 /** The owner's app: today's orders first, then stock, credit and the day's numbers. */
 export function OwnerApp({
@@ -48,12 +44,11 @@ export function OwnerApp({
     onSignedOut,
     onFailed: () => notify(text.failed),
   });
-  const hold = useHoldToDecide({
-    askMicrophone: live ? voice.askMicrophone : async () => previewRecorder,
-    decide: shop.decideByVoice,
+  const askMicrophone = live ? voice.askMicrophone : async () => previewRecorder;
+  const hold = useHoldToTalk({
+    askMicrophone,
     onTooShort: () => notify(text.holdToSay),
     onMicBlocked: () => notify(text.micBlocked),
-    onResult: (result) => notify(heardLine(result)),
   });
   useWakeLock(live);
 
@@ -62,7 +57,6 @@ export function OwnerApp({
     return `${text.heard(heard)} · ${decision ? text.decided[decision] : text.notUnderstood}`;
   }
 
-  const tabs = live ? LIVE_TABS : PREVIEW_TABS;
   const orders = shop.orders ?? [];
   const waiting = orders.filter((order) => order.status === "pending_approval").length;
   return (
@@ -100,7 +94,12 @@ export function OwnerApp({
               takings={takings(orders)}
               mic={hold.mic}
               onHoldStart={hold.holdStarted}
-              onHoldEnd={hold.holdEnded}
+              onHoldEnd={(order) =>
+                hold.holdEnded(async (audio) => {
+                  const result = await shop.decideByVoice(order, audio);
+                  if (result) notify(heardLine(result));
+                })
+              }
               onApprove={shop.approve}
               onReject={shop.reject}
               onDeliver={shop.deliver}
@@ -112,10 +111,12 @@ export function OwnerApp({
             </div>
           ))}
         {tab === "stock" && <StockView backend={backend} />}
-        {tab === "credit" && <CreditTab rows={creditRows(orders)} />}
+        {tab === "credit" && (
+          <CreditView backend={backend} askMicrophone={askMicrophone} notify={notify} />
+        )}
         {tab === "home" && <HomeTab backend={backend} />}
       </div>
-      {tabs.length > 1 && <TabBar tabs={tabs} tab={tab} onChange={setTab} waiting={waiting} />}
+      <TabBar tabs={TABS} tab={tab} onChange={setTab} waiting={waiting} />
     </div>
   );
 }

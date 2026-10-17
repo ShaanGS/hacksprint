@@ -3,6 +3,7 @@ import type { SubmittedStatus } from "@/lib/customer/backend";
 import type { OwnerBackend } from "@/lib/owner/backend";
 import type { OwnerOrder } from "@/lib/owner/types";
 import { previewBills } from "@/lib/preview/bill";
+import { previewCredit } from "@/lib/preview/credit";
 import { previewProducts } from "@/lib/preview/data";
 import { creditRows, previewOwnerOrders } from "@/lib/preview/owner";
 import { takings } from "@/lib/owner/summary";
@@ -26,6 +27,7 @@ export function previewOwner(): OwnerBackend {
   // This phone's own copy of the shelves, so a confirmed bill adds to them.
   const products = previewProducts.map((product) => ({ ...product }));
   const bills = previewBills(products);
+  const credit = previewCredit(() => orders);
 
   function move(
     id: string,
@@ -125,6 +127,18 @@ export function previewOwner(): OwnerBackend {
     },
     async priceSource(product) {
       return bills.priceSource(product);
+    },
+    async credit() {
+      return credit.book();
+    },
+    async creditEntries(customerId) {
+      return credit.entries(customerId);
+    },
+    async hearCredit() {
+      return credit.hear();
+    },
+    async addCredit(customerId, amountPaise, heard) {
+      credit.add(customerId, amountPaise, heard);
     },
   };
   return backend;

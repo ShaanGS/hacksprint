@@ -13,6 +13,10 @@ create table public.distributors (
   unique (shop_id, name)
 );
 
+-- Credit can be a counter sale the owner says aloud (spec D1), with no order behind it; its note
+-- keeps the words that were heard.
+alter table public.credit_ledger drop constraint credit_ledger_sale_has_order;
+
 -- A bill photo becomes a confirmed bill with lines; seeded history bills have no photo.
 alter table public.bills alter column image_path drop not null;
 alter table public.bills add column distributor_id uuid references public.distributors (id);

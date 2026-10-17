@@ -1,5 +1,6 @@
 import type { BillOutcome, ScannedBill } from "@/lib/bills/types";
 import type { Product } from "@/lib/catalog";
+import type { CreditBook, CreditDraft, CreditEntry } from "@/lib/credit/types";
 import {
   RequestError,
   SignedOutError,
@@ -81,6 +82,20 @@ export const liveOwner: OwnerBackend = {
   },
   priceSource(product) {
     return call<PriceSource>(`/api/sources/price/${product.id}`);
+  },
+  credit() {
+    return call<CreditBook>("/api/credit");
+  },
+  creditEntries(customerId) {
+    return call<CreditEntry[]>(`/api/sources/credit/${customerId}`);
+  },
+  hearCredit(audio) {
+    const form = new FormData();
+    form.append("audio", audio, audio.type.includes("mp4") ? "credit.mp4" : "credit.webm");
+    return call<CreditDraft>("/api/credit/spoken", { method: "POST", body: form });
+  },
+  async addCredit(customerId, amountPaise, heard) {
+    await post("/api/credit", { customer_id: customerId, amount_paise: amountPaise, heard });
   },
 };
 

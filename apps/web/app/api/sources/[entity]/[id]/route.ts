@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { creditEntries } from "@/lib/credit/book";
 import { requireCustomer } from "@/lib/customer/context";
 import { handle, HttpError } from "@/lib/http";
 import { findDraftId } from "@/lib/orders/cart";
@@ -11,7 +12,8 @@ const homeKind = z.enum(["orders", "collected", "owed-to-shop", "owed-by-shop"])
 
 /**
  * Where a number came from (spec E3): home/{orders|collected|owed-to-shop|owed-by-shop},
- * price/{productId} and order/{orderId} for the owner; cart/current for a customer's own order.
+ * price/{productId}, order/{orderId} and credit/{customerId} for the owner; cart/current for a
+ * customer's own order.
  */
 export function GET(
   _request: Request,
@@ -37,6 +39,7 @@ export function GET(
       return Response.json(source);
     }
     if (entity === "order") return Response.json(await orderPriceSources(db, id, "owner"));
+    if (entity === "credit") return Response.json(await creditEntries(db, shop.id, id));
     throw new HttpError(404, "No such number.");
   });
 }

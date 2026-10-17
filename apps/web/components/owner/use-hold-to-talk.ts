@@ -1,22 +1,19 @@
 import { useRef, useState } from "react";
 import type { MicState } from "@/components/ui/hold-mic";
 import type { Recorder } from "@/lib/audio/recorder";
-import type { VoiceDecision } from "@/lib/owner/backend";
-import type { OwnerOrder } from "@/lib/owner/types";
 
 // Shorter than this is a tap, not a word: the owner is shown how to use the mic instead.
 const MIN_HOLD_MS = 400;
 
 /**
- * Hold the mic on an order and say "seri" (spec A6). The press can end before the microphone is
+ * Hold the mic, speak, let go: the recording goes to whatever the release asks for, such as an
+ * order decision (spec A6) or a credit entry (D1). The press can end before the microphone is
  * ready, and touch screens can send two releases; both are ignored.
  */
-export function useHoldToDecide(handlers: {
+export function useHoldToTalk(handlers: {
   askMicrophone: () => Promise<Recorder | null>;
-  decide: (order: OwnerOrder, audio: Blob) => Promise<VoiceDecision | null>;
   onTooShort: () => void;
   onMicBlocked: () => void;
-  onResult: (result: VoiceDecision) => void;
 }) {
   const [mic, setMic] = useState<MicState>("idle");
   const pressedAt = useRef<number | null>(null);
@@ -37,7 +34,7 @@ export function useHoldToDecide(handlers: {
     setMic("listening");
   }
 
-  async function holdEnded(order: OwnerOrder) {
+  async function holdEnded(handle: (audio: Blob) => Promise<void>) {
     const startedAt = pressedAt.current;
     pressedAt.current = null;
     const recorder = recording.current;
@@ -51,9 +48,8 @@ export function useHoldToDecide(handlers: {
       handlers.onTooShort();
       return;
     }
-    const result = await handlers.decide(order, audio);
+    await handle(audio);
     setMic("idle");
-    if (result) handlers.onResult(result);
   }
 
   return { mic, holdStarted, holdEnded };
