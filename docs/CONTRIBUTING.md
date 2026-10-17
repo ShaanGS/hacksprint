@@ -19,8 +19,10 @@ These are spec section 15. Code comments cite them as "rule N".
 7. Statements and loan packs contain totals only. No customer names or phone numbers leave the
    shop's own view.
 8. We never hold, move or lend money, never route the owner to a lender, and never send his
-   data to one. One labelled exception, test mode only: the reorder agent can open a Paytm test
-   checkout for a sent order. That payment is never counted as sales or cash.
+   data to one. The bill-pay agent only prepares a payment from the owner's own UPI app, for a
+   bill he confirmed and inside the weekly limit he set; he authorises it with his UPI PIN. One
+   labelled exception, test mode only: the reorder agent can open a Paytm test checkout for a sent
+   order. That payment is never counted as sales or cash.
 9. Scheme facts come only from `apps/web/lib/schemes/catalog.ts`, each with its official source
    and checked date. Official links only. Never promise approval. Always show the fee warning.
 10. Collect only what a feature needs. Never collect caste, religion or similar. Never read the
