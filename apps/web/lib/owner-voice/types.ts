@@ -12,3 +12,27 @@ export type ParsedEntry =
   | { kind: "stock_count"; productId: string | null; qty: number | null };
 
 export type Named = { id: string; name: string };
+
+/**
+ * What the owner can ask about his own money, or what a list of items costs at his prices. The
+ * answer's numbers come from code.
+ */
+export const questionTopics = [
+  "week",
+  "collect",
+  "customer",
+  "stock",
+  "dues",
+  "loan",
+  "items",
+] as const;
+
+export type QuestionTopic = (typeof questionTopics)[number];
+
+export type Question = {
+  kind: "question";
+  topic: QuestionTopic;
+  customerId: string | null;
+  /** For "items": each product and the quantity he said. */
+  items: { productId: string; qty: number }[];
+};

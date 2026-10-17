@@ -35,7 +35,7 @@ export function OwnerApp({
   voice: OwnerVoice;
   onSignedOut: () => void;
 }) {
-  const { text } = useOwnerLanguage();
+  const { lang, text } = useOwnerLanguage();
   const [tab, setTab] = useState<OwnerTab>("home");
   const [notice, notify] = useNotice();
   const [offline, setOffline] = useState(false);
@@ -56,7 +56,7 @@ export function OwnerApp({
   async function hear(audio: Blob) {
     setHearing(true);
     try {
-      setCard(await ownerApi.hear(audio));
+      setCard(await ownerApi.hear(audio, lang));
     } catch {
       notify(text.failed);
     } finally {
@@ -121,6 +121,7 @@ export function OwnerApp({
             key={card?.entry_id ?? card?.transcript ?? "none"}
             card={card}
             onDone={() => setCard(null)}
+            onOpen={setTab}
           />
           {demo && <DemoTools open={tools} onClose={() => setTools(false)} onRecording={hear} />}
         </div>

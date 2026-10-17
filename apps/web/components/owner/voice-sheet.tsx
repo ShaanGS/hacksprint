@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { useOwnerLanguage } from "@/components/owner/owner-language";
 import { useOwnerScreen } from "@/components/owner/owner-screen";
+import type { OwnerTab } from "@/components/owner/tab-bar";
 import { Amount } from "@/components/ui/amount";
 import { Art, toArtName } from "@/components/ui/art";
 import { Button } from "@/components/ui/button";
@@ -10,14 +11,33 @@ import { ListRow } from "@/components/ui/list-row";
 import { Monogram } from "@/components/ui/monogram";
 import { Sheet } from "@/components/ui/sheet";
 import { formatMoney } from "@/lib/money";
-import { ownerApi, type VoiceCard } from "@/lib/owner/api";
+import { ownerApi, type QuestionTopic, type VoiceCard } from "@/lib/owner/api";
 
 /**
  * B1: what the owner said, as one entry on a card. Nothing is saved until he taps (rule 3); a
  * name that did not match, or a wrong match, is fixed by tapping the right one. Closing the card
  * throws the entry away. Keyed on the entry by its parent, so each card starts fresh.
  */
-export function VoiceSheet({ card, onDone }: { card: VoiceCard | null; onDone: () => void }) {
+// The tab that shows more about each answer.
+const tabFor: Record<QuestionTopic, OwnerTab> = {
+  week: "home",
+  collect: "collect",
+  customer: "collect",
+  stock: "stock",
+  dues: "bank",
+  loan: "bank",
+  items: "stock",
+};
+
+export function VoiceSheet({
+  card,
+  onDone,
+  onOpen,
+}: {
+  card: VoiceCard | null;
+  onDone: () => void;
+  onOpen: (tab: OwnerTab) => void;
+}) {
   const { text } = useOwnerLanguage();
   const { notify } = useOwnerScreen();
   const [picked, setPicked] = useState<string | null>(null);
@@ -68,25 +88,49 @@ export function VoiceSheet({ card, onDone }: { card: VoiceCard | null; onDone: (
     <Sheet
       open={card !== null}
       onOpenChange={(open) => !open && dismiss()}
-      title={card?.kind ? text.entryTitles[card.kind] : text.notUnderstoodEntry}
+      title={
+        card?.kind === "question"
+          ? text.answerTitle
+          : card?.kind
+            ? text.entryTitles[card.kind]
+            : text.notUnderstoodEntry
+      }
       description={card?.transcript ? text.heard(card.transcript) : undefined}
       footer={
-        card && (
+        card?.answer ? (
           <div className="space-y-2 pb-3">
-            {card.entry_id && label && !amountMissing && (
-              <Button wide disabled={saving} onClick={() => card.entry_id && save(card.entry_id)}>
-                {label}
-              </Button>
-            )}
-            <Button wide variant="ghost" onClick={dismiss}>
-              {text.notThis}
+            <Button
+              wide
+              onClick={() => {
+                if (card.answer) onOpen(tabFor[card.answer.topic]);
+                onDone();
+              }}
+            >
+              {text.openTab(text.tabs[tabFor[card.answer.topic]])}
+            </Button>
+            <Button wide variant="ghost" onClick={onDone}>
+              {text.done}
             </Button>
           </div>
+        ) : (
+          card && (
+            <div className="space-y-2 pb-3">
+              {card.entry_id && label && !amountMissing && (
+                <Button wide disabled={saving} onClick={() => card.entry_id && save(card.entry_id)}>
+                  {label}
+                </Button>
+              )}
+              <Button wide variant="ghost" onClick={dismiss}>
+                {text.notThis}
+              </Button>
+            </div>
+          )
         )
       }
     >
       {card && (
         <div className="space-y-4">
+          {card.answer && <p className="text-xl leading-snug font-semibold">{card.answer.text}</p>}
           {card.kind === null && <p className="py-2 text-center text-base">{text.sayEntryAgain}</p>}
           {amountMissing && <p className="py-2 text-center text-base">{text.sayAgain}</p>}
           {(card.kind === "credit_given" || card.kind === "credit_repaid_cash") &&

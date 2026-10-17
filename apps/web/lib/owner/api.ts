@@ -4,6 +4,7 @@ import type { Margin } from "@/lib/margins";
 import { call, post, upload } from "@/lib/owner/fetch";
 import type { SourceLabel } from "@/lib/rotation/labels";
 import type { Reason, rotationResponse } from "@/lib/rotation/responses";
+import type { QuestionTopic } from "@/lib/owner-voice/types";
 import type { RotationPart, SourceRow } from "@/lib/rotation/sources";
 import type { MudraBandKey } from "@/lib/schemes/catalog";
 import type { PriceSource } from "@/lib/sources/types";
@@ -92,10 +93,14 @@ export type SourceRows = { part: RotationPart; total_paise: number; rows: Source
 
 export type EntryKind = "credit_given" | "credit_repaid_cash" | "day_close" | "stock_count";
 
+export type { QuestionTopic };
+
 export type VoiceCard = {
   entry_id: string | null;
   transcript: string;
-  kind: EntryKind | null;
+  kind: EntryKind | "question" | null;
+  /** The answer to a spoken question, written by code from the shop's numbers. */
+  answer: { topic: QuestionTopic; text: string } | null;
   card: {
     customer?: { id: string; name: string } | null;
     amount_paise?: number | null;
@@ -190,8 +195,12 @@ export const ownerApi = {
   loanReady: (purpose: LoanPurpose) => post<LoanReady>("/api/loan-ready", { purpose }),
   loanPack: (loanRequestId: string) =>
     post<{ share_url: string }>("/api/loan-pack", { loan_request_id: loanRequestId }),
-  hear: (audio: Blob) =>
-    upload<VoiceCard>("/api/voice/owner", "audio", audio, recordingName(audio)),
+  hear: (audio: Blob, lang: Lang) => {
+    const form = new FormData();
+    form.append("audio", audio, recordingName(audio));
+    form.append("lang", lang);
+    return call<VoiceCard>("/api/voice/owner", { method: "POST", body: form });
+  },
   confirm: (entryId: string, picks: { customer_id?: string; product_id?: string }) =>
     post<{ ok: true; kind: EntryKind }>(`/api/voice/owner/${entryId}/confirm`, picks),
   reject: (entryId: string) => post<{ ok: true }>(`/api/voice/owner/${entryId}/reject`, {}),

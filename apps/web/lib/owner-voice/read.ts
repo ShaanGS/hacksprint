@@ -2,11 +2,16 @@ import { FunctionCallingConfigMode, ThinkingLevel, type FunctionDeclaration } fr
 import { matchCustomer } from "@/lib/credit/parse";
 import { createGemini } from "@/lib/gemini/client";
 import { wasSaid } from "@/lib/owner-voice/numbers";
-import type { Named, ParsedEntry } from "@/lib/owner-voice/types";
+import {
+  questionTopics,
+  type Named,
+  type ParsedEntry,
+  type Question,
+} from "@/lib/owner-voice/types";
 
 // Gemini picks which of the four entries the owner meant and copies its words into it (spec
-// section 14). It never computes: every number it returns must be one he said, or the entry is
-// read by plain word matching instead.
+// section 14), or which question about his money he asked. It never computes: every number it
+// returns must be one he said, or the entry is read by plain word matching instead.
 
 const READ_TIMEOUT_MS = 8_000;
 
@@ -46,6 +51,49 @@ const declarations: FunctionDeclaration[] = [
     },
   },
   {
+    name: "ask_question",
+    description:
+      "He asks about his own money instead of telling an entry: can he pay this week's bills, who to collect from, how much one customer owes, his stock, what he owes suppliers, or does he need a loan.",
+    parametersJsonSchema: {
+      type: "object",
+      properties: {
+        topic: {
+          type: "string",
+          enum: [...questionTopics],
+          description:
+            "week: can he pay this week, is he short. collect: who to collect from, who is late. customer: how much one customer owes. stock: his shelf, what is low or stuck. dues: what he owes suppliers, which bill is due. loan: does he need a loan, how much.",
+        },
+        customer: {
+          type: "string",
+          description: "For a question about one customer, the name copied exactly from the list",
+        },
+      },
+      required: ["topic"],
+    },
+  },
+  {
+    name: "price_items",
+    description:
+      'He lists items with quantities, as a customer asks for them at the counter, like "2 kg tomatoes, 1 Maggi and 3 kg rice", to know what they cost.',
+    parametersJsonSchema: {
+      type: "object",
+      properties: {
+        items: {
+          type: "array",
+          items: {
+            type: "object",
+            properties: {
+              product_code: { type: "string", description: "A product code from the list" },
+              quantity: { type: "number", description: "How many he said, exactly as said" },
+            },
+            required: ["product_code", "quantity"],
+          },
+        },
+      },
+      required: ["items"],
+    },
+  },
+  {
     name: "stock_count",
     description: 'He counted a product on the shelf, like "atta, 12 packs".',
     parametersJsonSchema: {
@@ -62,8 +110,9 @@ const declarations: FunctionDeclaration[] = [
 function instructions(customers: Named[], products: (Named & { code: string })[]): string {
   return [
     "A kirana shop owner speaks Tamil, Hindi, Kannada or English, often mixed. Turn what he said",
-    "into exactly one function call. Copy numbers exactly as he said them; never add, convert or",
-    "work out a number. If he said no number, leave it out. If nothing fits, call no function.",
+    "into exactly one function call: an entry he is telling you, or a question about his money.",
+    "Copy numbers exactly as he said them; never add, convert or work out a number. If he said",
+    "no number, leave it out. If nothing fits, call no function.",
     "",
     "Customers:",
     ...customers.map((c) => `- ${c.name}`),
@@ -76,12 +125,24 @@ function instructions(customers: Named[], products: (Named & { code: string })[]
 const said = (value: unknown, transcript: string): number | null =>
   typeof value === "number" && wasSaid(value, transcript) ? value : null;
 
-/** The entry he meant, or null when the model found none or used a number he did not say. */
+function customerOf(name: unknown, customers: Named[]): string | null {
+  const said = typeof name === "string" ? name.trim() : "";
+  if (!said) return null;
+  return (
+    customers.find((c) => c.name.toLowerCase() === said.toLowerCase())?.id ??
+    matchCustomer(said, customers)
+  );
+}
+
+/**
+ * The entry he meant or the question he asked, or null when the model found neither or used a
+ * number he did not say.
+ */
 export async function readEntry(
   transcript: string,
   customers: Named[],
   products: (Named & { code: string })[],
-): Promise<ParsedEntry | null> {
+): Promise<ParsedEntry | Question | null> {
   const { ai, model } = createGemini();
   const response = await ai.models.generateContent({
     model,
@@ -101,13 +162,25 @@ export async function readEntry(
   if (call.name === "credit_given" || call.name === "credit_repaid_cash") {
     const amount = said(args.amount_rupees, transcript);
     if (amount === null) return null;
-    const name = typeof args.customer === "string" ? args.customer : "";
-    const exact = customers.find((c) => c.name.toLowerCase() === name.trim().toLowerCase());
     return {
       kind: call.name,
-      customerId: exact?.id ?? (name ? matchCustomer(name, customers) : null),
+      customerId: customerOf(args.customer, customers),
       amountPaise: Math.round(amount * 100),
     };
+  }
+  if (call.name === "ask_question") {
+    const topic = questionTopics.find((t) => t === args.topic);
+    if (!topic) return null;
+    return { kind: "question", topic, customerId: customerOf(args.customer, customers), items: [] };
+  }
+  if (call.name === "price_items") {
+    const items = (Array.isArray(args.items) ? args.items : []).flatMap((item: unknown) => {
+      const line = item as { product_code?: unknown; quantity?: unknown };
+      const product = products.find((p) => p.code === line.product_code);
+      const qty = said(line.quantity, transcript);
+      return product && qty !== null && qty > 0 ? [{ productId: product.id, qty }] : [];
+    });
+    return items.length > 0 ? { kind: "question", topic: "items", customerId: null, items } : null;
   }
   if (call.name === "day_close") {
     const cash =

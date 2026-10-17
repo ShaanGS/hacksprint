@@ -32,6 +32,9 @@ export type MoneyText = {
   entryTitles: Record<EntryKind, string>;
   notUnderstoodEntry: string;
   sayEntryAgain: string;
+  answerTitle: string;
+  openTab: (tab: string) => string;
+  done: string;
   cashSales: string;
   moneyInHand: string;
   counted: string;
@@ -193,7 +196,11 @@ const en: MoneyText = {
     stock_count: "Stock count",
   },
   notUnderstoodEntry: "Not understood",
-  sayEntryAgain: "Say it again: credit given, cash paid back, tonight's sales, or a stock count.",
+  sayEntryAgain:
+    'Say an entry, like "Ramesh 200 on credit", or ask about your money, like "can I pay this week?"',
+  answerTitle: "Your answer",
+  openTab: (tab) => `Open ${tab}`,
+  done: "Done",
   cashSales: "Cash sales today",
   moneyInHand: "Money in hand, cash and bank",
   counted: "Counted",
@@ -403,7 +410,10 @@ const ta: MoneyText = {
   },
   notUnderstoodEntry: "புரியவில்லை",
   sayEntryAgain:
-    "மீண்டும் சொல்லுங்கள்: கொடுத்த கடன், ரொக்கமாகத் தந்தது, இன்றைய விற்பனை, அல்லது சரக்கு எண்ணிக்கை.",
+    '"ரமேஷ் 200 கடன்" போல ஒரு பதிவைச் சொல்லுங்கள், அல்லது "இந்த வாரம் பணம் போதுமா?" போல உங்கள் பணம் பற்றிக் கேளுங்கள்.',
+  answerTitle: "பதில்",
+  openTab: (tab) => `${tab} திற`,
+  done: "சரி",
   cashSales: "இன்றைய ரொக்க விற்பனை",
   moneyInHand: "கையிருப்பு, ரொக்கமும் வங்கியும்",
   counted: "எண்ணியது",

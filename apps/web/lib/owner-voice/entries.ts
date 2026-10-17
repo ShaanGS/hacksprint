@@ -3,7 +3,8 @@ import { z } from "zod";
 import { audit } from "@/lib/audit";
 import { loadCatalog } from "@/lib/catalog";
 import { HttpError } from "@/lib/http";
-import { langInfo } from "@/lib/i18n/languages";
+import { langInfo, type Lang } from "@/lib/i18n/languages";
+import { answerQuestion } from "@/lib/owner-voice/answers";
 import { readByWords } from "@/lib/owner-voice/fallback";
 import { readEntry } from "@/lib/owner-voice/read";
 import type { Named, ParsedEntry } from "@/lib/owner-voice/types";
@@ -88,7 +89,7 @@ function choicesOf(parsed: ParsedEntry, customers: Named[], products: (Named & {
   return [];
 }
 
-export async function hearEntry(db: SupabaseClient, shop: Shop, audio: Blob) {
+export async function hearEntry(db: SupabaseClient, shop: Shop, audio: Blob, lang: Lang) {
   const { customers, products } = await namesFor(db, shop.id);
   const heard = await speechToText(audio, audio.type.includes("mp4") ? "owner.mp4" : "owner.webm", {
     languageCode: langInfo[shop.ownerLang].sarvamCode,
@@ -98,14 +99,26 @@ export async function hearEntry(db: SupabaseClient, shop: Shop, audio: Blob) {
     ),
   });
   const transcript = heard.transcript.trim();
-  const parsed =
-    (transcript ? await readEntry(transcript, customers, products).catch(() => null) : null) ??
-    readByWords(transcript, customers, products);
+  const read = transcript
+    ? await readEntry(transcript, customers, products).catch(() => null)
+    : null;
+  if (read?.kind === "question") {
+    return answerQuestion(db, shop, transcript, read, lang === "ta" ? "ta" : "en");
+  }
+  const parsed = read ?? readByWords(transcript, customers, products);
   if (!parsed) {
     await audit(db, shop.id, [
       { actor: "agent", action: "voice.not_understood", payload: { transcript } },
     ]);
-    return { entry_id: null, transcript, kind: null, card: null, needs: [], choices: [] };
+    return {
+      entry_id: null,
+      transcript,
+      kind: null,
+      card: null,
+      needs: [],
+      choices: [],
+      answer: null,
+    };
   }
   const { data, error } = await db
     .from("owner_voice_entries")
@@ -130,6 +143,7 @@ export async function hearEntry(db: SupabaseClient, shop: Shop, audio: Blob) {
     card: cardOf(parsed, customers, products),
     needs: needsOf(parsed),
     choices: choicesOf(parsed, customers, products),
+    answer: null,
   };
 }
 

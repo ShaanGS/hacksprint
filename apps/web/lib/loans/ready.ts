@@ -3,8 +3,8 @@ import { z } from "zod";
 import { audit } from "@/lib/audit";
 import { HttpError } from "@/lib/http";
 import { loadProfile } from "@/lib/loans/profile";
-import { loadFestivalOrder } from "@/lib/rotation/festival";
-import { loadShopData } from "@/lib/rotation/load";
+import { loadFestivalOrder, type FestivalOrder } from "@/lib/rotation/festival";
+import { loadShopData, type ShopData } from "@/lib/rotation/load";
 import { loanNeeded } from "@/lib/rotation/loan";
 import { snapshotOf } from "@/lib/rotation/snapshot";
 import { mudraBand, registrationStep } from "@/lib/schemes/band";
@@ -14,6 +14,17 @@ import type { Shop } from "@/lib/shop";
 // The loan-ready check (D3, spec 9.14 and section 10): does the festival order need a loan once
 // spare money and late payers are counted, how much, and which official scheme covers it. When
 // collecting is enough, it says so plainly.
+
+/** The loan a need calls for once this week's spare money and the late payers are counted. */
+export function loanFigures(data: ShopData, order: FestivalOrder | null, needPaise: number) {
+  const without = snapshotOf(data, new Set(order?.payableId ? [order.payableId] : []));
+  return {
+    gapWithoutOrderPaise: without.week.gapPaise,
+    canCollectPaise: without.week.late.paise,
+    lateCustomers: without.week.late.customers,
+    loanNeededPaise: loanNeeded(needPaise, without.week.gapPaise, without.week.late.paise),
+  };
+}
 
 export async function loanReady(
   db: SupabaseClient,
@@ -27,10 +38,11 @@ export async function loanReady(
     throw new HttpError(409, "There is no approved festival order; say the amount you need.");
   }
   const needPaise = input.amountPaise ?? order?.totalPaise ?? 0;
-  const without = snapshotOf(data, new Set(order?.payableId ? [order.payableId] : []));
-  const gapWithoutOrderPaise = without.week.gapPaise;
-  const canCollectPaise = without.week.late.paise;
-  const loanNeededPaise = loanNeeded(needPaise, gapWithoutOrderPaise, canCollectPaise);
+  const { gapWithoutOrderPaise, canCollectPaise, lateCustomers, loanNeededPaise } = loanFigures(
+    data,
+    order,
+    needPaise,
+  );
   const profile = await loadProfile(db, shop.id);
   const band = loanNeededPaise > 0 ? mudraBand(loanNeededPaise, profile.repaidTarunBefore) : null;
 
@@ -77,7 +89,7 @@ export async function loanReady(
     },
     gap_without_order_paise: gapWithoutOrderPaise,
     can_collect_paise: canCollectPaise,
-    late_customers: without.week.late.customers,
+    late_customers: lateCustomers,
     loan_needed_paise: loanNeededPaise,
     no_loan_needed: loanNeededPaise === 0,
     scheme:
