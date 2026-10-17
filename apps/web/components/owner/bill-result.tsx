@@ -56,7 +56,7 @@ export function BillResult({
             <Art name={toArtName(change.art)} size={44} />
             <span className="min-w-0 flex-1 truncate text-base">{change.name}</span>
             <span className="text-sm font-semibold text-success tabular-nums">
-              {text.stockNow(String(change.added), String(change.nowQty))}
+              {text.stockAdded(String(change.added))}
             </span>
           </li>
         ))}

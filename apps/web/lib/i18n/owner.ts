@@ -81,7 +81,7 @@ export type OwnerText = {
   priceUpTitle: string;
   priceUp: (before: string, now: string, percent: number) => string;
   allCame: string;
-  stockNow: (added: string, now: string) => string;
+  stockAdded: (added: string) => string;
   done: string;
   priceTitle: string;
   priceOnBill: (mrp: string) => string;
@@ -185,7 +185,7 @@ const en: OwnerText = {
   priceUpTitle: "Price went up",
   priceUp: (before, now, percent) => `${before} → ${now}, up ${percent}% since the last bill`,
   allCame: "Everything you ordered came, at the same price.",
-  stockNow: (added, now) => `+${added}, now ${now}`,
+  stockAdded: (added) => `+${added} added`,
   done: "Done",
   priceTitle: "Where this price comes from",
   priceOnBill: (mrp) => `${mrp} is the MRP printed on this bill`,
@@ -297,7 +297,7 @@ const ta: OwnerText = {
   priceUpTitle: "விலை ஏறியது",
   priceUp: (before, now, percent) => `${before} → ${now}, கடந்த பில்லை விட ${percent}% அதிகம்`,
   allCame: "ஆர்டர் செய்த அனைத்தும் அதே விலையில் வந்தது.",
-  stockNow: (added, now) => `+${added}, இப்போது ${now}`,
+  stockAdded: (added) => `+${added} சேர்ந்தது`,
   done: "முடிந்தது",
   priceTitle: "இந்த விலை எங்கிருந்து",
   priceOnBill: (mrp) => `${mrp} — இந்த பில்லில் அச்சிட்ட MRP`,

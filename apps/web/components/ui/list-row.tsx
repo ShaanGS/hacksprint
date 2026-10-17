@@ -37,8 +37,8 @@ export function ListRow({
       {art}
       <span className="min-w-0 flex-1 text-left">
         {tag && <span className="mb-1 block">{tag}</span>}
-        <span className="block truncate text-lg font-medium">{title}</span>
-        {meta && <span className="block truncate text-base text-ink-muted">{meta}</span>}
+        <span className="line-clamp-2 text-lg font-medium">{title}</span>
+        {meta && <span className="line-clamp-2 text-base text-ink-muted">{meta}</span>}
         {note && <span className="block text-sm text-ink-muted">{note}</span>}
       </span>
       {trailing && <span className="shrink-0 self-start pt-1 text-right">{trailing}</span>}

@@ -1,15 +1,15 @@
 "use client";
 
-import { ExternalLink, FileText } from "lucide-react";
+import { Check, ExternalLink, FileText } from "lucide-react";
 import { useState, type ReactNode } from "react";
 import { useOwnerLanguage } from "@/components/owner/owner-language";
 import { useOwnerScreen } from "@/components/owner/owner-screen";
 import { useDates } from "@/components/owner/use-dates";
 import { Amount } from "@/components/ui/amount";
 import { Button, LinkButton } from "@/components/ui/button";
-import { Chip } from "@/components/ui/chip";
 import { FeatureCard } from "@/components/ui/feature-card";
 import { Sheet } from "@/components/ui/sheet";
+import { cn } from "@/lib/cn";
 import { formatMoney } from "@/lib/money";
 import { ownerApi, type Link, type LoanPurpose, type LoanReady } from "@/lib/owner/api";
 import { schemeWords } from "@/lib/schemes/catalog";
@@ -44,14 +44,21 @@ export function LoanCheck({ onCollect }: { onCollect: () => void }) {
       <FeatureCard banner="approve" title={text.loanTitle} text={text.loanText} className="mt-4">
         <div className="mt-4 flex flex-wrap gap-2">
           {(["stock_rotation", "equipment"] as const).map((key) => (
-            <Chip
+            <button
               key={key}
-              on={purpose === key}
+              type="button"
+              aria-pressed={purpose === key}
               onClick={() => setPurpose(key)}
-              className={purpose === key ? "bg-surface text-ink" : "bg-ink/30 text-accent-ink"}
+              className={cn(
+                "flex min-h-11 items-center gap-1.5 rounded-full px-4 text-sm font-semibold",
+                purpose === key
+                  ? "bg-surface text-ink"
+                  : "border border-accent-ink/40 text-accent-ink",
+              )}
             >
+              {purpose === key && <Check aria-hidden className="size-4" strokeWidth={3} />}
               {text.purposes[key]}
-            </Chip>
+            </button>
           ))}
         </div>
         <button

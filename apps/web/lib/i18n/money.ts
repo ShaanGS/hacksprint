@@ -430,7 +430,7 @@ const ta: MoneyText = {
     usual_week_sales: "வழக்கமான வார விற்பனை",
     from_customers: "தர வேண்டிய வாடிக்கையாளர்கள்",
     late: "தாமதமாகத் தருபவர்கள்",
-    with_customers: "வாடிக்கையாளர்களிடம்",
+    with_customers: "வாடிக்கையாளர் கடன்",
     on_shelf: "அலமாரியில் சரக்கு",
   },
   costUnknown: (count) => `${count} பொருளுக்கு இன்னும் பில் விலை இல்லை`,

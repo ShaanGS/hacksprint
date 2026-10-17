@@ -36,7 +36,8 @@ export function StockTab({ onBank }: { onBank: () => void }) {
     return stock.failed ? <Failed art="crate" onRetry={stock.reload} /> : <Loading art="crate" />;
   }
   const { products, festival_order: order } = stock.data;
-  const left = (row: ShelfRow) => text.about(text.left(row.estimate_qty, row.unit as ProductUnit));
+  const left = (row: ShelfRow) =>
+    text.about(text.left(Math.round(row.estimate_qty), row.unit as ProductUnit));
   const lasts = (row: ShelfRow) =>
     row.days_left === "not_moving"
       ? text.notMoving

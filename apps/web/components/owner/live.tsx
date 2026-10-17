@@ -11,7 +11,7 @@ import {
 } from "react";
 import { SignedOutError } from "@/lib/owner/fetch";
 import type { ChangedArea } from "@/lib/realtime";
-import { createBrowserClient } from "@/lib/supabase/browser";
+import { browserClient } from "@/lib/supabase/browser";
 
 // Open screens fetch again when the shop's numbers change (spec section 13): the server says
 // which area changed on shop:{id}, and a timer covers a venue Wi-Fi that drops the socket.
@@ -50,7 +50,7 @@ export function LiveUpdates({
         if (!area || listener.areas.includes(area)) listener.refetch();
       }
     };
-    const client = createBrowserClient();
+    const client = browserClient();
     const channel = client
       ?.channel(`shop:${shopId}`)
       .on("broadcast", { event: "changed" }, ({ payload }) => refetch(payload?.area))
