@@ -4,7 +4,7 @@
 
 <div align="center">
 
-# AI manager for a kirana shop
+# Personal Assistant - Kirana Store 
 
 **Customers order by voice in their own language. The owner approves with one tap.<br>Payment arrives as a Paytm link or goes on the customer's account.**
 
