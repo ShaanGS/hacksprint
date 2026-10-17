@@ -82,6 +82,7 @@ export function previewBills(products: Product[]) {
       printedDistributor: "SRI BALAJI AGENCIES",
       billNumber: "SB-2073",
       printedTotalPaise: 500000,
+      dueDate: null,
       lines: printed.map(([printedName, code, qty, cost, mrp]) => ({
         printedName,
         productId: code,
@@ -144,7 +145,7 @@ export function previewBills(products: Product[]) {
       0,
     );
     today = { lines, totalPaise };
-    return { totalPaise, stock, issues };
+    return { totalPaise, dueDate: null, stock, issues };
   }
 
   /** What the shop owes, with today's bill once it is in. */

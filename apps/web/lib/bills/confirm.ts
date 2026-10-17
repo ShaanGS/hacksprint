@@ -6,6 +6,7 @@ import { loadCatalog } from "@/lib/catalog";
 import { loadDistributors } from "@/lib/distributors";
 import { HttpError } from "@/lib/http";
 import { lineTotalPaise } from "@/lib/orders/totals";
+import { broadcastChanged } from "@/lib/realtime";
 import type { Shop } from "@/lib/shop";
 
 // The owner's yes to a bill (spec B1, B4, C1). confirm_bill does everything in one transaction:
@@ -63,7 +64,7 @@ export async function confirmBill(
   db: SupabaseClient,
   shop: Shop,
   billId: string,
-  input: { distributorId: string; lines: ConfirmLine[] },
+  input: { distributorId: string; dueDate: string | null; lines: ConfirmLine[] },
 ): Promise<BillOutcome> {
   const [products, distributors] = await Promise.all([
     loadCatalog(db, shop.id),
@@ -79,6 +80,7 @@ export async function confirmBill(
   const { data, error } = await db.rpc("confirm_bill", {
     p_bill_id: billId,
     p_distributor_id: input.distributorId,
+    p_due_date: input.dueDate,
     p_lines: input.lines.map((line) => ({
       product_id: line.productId,
       qty: line.qty,
@@ -92,6 +94,10 @@ export async function confirmBill(
   }
   if (error) throw new Error(`Could not confirm the bill: ${error.message}`);
   const issues = z.array(issueRow).parse(data).map(toIssue);
+  const payable = await db.from("payables").select("due_date").eq("bill_id", billId).maybeSingle();
+  if (payable.error)
+    throw new Error(`Could not read the bill's due date: ${payable.error.message}`);
+  await broadcastChanged(db, shop.id, ["stock", "rotation"]);
 
   // Stock as it is now, after the bill, for the "stock updated" list.
   const after = await loadCatalog(db, shop.id);
@@ -110,5 +116,7 @@ export async function confirmBill(
     (total, line) => total + lineTotalPaise({ qty: line.qty, unitPricePaise: line.unitCostPaise }),
     0,
   );
-  return { totalPaise, stock, issues };
+  const dueDate =
+    z.object({ due_date: z.string() }).nullable().parse(payable.data)?.due_date ?? null;
+  return { totalPaise, dueDate, stock, issues };
 }

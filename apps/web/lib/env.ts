@@ -22,6 +22,8 @@ const appSchema = z.object({
   OWNER_PIN: text().regex(/^\d{4}$/, "must be 4 digits"),
   // Signs the owner and customer session cookies.
   SESSION_SECRET: text().min(32, "must be at least 32 characters (openssl rand -hex 32)"),
+  // Scripts and n8n call the API with it (spec section 13); the browser never holds it.
+  SHOP_TOKEN: text().min(32, "must be at least 32 characters (openssl rand -hex 32)"),
 });
 
 const supabaseSchema = z.object({
@@ -81,6 +83,16 @@ const serviceKeys = [
   "GEMINI_API_KEY",
   "SARVAM_API_KEY",
 ];
+
+/** The stage fallbacks (mark-paid, demo reset) and the "demo data" label are on. */
+export function demoMode(): boolean {
+  return process.env.DEMO_MODE === "true";
+}
+
+/** In the demo, the late payer's reminder goes to a teammate's real WhatsApp number. */
+export function demoPayerPhone(): string | null {
+  return process.env.DEMO_PAYER_PHONE || null;
+}
 
 export function isPreview(): boolean {
   return serviceKeys.every((key) => !process.env[key]);

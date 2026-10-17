@@ -5,6 +5,7 @@ const startupEnv = {
   APP_URL: "http://localhost:3000",
   OWNER_PIN: "4321",
   SESSION_SECRET: "test-session-secret-at-least-32-characters",
+  SHOP_TOKEN: "test-shop-token-at-least-32-characters-long",
   NEXT_PUBLIC_SUPABASE_URL: "https://abcdefgh.supabase.co",
   NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY: "sb_publishable_test",
   SUPABASE_SECRET_KEY: "sb_secret_test",

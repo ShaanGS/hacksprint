@@ -1,10 +1,15 @@
 import { z } from "zod";
 import { confirmBill } from "@/lib/bills/confirm";
 import { handle, HttpError, readJson } from "@/lib/http";
-import { requireOwner } from "@/lib/owner/context";
+import { requireShop } from "@/lib/auth/shop";
 
 const body = z.object({
   distributor_id: z.uuid(),
+  due_date: z
+    .string()
+    .regex(/^\d{4}-\d{2}-\d{2}$/)
+    .nullable()
+    .optional(),
   lines: z
     .array(
       z.object({
@@ -24,9 +29,10 @@ export function POST(request: Request, context: { params: Promise<{ id: string }
     const id = (await context.params).id;
     if (!z.uuid().safeParse(id).success) throw new HttpError(404, "No such bill.");
     const input = await readJson(request, body);
-    const { db, shop } = await requireOwner();
+    const { db, shop } = await requireShop(request);
     const outcome = await confirmBill(db, shop, id, {
       distributorId: input.distributor_id,
+      dueDate: input.due_date ?? null,
       lines: input.lines.map((line) => ({
         productId: line.product_id,
         qty: line.qty,

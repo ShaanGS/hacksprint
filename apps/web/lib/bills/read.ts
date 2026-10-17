@@ -17,6 +17,14 @@ export const billReading = z.object({
   distributor: z.string(),
   billNumber: z.string().nullable(),
   totalRupees: rupees,
+  /** A printed due date, as YYYY-MM-DD, when the bill shows one. */
+  dueDate: z
+    .string()
+    .regex(/^\d{4}-\d{2}-\d{2}$/)
+    .nullable()
+    .catch(null),
+  /** "Payment within 3 days": the days of credit the bill prints. */
+  creditDays: z.number().int().positive().max(120).nullable().catch(null),
   lines: z
     .array(
       z.object({
@@ -43,6 +51,11 @@ const responseSchema = {
     distributor: { type: "string", description: "The seller's name printed at the top" },
     billNumber: { ...nullableString, description: "The bill or invoice number" },
     totalRupees: { ...nullableNumber, description: "The bill total as printed" },
+    dueDate: { ...nullableString, description: "A due date printed on the bill, as YYYY-MM-DD" },
+    creditDays: {
+      ...nullableNumber,
+      description: 'Days of credit printed, as in "Payment within 3 days"',
+    },
     lines: {
       type: "array",
       items: {
@@ -59,7 +72,7 @@ const responseSchema = {
       },
     },
   },
-  required: ["distributor", "billNumber", "totalRupees", "lines"],
+  required: ["distributor", "billNumber", "totalRupees", "dueDate", "creditDays", "lines"],
 };
 
 function instructions(products: Product[]): string {

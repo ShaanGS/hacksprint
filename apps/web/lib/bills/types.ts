@@ -24,6 +24,8 @@ export type ScannedBill = {
   printedDistributor: string;
   billNumber: string | null;
   printedTotalPaise: number | null;
+  /** When the bill says it is due, or null for the distributor's usual terms. */
+  dueDate: string | null;
   lines: ScannedLine[];
   distributors: Distributor[];
   /** The day this paper bill was already added, if it was. */
@@ -58,4 +60,9 @@ export type StockChange = {
   nowQty: number;
 };
 
-export type BillOutcome = { totalPaise: number; stock: StockChange[]; issues: BillIssue[] };
+export type BillOutcome = {
+  totalPaise: number;
+  dueDate: string | null;
+  stock: StockChange[];
+  issues: BillIssue[];
+};

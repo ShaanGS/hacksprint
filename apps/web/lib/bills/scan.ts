@@ -9,6 +9,7 @@ import { loadCatalog } from "@/lib/catalog";
 import { loadDistributors } from "@/lib/distributors";
 import { HttpError } from "@/lib/http";
 import type { Shop } from "@/lib/shop";
+import { addDays, shopDate } from "@/lib/time";
 
 // A photo of today's bill becomes a parsed bill waiting for the owner (spec B1). The photo is kept
 // in the private bills bucket, so any price it sets can show where it came from (rule 6).
@@ -82,6 +83,9 @@ export async function scanBill(db: SupabaseClient, shop: Shop, photo: Blob): Pro
     printedDistributor: reading.distributor,
     billNumber: reading.billNumber,
     printedTotalPaise: toPaise(reading.totalRupees),
+    dueDate:
+      reading.dueDate ??
+      (reading.creditDays === null ? null : addDays(shopDate(new Date()), reading.creditDays)),
     lines,
     distributors,
     alreadyAddedOn: await addedBefore(db, distributorId, reading.billNumber),
