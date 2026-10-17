@@ -35,9 +35,14 @@ export function canTransition(from: OrderStatus, to: OrderStatus): boolean {
 }
 
 export class TransitionError extends Error {
+  readonly from: OrderStatus;
+  readonly to: OrderStatus;
+
   constructor(from: OrderStatus, to: OrderStatus) {
     super(`An order cannot go from ${from} to ${to}`);
     this.name = "TransitionError";
+    this.from = from;
+    this.to = to;
   }
 }
 
