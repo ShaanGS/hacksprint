@@ -1,4 +1,5 @@
 @import "tailwindcss";
+@import "./frame.css";
 
 /* Values come from design/tokens.ts, the source of truth; tests/unit/tokens.test.ts keeps
    them in step. Only these colours exist, so a stray `bg-blue-500` produces nothing. */
@@ -74,79 +75,12 @@ body {
   }
 }
 
-/* On a phone the app fills the screen. On a laptop or projector it sits in a 390 x 844
-   phone frame, so the demo looks like the phone a judge is holding. */
-.frame {
-  height: 100dvh;
-  display: flex;
-  justify-content: center;
-}
-
-.screen {
-  position: relative;
-  width: 100%;
-  max-width: 430px;
-  height: 100%;
-  overflow: hidden;
-  background: var(--color-canvas);
-  isolation: isolate;
-}
-
-@media (min-width: 640px) and (min-height: 640px) {
-  .frame {
-    align-items: center;
-  }
-
-  .screen {
-    width: 390px;
-    height: min(844px, calc(100dvh - 40px));
-    border-radius: 46px;
-    box-shadow:
-      0 0 0 10px #111111,
-      0 0 0 11px #2c2c31,
-      0 40px 80px rgb(0 0 0 / 0.25);
-  }
-}
-
 /* The front page's hand and phone fade into the page at the wrist. */
 @utility fade-bottom {
   mask-image: linear-gradient(to bottom, black 72%, transparent 100%);
 }
 
-/* Bottom bars clear the phone's home indicator. */
+/* Bottom bars clear the phone's home indicator, or the drawn one in the laptop frame. */
 @utility pb-safe {
-  padding-bottom: max(env(safe-area-inset-bottom), 1rem);
-}
-
-.scroll {
-  height: 100%;
-  overflow-y: auto;
-  overscroll-behavior: contain;
-  scrollbar-width: none;
-}
-
-.scroll::-webkit-scrollbar {
-  display: none;
-}
-
-/* Printed (the QR for the counter), a page is a plain sheet without the phone frame. */
-@media print {
-  .frame {
-    display: block;
-    height: auto;
-  }
-
-  .screen {
-    width: auto;
-    max-width: none;
-    height: auto;
-    overflow: visible;
-    border-radius: 0;
-    box-shadow: none;
-  }
-
-  .scroll {
-    height: auto;
-    overflow: visible;
-  }
+  padding-bottom: max(env(safe-area-inset-bottom), var(--frame-safe-bottom, 1rem));
 }

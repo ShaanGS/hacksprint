@@ -15,8 +15,8 @@ const icons: Record<OwnerTab, LucideIcon> = {
 };
 
 /**
- * The owner app's places on a floating white bar, so the content scrolls under it. The lime mic
- * sits raised in the middle, so it can be held from any tab.
+ * The owner app's places on a floating white bar; the content scrolls under it and fades out
+ * below it. The lime mic sits raised in the middle, so it can be held from any tab.
  */
 export function TabBar({
   tab,
@@ -55,8 +55,8 @@ export function TabBar({
     );
   };
   return (
-    <nav className="pb-safe absolute inset-x-0 bottom-0 z-30 px-3">
-      <div className="grid grid-cols-5 items-center rounded-3xl bg-surface px-1 py-1.5 shadow-float">
+    <nav className="pb-safe pointer-events-none absolute inset-x-0 bottom-0 z-30 bg-linear-to-t from-canvas from-50% to-canvas/0 px-3 pt-8">
+      <div className="pointer-events-auto grid grid-cols-5 items-center rounded-3xl bg-surface px-1 py-1.5 shadow-float">
         {button("home")}
         {button("collect")}
         <div className="flex -translate-y-6 justify-center">

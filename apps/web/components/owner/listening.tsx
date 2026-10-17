@@ -26,6 +26,7 @@ export function Listening({ state }: { state: ListeningState | null }) {
           exit={{ y: 24, opacity: 0 }}
           transition={snappy}
           aria-live="polite"
+          data-dark-screen
           className="pointer-events-none absolute inset-0 z-50 flex flex-col items-center bg-night px-6 pt-14 text-center text-night-ink"
         >
           <span className="inline-flex min-h-11 items-center gap-2 rounded-full bg-indigo px-5 text-sm font-semibold">

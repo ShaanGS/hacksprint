@@ -44,3 +44,11 @@ export function lastFullMonths(today: string, count: number): string[] {
     return back.toISOString().slice(0, 7);
   });
 }
+
+/** The time as a phone's status bar shows it, in India: "9:41", 12 hour, no AM or PM. */
+export function phoneClock(now = new Date()): string {
+  const india = new Date(now.getTime() + IST_OFFSET_MS);
+  const hours = india.getUTCHours() % 12 || 12;
+  const minutes = String(india.getUTCMinutes()).padStart(2, "0");
+  return `${hours}:${minutes}`;
+}

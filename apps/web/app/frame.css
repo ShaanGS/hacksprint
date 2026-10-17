@@ -1,0 +1,186 @@
+/* The phone frame (components/app/app-frame.tsx). On a phone the app fills the screen. On a
+   laptop or projector it sits inside a drawn iPhone at real proportions: a 393 x 852 screen,
+   the size of an iPhone 15 Pro, behind a thin black bezel and a titanium band. */
+
+.frame {
+  height: 100dvh;
+  display: flex;
+  justify-content: center;
+}
+
+.device {
+  position: relative;
+  width: 100%;
+  max-width: 430px;
+  height: 100%;
+}
+
+.screen {
+  position: relative;
+  height: 100%;
+  overflow: hidden;
+  background: var(--color-canvas);
+  isolation: isolate;
+}
+
+.scroll {
+  height: 100%;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  scrollbar-width: none;
+}
+
+.scroll::-webkit-scrollbar {
+  display: none;
+}
+
+/* The drawn phone's own parts. A real phone has its own, so they only show in the frame. */
+.status-bar,
+.island,
+.home-bar,
+.side-button {
+  display: none;
+}
+
+@media screen and (min-width: 640px) and (min-height: 640px) {
+  .frame {
+    align-items: center;
+    overflow: hidden;
+  }
+
+  /* 393 x 852 plus 13px a side: a 9px bezel inside a 4px band. */
+  .device {
+    flex: none;
+    width: 419px;
+    max-width: none;
+    height: 878px;
+    padding: 4px;
+    border-radius: 68px;
+    background: linear-gradient(135deg, #e4e2dd, #a7a49d 22%, #dcdad4 48%, #8f8c86 76%, #cfcdc7);
+    box-shadow:
+      inset 0 0 0 1px rgb(255 255 255 / 0.35),
+      0 2px 6px rgb(0 0 0 / 0.12),
+      0 40px 80px -24px rgb(0 0 0 / 0.35);
+    /* A short window shrinks the whole phone instead of cutting it shorter. CSS cannot divide
+       one length by another yet; tan(atan2(a, b)) is a / b as a plain number. The first line
+       is for browsers without it. */
+    scale: 0.85;
+    scale: min(1, tan(atan2(100dvh - 48px, 878px)));
+  }
+
+  .screen {
+    --frame-safe-bottom: 1.75rem;
+    border: 9px solid #000;
+    border-radius: 64px;
+    padding-top: 54px;
+  }
+
+  /* A layer that darkens the whole screen (listening) darkens the status bar behind it too. */
+  .screen:has([data-dark-screen]) {
+    background: var(--color-night);
+  }
+
+  /* White under a difference blend reads black on a light screen and white on a dark one, as
+     on an iPhone. The time sits centred left of the island, the icons right of it. */
+  .status-bar {
+    position: absolute;
+    inset: 0 0 auto;
+    z-index: 100;
+    display: grid;
+    grid-template-columns: 1fr 126px 1fr;
+    align-items: center;
+    justify-items: center;
+    height: 54px;
+    padding-top: 5px;
+    color: #fff;
+    font-size: 17px;
+    font-weight: 600;
+    mix-blend-mode: difference;
+    pointer-events: none;
+  }
+
+  .island {
+    display: block;
+    position: absolute;
+    top: 11px;
+    left: 50%;
+    z-index: 101;
+    width: 126px;
+    height: 37px;
+    translate: -50% 0;
+    border-radius: 9999px;
+    background: #000;
+    pointer-events: none;
+  }
+
+  .home-bar {
+    display: block;
+    position: absolute;
+    bottom: 8px;
+    left: 50%;
+    z-index: 100;
+    width: 134px;
+    height: 5px;
+    translate: -50% 0;
+    border-radius: 9999px;
+    background: #fff;
+    mix-blend-mode: difference;
+    pointer-events: none;
+  }
+
+  .side-button {
+    display: block;
+    position: absolute;
+    left: -3px;
+    width: 3px;
+    border-radius: 2px 0 0 2px;
+    background: linear-gradient(90deg, #8f8c86, #d6d4ce);
+  }
+
+  .side-button[data-button="action"] {
+    top: 130px;
+    height: 32px;
+  }
+
+  .side-button[data-button="volume-up"] {
+    top: 190px;
+    height: 60px;
+  }
+
+  .side-button[data-button="volume-down"] {
+    top: 264px;
+    height: 60px;
+  }
+
+  .side-button[data-button="power"] {
+    top: 218px;
+    right: -3px;
+    left: auto;
+    height: 96px;
+    border-radius: 0 2px 2px 0;
+    background: linear-gradient(90deg, #d6d4ce, #8f8c86);
+  }
+}
+
+/* Printed (the QR for the counter), a page is a plain sheet without the phone frame. */
+@media print {
+  .frame {
+    display: block;
+    height: auto;
+  }
+
+  .device {
+    max-width: none;
+    height: auto;
+  }
+
+  .screen {
+    height: auto;
+    overflow: visible;
+  }
+
+  .scroll {
+    height: auto;
+    overflow: visible;
+  }
+}

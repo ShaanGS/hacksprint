@@ -10,7 +10,7 @@ Build from the primitives in `apps/web/components/ui/` and check them at `/style
 - Every screen opens with its big number, bold on white with a status chip above it, then one primary action. Never a page of same-weight rows.
 - One job per screen and one primary button: a full-width pill, black for the screen's own action, lime for anything an agent does. Its label names the choice ("Send to Murugan Traders"). A violet card carries the one thing worth doing next.
 - The header: the owner's initial in a black circle, the shop's name with a small date above it, the round language button; the page headline under it with the demo badge.
-- Mobile first at 390px. Tap targets at least 44px. Bottom bars respect the safe area. On a laptop or projector the app sits in a phone frame (`AppFrame`).
+- Mobile first at 390px. Tap targets at least 44px. Bottom bars respect the safe area. On a laptop or projector the app sits in a drawn iPhone at real proportions (`AppFrame`, `app/frame.css`), scaled down whole to fit the window, never squashed.
 - Messages (saved, paid, offline) rise as toasts just above the tab bar. Nothing ever covers a title.
 
 ## The night layer
