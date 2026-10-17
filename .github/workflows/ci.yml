@@ -1,8 +1,14 @@
-# Lint, typecheck and unit tests on every push. Needs no secrets: typecheck skips the
-# env check, and unit tests set their own env. Smoke and e2e tests need real keys, so they run locally.
+# Lint, typecheck and unit tests on every push and pull request. Needs no secrets: typecheck
+# skips the env check, and unit tests set their own env. Smoke and e2e tests need real keys, so
+# they run locally.
 name: CI
 
-on: push
+on:
+  push:
+  pull_request:
+
+permissions:
+  contents: read
 
 jobs:
   check:

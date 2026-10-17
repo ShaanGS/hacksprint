@@ -3,14 +3,22 @@ import { cn } from "@/lib/cn";
 
 // Tailwind only generates classes it can read in the source, so each swatch names its class.
 const swatches = [
+  { name: "canvas", className: "bg-canvas", value: colors.canvas },
   { name: "surface", className: "bg-surface", value: colors.surface },
   { name: "surface-muted", className: "bg-surface-muted", value: colors.surfaceMuted },
-  { name: "surface-pressed", className: "bg-surface-pressed", value: colors.surfacePressed },
   { name: "ink", className: "bg-ink", value: colors.ink },
   { name: "ink-muted", className: "bg-ink-muted", value: colors.inkMuted },
+  { name: "accent", className: "bg-accent", value: colors.accent },
+  { name: "accent-soft", className: "bg-accent-soft", value: colors.accentSoft },
+  { name: "yellow", className: "bg-yellow", value: colors.yellow },
+  { name: "night", className: "bg-night", value: colors.night },
+  { name: "night-raised", className: "bg-night-raised", value: colors.nightRaised },
+  { name: "indigo", className: "bg-indigo", value: colors.indigo },
   { name: "success", className: "bg-success", value: colors.success },
+  { name: "warning", className: "bg-warning", value: colors.warning },
   { name: "danger", className: "bg-danger", value: colors.danger },
-  { name: "border", className: "bg-border", value: colors.border },
+  { name: "tint-sand", className: "bg-tint-sand", value: colors.tintSand },
+  { name: "tint-mint", className: "bg-tint-mint", value: colors.tintMint },
 ];
 
 export function Colours() {
@@ -19,10 +27,10 @@ export function Colours() {
       {swatches.map((swatch) => (
         <div key={swatch.name} className="flex items-center gap-3">
           <span
-            className={cn("size-10 shrink-0 rounded-xl border border-border", swatch.className)}
+            className={cn("size-10 shrink-0 rounded-full border border-border", swatch.className)}
           />
           <span className="min-w-0">
-            <span className="block text-sm font-medium">{swatch.name}</span>
+            <span className="block text-sm font-semibold">{swatch.name}</span>
             <span className="block truncate text-xs text-ink-muted">{swatch.value}</span>
           </span>
         </div>
@@ -34,26 +42,20 @@ export function Colours() {
 export function Type() {
   return (
     <div className="space-y-2">
-      <p className="text-display font-bold tabular-nums">₹3,240</p>
-      <p className="text-title font-bold">Today at the shop</p>
-      <p className="text-2xl font-bold">14 orders</p>
-      <p className="text-xl font-bold">Choose a substitute</p>
-      <p className="text-lg font-medium">Maggi Masala Noodles</p>
-      <p className="text-base text-ink-muted">2 packs · ₹14 each</p>
-      <p className="text-sm text-ink-muted">Jaggery is in stock</p>
-      <p className="text-xs text-ink-muted">Updated 6:40 PM</p>
+      <p className="text-hero font-extrabold tracking-tight tabular-nums">₹36,500</p>
+      <p className="text-title font-bold tracking-tight">Can you pay this week?</p>
+      <p className="text-xl font-bold">Where your money is</p>
+      <p className="text-base font-semibold">Arjun Reddy</p>
+      <p className="text-sm text-ink-muted">Usually pays in 12 days · 9 days late</p>
       <div className="mt-4 space-y-1 border-t border-border pt-4">
-        <p lang="ta" className="text-lg">
-          சர்க்கரை தீர்ந்துவிட்டது. வெல்லம் வேண்டுமா?
+        <p lang="ta" className="text-title font-bold">
+          இந்த வாரம் பணம் குறைவு
         </p>
-        <p lang="hi" className="text-lg">
-          चीनी खत्म हो गई है। गुड़ चाहिए?
-        </p>
-        <p lang="kn" className="text-lg">
-          ಸಕ್ಕರೆ ಮುಗಿದಿದೆ. ಬೆಲ್ಲ ಬೇಕೆ?
+        <p lang="ta" className="text-base font-semibold">
+          தாமதமான 3 பேரிடம் வசூலித்தால்: +₹9,600
         </p>
         <p className="text-sm text-ink-muted">
-          Every spoken line also shows as text, in the customer&apos;s language.
+          Tamil headlines take two lines at most; nothing is cut mid-word.
         </p>
       </div>
     </div>

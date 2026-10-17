@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { signPaytm, verifyPaytm } from "@/lib/paytm/checksum";
-import { buildCreateLinkBody } from "@/lib/paytm/client";
+import { linkIdOf } from "@/app/api/webhooks/paytm/route";
+import { buildCreateLinkBody, successfulPayment } from "@/lib/paytm/client";
 
 // No known-answer test vector exists for Paytm's checksum. As of 2026-10-05:
 // - Paytm's docs (paytmpayments.com/docs/checksum and /checksum-implementation) show only
@@ -71,5 +72,43 @@ describe("create link request body", () => {
     });
 
     expect(body).toMatchObject({ statusCallbackUrl: "https://example.com/api/webhooks/paytm" });
+  });
+});
+
+describe("which link a callback paid", () => {
+  it("reads the link id Paytm's link webhook puts in MERC_UNQ_REF", () => {
+    expect(linkIdOf({ MERC_UNQ_REF: "LI_8812345", STATUS: "TXN_SUCCESS" })).toBe("8812345");
+    expect(linkIdOf({ MERC_UNQ_REF: "8812345" })).toBe("8812345");
+  });
+
+  it("prefers a linkId field in either spelling", () => {
+    expect(linkIdOf({ linkId: "42", MERC_UNQ_REF: "LI_7" })).toBe("42");
+    expect(linkIdOf({ LINKID: "43" })).toBe("43");
+  });
+
+  it("finds no link when neither is there", () => {
+    expect(linkIdOf({ ORDERID: "ORD1", STATUS: "TXN_SUCCESS" })).toBeUndefined();
+  });
+});
+
+describe("a link counts as paid", () => {
+  const paid = { txnId: "T1", status: "SUCCESS", amountPaise: 420000 };
+
+  it("on a success for exactly the link's amount", () => {
+    expect(successfulPayment([paid], 420000)).toEqual(paid);
+    expect(successfulPayment([{ ...paid, status: "TXN_SUCCESS" }], 420000)?.txnId).toBe("T1");
+  });
+
+  it("not on a failed or pending payment", () => {
+    expect(successfulPayment([{ ...paid, status: "FAILURE" }], 420000)).toBeNull();
+    expect(successfulPayment([{ ...paid, status: "PENDING" }], 420000)).toBeNull();
+  });
+
+  it("not on a different amount", () => {
+    expect(successfulPayment([{ ...paid, amountPaise: 400000 }], 420000)).toBeNull();
+  });
+
+  it("not when nothing was paid", () => {
+    expect(successfulPayment([], 420000)).toBeNull();
   });
 });

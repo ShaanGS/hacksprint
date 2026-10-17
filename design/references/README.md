@@ -1,12 +1,8 @@
 # Design references
 
-The look comes from the team's own mazhai app. Each reference is a mazhai screen whose layout matches one of our screens. Copy the visual language (spacing, density, radius, type weight, how art and amounts sit in a row), never the wording or the flow. Our screens and words come from `docs/spec.md` section 9 and `design/DESIGN.md`.
+The owner chose these two on Oct 17. Copy the visual language (spacing, radius, type weight, how cards, art and amounts sit), never the wording or the flow. The colours now come from the team's banner (`docs/banner.png`): a white page, black ink and the banner's yellow. Our screens and words come from `docs/spec.md` and `design/DESIGN.md`.
 
-| Our screen          | File                    | mazhai screen it borrows from                        |
-| ------------------- | ----------------------- | ---------------------------------------------------- |
-| Overall look        | `00-style.png`          | Home: tiles, banner card, rows, tab bar              |
-| Customer voice page | `01-voice-order.png`    | Choose a trip: sheet, chips, rows, black button      |
-| Owner order card    | `02-order-card.png`     | Your trip: summary, list, total, one button          |
-| Bill scan           | `03-bill-scan.png`      | Pay: line items with amounts, total, confirm         |
-| Credit book         | `04-credit-book.png`    | Share a ride: rows with art, names and amounts       |
-| Nightly report      | `05-nightly-report.png` | Home in one tap: progress list, summary card, button |
+| File                  | What it gives us                                                                                                                                                                                                                                                                                          |
+| --------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `10-teal-grocery.jpg` | The everyday shapes: white rounded cards, round icon buttons in the header, product photos on soft tiles, the pastel promo card with a cutout and a pill button, the two-column product cards. Home, Collect, Stock, Bank and the PIN screen. Its mint and teal gave way to the banner's white and black. |
+| `11-indigo-voice.jpg` | The night layer: the dark page, indigo pills and the violet card, the greeting headline over tiled cards, and the "I'm listening" screen with the orb and the big mic. Voice, its answers and the three agents. Its lime became the banner's yellow.                                                      |

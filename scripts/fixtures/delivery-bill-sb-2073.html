@@ -1,0 +1,146 @@
+<!doctype html>
+<!-- Act 1's delivery bill (spec section 11). Rendered to the .jpg next to it by render-bill.ts. -->
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <style>
+      body {
+        margin: 0;
+        width: 1050px;
+        height: 1005px;
+        background: #5f5246;
+        display: grid;
+        place-items: center;
+        font-family: Arial, Helvetica, sans-serif;
+        color: #111;
+      }
+      .bill {
+        width: 880px;
+        padding: 40px 50px 50px;
+        background: #f8f7f2;
+        transform: rotate(1.2deg);
+        box-shadow: 0 4px 18px rgb(0 0 0 / 0.35);
+      }
+      h1 {
+        margin: 0;
+        text-align: center;
+        font-size: 40px;
+      }
+      .sub {
+        text-align: center;
+        font-size: 17px;
+        line-height: 1.6;
+      }
+      hr {
+        border: 0;
+        border-top: 2px solid #222;
+        margin: 14px 0;
+      }
+      h2 {
+        text-align: center;
+        font-size: 24px;
+        margin: 10px 0 16px;
+      }
+      .meta {
+        display: flex;
+        justify-content: space-between;
+        font-size: 19px;
+      }
+      table {
+        width: 100%;
+        margin-top: 22px;
+        border-collapse: collapse;
+        font-size: 20px;
+      }
+      th {
+        background: #e7e3d8;
+        text-align: left;
+        padding: 10px 8px;
+      }
+      td {
+        padding: 13px 8px;
+      }
+      .num {
+        text-align: right;
+        font-family: "Courier New", monospace;
+      }
+      .total {
+        text-align: right;
+        font-size: 22px;
+        font-weight: bold;
+        margin-top: 26px;
+      }
+      .terms {
+        margin-top: 34px;
+        font-size: 17px;
+      }
+      .sign {
+        text-align: right;
+        margin-top: 50px;
+        font-size: 17px;
+        line-height: 2.6;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="bill">
+      <h1>SRI BALAJI AGENCIES</h1>
+      <p class="sub">
+        Wholesale Grocery Distributors · 12, Ranganathan Street, T. Nagar, Chennai 600017<br />
+        Phone 044 2434 0000 · GSTIN 33AAAAA0000A1Z5
+      </p>
+      <hr />
+      <h2>TAX INVOICE</h2>
+      <div class="meta">
+        <span><b>Bill No: SB-2073</b><br />To: Lakshmi Stores, Chennai</span>
+        <span>Against order of today</span>
+      </div>
+      <table>
+        <tr>
+          <th>No</th>
+          <th>Item</th>
+          <th class="num">Qty</th>
+          <th class="num">Rate</th>
+          <th class="num">MRP</th>
+          <th class="num">Amount</th>
+        </tr>
+        <tr>
+          <td>1</td>
+          <td>Aashirvaad Shudh Chakki Atta 5 kg</td>
+          <td class="num">10</td>
+          <td class="num">274.00</td>
+          <td class="num">295.00</td>
+          <td class="num">2,740.00</td>
+        </tr>
+        <tr>
+          <td>2</td>
+          <td>Sugar (per kg)</td>
+          <td class="num">10</td>
+          <td class="num">40.00</td>
+          <td class="num">46.00</td>
+          <td class="num">400.00</td>
+        </tr>
+        <tr>
+          <td>3</td>
+          <td>Toor Dal (per kg)</td>
+          <td class="num">10</td>
+          <td class="num">138.00</td>
+          <td class="num">160.00</td>
+          <td class="num">1,380.00</td>
+        </tr>
+        <tr>
+          <td>4</td>
+          <td>Tata Salt 1 kg</td>
+          <td class="num">20</td>
+          <td class="num">24.00</td>
+          <td class="num">28.00</td>
+          <td class="num">480.00</td>
+        </tr>
+      </table>
+      <hr />
+      <p class="total">TOTAL Rs. &nbsp;&nbsp;&nbsp; 5,000.00</p>
+      <p class="terms">Goods once sold will not be taken back. Payment within 3 days.</p>
+      <p class="sign">For SRI BALAJI AGENCIES<br />Authorised Signatory</p>
+    </div>
+  </body>
+</html>
