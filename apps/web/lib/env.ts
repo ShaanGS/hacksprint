@@ -54,9 +54,10 @@ const paytmSchema = z.object({
   PAYTM_MERCHANT_KEY: text().length(16, "must be 16 characters (the merchant key, not the MID)"),
 });
 
+// The reorder workflow's webhook, and the secret its first step checks in the x-munim-secret header.
 const n8nSchema = z.object({
   N8N_WEBHOOK_URL: httpUrl(),
-  N8N_WEBHOOK_SECRET: text().min(32, "must be at least 32 characters (openssl rand -hex 32)"),
+  N8N_WEBHOOK_SECRET: text().min(32, "must be at least 32 characters"),
 });
 
 function parse<T extends z.ZodType>(service: string, schema: T): z.infer<T> {
@@ -71,7 +72,7 @@ export const appEnv = () => parse("App", appSchema);
 export const supabaseEnv = () => parse("Supabase", supabaseSchema);
 export const geminiEnv = () => parse("Gemini", geminiSchema);
 export const sarvamEnv = () => parse("Sarvam", sarvamSchema);
-// Paytm and n8n are checked on first use: Paytm keys may arrive late (spec 5.4), n8n starts in milestone 4.
+// Paytm and n8n are checked on first use: Paytm keys may arrive late (spec 5.4), n8n only for reorders.
 export const paytmEnv = () => parse("Paytm", paytmSchema);
 export const n8nEnv = () => parse("n8n", n8nSchema);
 
@@ -87,6 +88,11 @@ const serviceKeys = [
 /** The stage fallbacks (mark-paid, demo reset) and the "demo data" label are on. */
 export function demoMode(): boolean {
   return process.env.DEMO_MODE === "true";
+}
+
+/** The Paytm keys are in, so payment links go to Paytm (staging keys give its test mode). */
+export function paytmConfigured(): boolean {
+  return paytmSchema.safeParse(process.env).success;
 }
 
 /** In the demo, the late payer's reminder goes to a teammate's real WhatsApp number. */

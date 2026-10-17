@@ -31,10 +31,14 @@ async function readParams(request: Request): Promise<Record<string, string>> {
   return Object.fromEntries([...form.entries()].map(([key, value]) => [key, String(value)]));
 }
 
-/** The link this payment belongs to; Paytm has used both spellings. */
-function linkIdOf(params: Record<string, string>): string | undefined {
+/**
+ * The link this payment belongs to. Paytm's link webhook carries it in MERC_UNQ_REF, at times
+ * with a prefix ("LI_123"); other callbacks have sent linkId, in either spelling.
+ */
+export function linkIdOf(params: Record<string, string>): string | undefined {
   const key = Object.keys(params).find((name) => name.toLowerCase() === "linkid");
-  return key ? params[key] : undefined;
+  if (key && params[key]) return params[key];
+  return params.MERC_UNQ_REF?.match(/(\d+)$/)?.[1];
 }
 
 export function POST(request: Request) {
