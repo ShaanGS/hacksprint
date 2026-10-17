@@ -8,6 +8,7 @@ const paymentRow = z.object({
   status: z.string(),
   orders: z.object({ number: z.coerce.number() }).nullable(),
   customers: z.object({ name: z.string() }).nullable(),
+  purchase_orders: z.object({ distributors: z.object({ name: z.string() }) }).nullable(),
 });
 
 export type PaymentView = {
@@ -18,6 +19,8 @@ export type PaymentView = {
   /** An order's payment shows its number; a credit payment shows whose account it settles. */
   orderNumber: number | null;
   customer: string | null;
+  /** A stock order's payment (test mode) shows the distributor it is for. */
+  stockOrderFor: string | null;
 };
 
 /** A payment as its pay page shows it, or null if there is no such payment. */
@@ -25,7 +28,9 @@ export async function paymentView(db: SupabaseClient, id: string): Promise<Payme
   if (!/^[0-9a-f-]{36}$/.test(id)) return null;
   const { data, error } = await db
     .from("payments")
-    .select("id, provider, amount_paise, status, orders(number), customers(name)")
+    .select(
+      "id, provider, amount_paise, status, orders(number), customers(name), purchase_orders(distributors(name))",
+    )
     .eq("id", id)
     .maybeSingle();
   if (error) throw new Error(`Could not read the payment: ${error.message}`);
@@ -38,5 +43,6 @@ export async function paymentView(db: SupabaseClient, id: string): Promise<Payme
     paid: row.status === "paid",
     orderNumber: row.orders?.number ?? null,
     customer: row.customers?.name ?? null,
+    stockOrderFor: row.purchase_orders?.distributors.name ?? null,
   };
 }

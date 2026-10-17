@@ -2,14 +2,16 @@
 
 import { Mic, WifiOff } from "lucide-react";
 import { AnimatePresence } from "motion/react";
-import { useMemo, useState } from "react";
+import { useCallback, useMemo, useState } from "react";
 import { BankTab } from "@/components/owner/bank-tab";
+import { CollectAgent } from "@/components/owner/collect-agent";
 import { CollectTab } from "@/components/owner/collect-tab";
 import { DemoTools } from "@/components/owner/demo-tools";
 import { HomeTab } from "@/components/owner/home-tab";
 import { LiveUpdates } from "@/components/owner/live";
 import { useOwnerLanguage } from "@/components/owner/owner-language";
-import { OwnerScreenContext } from "@/components/owner/owner-screen";
+import { OwnerScreenContext, type AgentKind } from "@/components/owner/owner-screen";
+import { ReorderAgent } from "@/components/owner/reorder-agent";
 import { StockTab } from "@/components/owner/stock-tab";
 import { TabBar, type OwnerTab } from "@/components/owner/tab-bar";
 import { Pill, TopNotices } from "@/components/owner/top-notices";
@@ -42,6 +44,8 @@ export function OwnerApp({
   const [card, setCard] = useState<VoiceCard | null>(null);
   const [tools, setTools] = useState(false);
   const [hearing, setHearing] = useState(false);
+  const [agent, setAgent] = useState<AgentKind | null>(null);
+  const closeAgent = useCallback(() => setAgent(null), []);
   const hold = useHoldToTalk({
     askMicrophone: voice.askMicrophone,
     onTooShort: () => notify(text.holdLonger),
@@ -65,7 +69,7 @@ export function OwnerApp({
   }
 
   const screen = useMemo(
-    () => ({ demo, notify, openDemoTools: () => setTools(true) }),
+    () => ({ demo, notify, openDemoTools: () => setTools(true), openAgent: setAgent }),
     [demo, notify],
   );
   const status =
@@ -122,7 +126,10 @@ export function OwnerApp({
             card={card}
             onDone={() => setCard(null)}
             onOpen={setTab}
+            onAgent={setAgent}
           />
+          <CollectAgent open={agent === "collect"} onClose={closeAgent} />
+          <ReorderAgent open={agent === "reorder"} onClose={closeAgent} />
           {demo && <DemoTools open={tools} onClose={() => setTools(false)} onRecording={hear} />}
         </div>
       </LiveUpdates>

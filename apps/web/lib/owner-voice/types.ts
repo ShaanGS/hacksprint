@@ -14,8 +14,9 @@ export type ParsedEntry =
 export type Named = { id: string; name: string };
 
 /**
- * What the owner can ask about his own money, or what a list of items costs at his prices. The
- * answer's numbers come from code.
+ * What the owner can ask about his own money, what a list of items costs at his prices, or a job
+ * he hands to an agent (collect from late payers, order what runs low). The answer's numbers come
+ * from code.
  */
 export const questionTopics = [
   "week",
@@ -25,6 +26,8 @@ export const questionTopics = [
   "dues",
   "loan",
   "items",
+  "collect_agent",
+  "reorder",
 ] as const;
 
 export type QuestionTopic = (typeof questionTopics)[number];

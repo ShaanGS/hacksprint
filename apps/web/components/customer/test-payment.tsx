@@ -45,7 +45,11 @@ export function TestPayment({ payment, shopName }: { payment: PaymentView; shopN
         </div>
         <p className="mt-2 text-sm font-semibold text-ink-muted">
           {shopName} ·{" "}
-          {payment.orderNumber === null ? payment.customer : `Order #${payment.orderNumber}`}
+          {payment.stockOrderFor
+            ? `Stock order for ${payment.stockOrderFor}`
+            : payment.orderNumber === null
+              ? payment.customer
+              : `Order #${payment.orderNumber}`}
         </p>
         <Amount paise={payment.amountPaise} size="hero" className="mt-1 block" />
         <p className="mt-1 text-base text-ink-muted">

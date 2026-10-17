@@ -1,5 +1,6 @@
 "use client";
 
+import { Bot } from "lucide-react";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { CustomerSheet } from "@/components/owner/customer-sheet";
 import { useLive } from "@/components/owner/live";
@@ -10,9 +11,11 @@ import { TabHeader } from "@/components/owner/tab-header";
 import { Amount } from "@/components/ui/amount";
 import { Art } from "@/components/ui/art";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import { ListRow } from "@/components/ui/list-row";
 import { Monogram } from "@/components/ui/monogram";
 import { Ticker } from "@/components/ui/ticker";
+import { agentWordsFor } from "@/lib/i18n/agents";
 import { formatMoney } from "@/lib/money";
 import { ownerApi, type CustomerRow } from "@/lib/owner/api";
 
@@ -21,8 +24,8 @@ import { ownerApi, type CustomerRow } from "@/lib/owner/api";
  * in while the list is open clears its row and says so (A5).
  */
 export function CollectTab() {
-  const { text } = useOwnerLanguage();
-  const { notify } = useOwnerScreen();
+  const { lang, text } = useOwnerLanguage();
+  const { notify, openAgent } = useOwnerScreen();
   const [openId, setOpenId] = useState<string | null>(null);
   const balances = useRef<Map<string, CustomerRow> | null>(null);
   const said = useRef({ notify, paidIn: text.paidIn });
@@ -66,6 +69,12 @@ export function CollectTab() {
         <p className="text-sm font-semibold text-ink-muted">{text.parts.late}</p>
         <Ticker paise={late_paise} className="mt-1 block text-hero font-extrabold tracking-tight" />
         <p className="mt-1 max-w-56 text-base text-ink-muted">{text.lateLine(late)}</p>
+        {late > 0 && (
+          <Button className="mt-4" onClick={() => openAgent("collect")}>
+            <Bot aria-hidden className="size-5" />
+            {agentWordsFor(lang).letAgentCollect}
+          </Button>
+        )}
       </section>
 
       {customers.length === 0 ? (

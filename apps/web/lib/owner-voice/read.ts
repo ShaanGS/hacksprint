@@ -53,7 +53,7 @@ const declarations: FunctionDeclaration[] = [
   {
     name: "ask_question",
     description:
-      "He asks about his own money instead of telling an entry: can he pay this week's bills, who to collect from, how much one customer owes, his stock, what he owes suppliers, or does he need a loan.",
+      "He asks about his own money instead of telling an entry: can he pay this week's bills, who to collect from, how much one customer owes, his stock, what he owes suppliers, or does he need a loan. Or he hands the agent a job: to collect from the late payers for him, or to order what is running low.",
     parametersJsonSchema: {
       type: "object",
       properties: {
@@ -61,7 +61,7 @@ const declarations: FunctionDeclaration[] = [
           type: "string",
           enum: [...questionTopics],
           description:
-            "week: can he pay this week, is he short. collect: who to collect from, who is late. customer: how much one customer owes. stock: his shelf, what is low or stuck. dues: what he owes suppliers, which bill is due. loan: does he need a loan, how much.",
+            'week: can he pay this week, is he short. collect: who to collect from, who is late (he wants to know). customer: how much one customer owes. stock: his shelf, what is low or stuck. dues: what he owes suppliers, which bill is due. loan: does he need a loan, how much. collect_agent: he wants it done for him, the late payers reminded and the money collected ("collect from the late payers", "கடன் வசூல் பண்ணு", "paisa wasool karo"). reorder: he wants what is running low ordered from his distributor ("order what\'s running low", "சரக்கு ஆர்டர் போடு", "maal mangwao").',
         },
         customer: {
           type: "string",

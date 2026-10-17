@@ -18,7 +18,13 @@ export type ShopPayable = Payable & {
   createdAt: string;
 };
 export type ShopPayment = Payment & { id: string; customerId: string | null };
-export type ShopReceipt = Receipt & { billId: string; billedOn: string; lineTotalPaise: number };
+export type ShopReceipt = Receipt & {
+  billId: string;
+  billedOn: string;
+  lineTotalPaise: number;
+  distributorId: string | null;
+  distributor: string | null;
+};
 
 export type ShopData = {
   now: Date;
@@ -91,7 +97,11 @@ const receiptRow = z.object({
   line_total_paise: z.number().int(),
   created_at: z.string(),
   bill_id: z.string(),
-  bills: z.object({ billed_on: z.string().nullable() }),
+  bills: z.object({
+    billed_on: z.string().nullable(),
+    distributor_id: z.string().nullable(),
+    distributors: z.object({ name: z.string() }).nullable(),
+  }),
 });
 
 function check<T>(
@@ -140,13 +150,14 @@ export async function loadShopData(
         .select("id, amount_paise, paid_at, is_credit_repayment, customer_id")
         .eq("shop_id", shopId)
         .eq("status", "paid")
+        .is("purchase_order_id", null)
         .gte("paid_at", sinceInstant),
       loadCatalog(db, shopId),
       db.from("shelf_counts").select("product_id, counted_qty, counted_at").eq("shop_id", shopId),
       db
         .from("bill_items")
         .select(
-          "product_id, qty, unit_cost_paise, line_total_paise, created_at, bill_id, bills!inner(shop_id, status, billed_on)",
+          "product_id, qty, unit_cost_paise, line_total_paise, created_at, bill_id, bills!inner(shop_id, status, billed_on, distributor_id, distributors(name))",
         )
         .eq("bills.shop_id", shopId)
         .eq("bills.status", "confirmed"),
@@ -210,6 +221,8 @@ export async function loadShopData(
       lineTotalPaise: r.line_total_paise,
       billId: r.bill_id,
       billedOn: r.bills.billed_on ?? shopDate(r.created_at),
+      distributorId: r.bills.distributor_id,
+      distributor: r.bills.distributors?.name ?? null,
     })),
   };
 }

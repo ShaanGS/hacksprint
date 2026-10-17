@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { useOwnerLanguage } from "@/components/owner/owner-language";
-import { useOwnerScreen } from "@/components/owner/owner-screen";
+import { useOwnerScreen, type AgentKind } from "@/components/owner/owner-screen";
 import type { OwnerTab } from "@/components/owner/tab-bar";
 import { Amount } from "@/components/ui/amount";
 import { Art, toArtName } from "@/components/ui/art";
@@ -10,6 +10,7 @@ import { Button } from "@/components/ui/button";
 import { ListRow } from "@/components/ui/list-row";
 import { Monogram } from "@/components/ui/monogram";
 import { Sheet } from "@/components/ui/sheet";
+import { agentWordsFor } from "@/lib/i18n/agents";
 import { formatMoney } from "@/lib/money";
 import { ownerApi, type QuestionTopic, type VoiceCard } from "@/lib/owner/api";
 
@@ -27,18 +28,28 @@ const tabFor: Record<QuestionTopic, OwnerTab> = {
   dues: "bank",
   loan: "bank",
   items: "stock",
+  collect_agent: "collect",
+  reorder: "stock",
+};
+
+// The spoken jobs an agent does, and which agent.
+const agentFor: Partial<Record<QuestionTopic, AgentKind>> = {
+  collect_agent: "collect",
+  reorder: "reorder",
 };
 
 export function VoiceSheet({
   card,
   onDone,
   onOpen,
+  onAgent,
 }: {
   card: VoiceCard | null;
   onDone: () => void;
   onOpen: (tab: OwnerTab) => void;
+  onAgent: (agent: AgentKind) => void;
 }) {
-  const { text } = useOwnerLanguage();
+  const { lang, text } = useOwnerLanguage();
   const { notify } = useOwnerScreen();
   const [picked, setPicked] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
@@ -99,15 +110,28 @@ export function VoiceSheet({
       footer={
         card?.answer ? (
           <div className="space-y-2 pb-3">
-            <Button
-              wide
-              onClick={() => {
-                if (card.answer) onOpen(tabFor[card.answer.topic]);
-                onDone();
-              }}
-            >
-              {text.openTab(text.tabs[tabFor[card.answer.topic]])}
-            </Button>
+            {agentFor[card.answer.topic] ? (
+              <Button
+                wide
+                onClick={() => {
+                  const agent = card.answer && agentFor[card.answer.topic];
+                  if (agent) onAgent(agent);
+                  onDone();
+                }}
+              >
+                {agentWordsFor(lang).letAgent}
+              </Button>
+            ) : (
+              <Button
+                wide
+                onClick={() => {
+                  if (card.answer) onOpen(tabFor[card.answer.topic]);
+                  onDone();
+                }}
+              >
+                {text.openTab(text.tabs[tabFor[card.answer.topic]])}
+              </Button>
+            )}
             <Button wide variant="ghost" onClick={onDone}>
               {text.done}
             </Button>

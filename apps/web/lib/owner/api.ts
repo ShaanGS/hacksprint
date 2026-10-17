@@ -6,6 +6,9 @@ import type { SourceLabel } from "@/lib/rotation/labels";
 import type { Reason, rotationResponse } from "@/lib/rotation/responses";
 import type { ChecklistItem } from "@/lib/loans/pack";
 import type { QuestionTopic } from "@/lib/owner-voice/types";
+import type { payStockOrder } from "@/lib/reorder/pay";
+import type { groupJson, reorderResponse } from "@/lib/reorder/plan";
+import type { sendReorder } from "@/lib/reorder/send";
 import type { RotationPart, SourceRow } from "@/lib/rotation/sources";
 import type { MudraBandKey } from "@/lib/schemes/catalog";
 import type { PriceSource } from "@/lib/sources/types";
@@ -186,6 +189,11 @@ export type Value = {
   };
 };
 
+export type ReorderGroup = ReturnType<typeof groupJson>;
+export type ReorderPlan = ReturnType<typeof reorderResponse>;
+export type SentReorder = Awaited<ReturnType<typeof sendReorder>>;
+export type StockOrderPayment = Awaited<ReturnType<typeof payStockOrder>>;
+
 const recordingName = (audio: Blob) => (audio.type.includes("mp4") ? "owner.mp4" : "owner.webm");
 
 export const ownerApi = {
@@ -197,6 +205,12 @@ export const ownerApi = {
   remind: (id: string) => post<Reminder>(`/api/credit/${id}/remind`, {}),
   markPaid: (paymentId: string) =>
     post<{ paid: boolean }>(`/api/dev/payments/${paymentId}/mark-paid`, {}),
+  checkPayment: (paymentId: string) =>
+    post<{ paid: boolean }>(`/api/payments/${paymentId}/check`, {}),
+  reorderPlan: () => call<ReorderPlan>("/api/reorder"),
+  sendReorder: (distributorId: string, productIds: string[]) =>
+    post<SentReorder>("/api/reorder", { distributor_id: distributorId, product_ids: productIds }),
+  payReorder: (orderId: string) => post<StockOrderPayment>(`/api/reorder/${orderId}/pay`, {}),
   stock: () => call<Stock>("/api/stock"),
   stuck: () => call<{ stuck_paise: number; products: ShelfRow[] }>("/api/stock/stuck"),
   priceSource: (productId: string) => call<PriceSource>(`/api/sources/price/${productId}`),

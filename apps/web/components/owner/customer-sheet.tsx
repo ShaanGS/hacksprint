@@ -15,6 +15,9 @@ import { langInfo } from "@/lib/i18n/languages";
 import { formatMoney } from "@/lib/money";
 import { ownerApi, type CustomerDetail, type CustomerRow, type Reminder } from "@/lib/owner/api";
 
+// How often an open reminder's payment link is checked: a paid link then clears the row live.
+const CHECK_MS = 6_000;
+
 /**
  * One customer (A4, E3): what they owe, every entry behind it with its source, and the reminder.
  * The reminder is a fixed message in the customer's language with a payment link; WhatsApp opens
@@ -50,6 +53,15 @@ export function CustomerSheet({
       setReminder(null);
     };
   }, [id, customer?.balance_paise]);
+
+  const waitingPayment = reminder?.payment_id ?? null;
+  useEffect(() => {
+    if (!waitingPayment) return;
+    const timer = setInterval(() => {
+      ownerApi.checkPayment(waitingPayment).catch(() => undefined);
+    }, CHECK_MS);
+    return () => clearInterval(timer);
+  }, [waitingPayment]);
 
   async function remind(customerId: string) {
     setBusy(true);

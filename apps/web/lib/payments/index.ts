@@ -10,7 +10,8 @@ import type { Shop } from "@/lib/shop";
 
 // Payment links (spec A4, A7) and the one way a payment becomes paid (A5). The shop's payment
 // mode picks the provider: Paytm when its keys are in, otherwise our own test payment page. A
-// paid credit link writes a verified repayment; a paid order link moves the (frozen) order.
+// paid credit link writes a verified repayment; a paid order link moves the (frozen) order; a
+// paid stock-order link (test mode) is only recorded.
 // markPaid only moves a payment still waiting, so a repeated callback or a double tap changes
 // nothing (spec rule 4).
 
@@ -31,6 +32,7 @@ const paidRow = z.object({
   order_id: z.string().nullable(),
   customer_id: z.string().nullable(),
   reminder_id: z.string().nullable(),
+  purchase_order_id: z.string().nullable(),
   amount_paise: z.number().int(),
 });
 
@@ -119,6 +121,23 @@ export function creditPaymentLink(
 }
 
 /**
+ * A test-mode payment for a stock order the reorder agent sent (decision of Oct 17). In test mode
+ * it lands in our own Paytm sandbox, not the distributor's; it is never counted as money in.
+ */
+export function stockOrderPaymentLink(
+  db: SupabaseClient,
+  shop: Shop,
+  order: { purchaseOrderId: string; amountPaise: number },
+): Promise<{ id: string; url: string }> {
+  return createLink(db, shop, {
+    amountPaise: order.amountPaise,
+    linkName: `Stock${order.purchaseOrderId.replace(/[^A-Za-z0-9]/g, "").slice(0, 12)}`,
+    description: `Stock order ${shop.name}`,
+    row: { purchase_order_id: order.purchaseOrderId },
+  });
+}
+
+/**
  * Marks a payment paid. A credit payment writes the verified repayment and clears its reminder;
  * an order payment moves the order to paid. Returns false when it was already paid.
  */
@@ -135,13 +154,26 @@ export async function markPaid(
     .update({ status: "paid", paid_at: paidAt, provider_txn_id: txnId })
     .match(match)
     .eq("status", "created")
-    .select("id, shop_id, order_id, customer_id, reminder_id, amount_paise")
+    .select("id, shop_id, order_id, customer_id, reminder_id, purchase_order_id, amount_paise")
     .maybeSingle();
   if (error) throw new Error(`Could not record the payment: ${error.message}`);
   if (!data) return false;
   const paid = paidRow.parse(data);
   if (paid.order_id) {
     return transition(db, { orderId: paid.order_id, from: "awaiting_payment", to: "paid", actor });
+  }
+  if (paid.purchase_order_id) {
+    // A test payment for a stock order changes none of the shop's numbers, so nothing is broadcast.
+    await audit(db, paid.shop_id, [
+      {
+        actor,
+        action: "reorder.paid_test",
+        entityType: "purchase_order",
+        entityId: paid.purchase_order_id,
+        payload: { paymentId: paid.id, amountPaise: paid.amount_paise },
+      },
+    ]);
+    return true;
   }
   if (paid.customer_id) await settleCredit(db, paid, paidAt, actor);
   return true;

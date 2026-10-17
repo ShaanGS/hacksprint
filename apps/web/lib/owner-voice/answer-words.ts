@@ -35,6 +35,10 @@ export type AnswerWords = {
   items: (totalPaise: number, lines: string) => string;
   noItems: string;
   notSold: (names: string) => string;
+  collectAgent: (customers: number, paise: number) => string;
+  collectNobody: string;
+  reorderAgent: (count: number, names: string) => string;
+  reorderNothing: string;
 };
 
 const en: AnswerWords = {
@@ -78,6 +82,12 @@ const en: AnswerWords = {
   items: (total, lines) => `That comes to ${m(total)}: ${lines}.`,
   noItems: "I could not find those items in your shop.",
   notSold: (names) => ` Not in your shop's list: ${names}.`,
+  collectAgent: (customers, paise) =>
+    `${customers} late ${customers === 1 ? "payer owes" : "payers owe"} ${m(paise)}. The agent writes each reminder with a payment link; you send them from your WhatsApp.`,
+  collectNobody: "Nobody is late, so there is nothing for the agent to collect.",
+  reorderAgent: (count, names) =>
+    `${count} ${count === 1 ? "item runs" : "items run"} out this week: ${names}. The agent orders them at your last bill's quantity, after you approve.`,
+  reorderNothing: "Nothing runs out this week, so there is nothing to order.",
 };
 
 const ta: AnswerWords = {
@@ -121,6 +131,12 @@ const ta: AnswerWords = {
   items: (total, lines) => `மொத்தம் ${m(total)}: ${lines}.`,
   noItems: "அந்தப் பொருட்கள் உங்கள் கடையில் இல்லை.",
   notSold: (names) => ` உங்கள் கடைப் பட்டியலில் இல்லை: ${names}.`,
+  collectAgent: (customers, paise) =>
+    `${customers} பேர் தாமதமாக ${m(paise)} தர வேண்டும். ஒவ்வொருவருக்கும் பணம் செலுத்தும் லிங்க் உடன் நினைவூட்டலை முகவர் எழுதும்; நீங்கள் உங்கள் WhatsApp-இல் அனுப்புங்கள்.`,
+  collectNobody: "யாரும் தாமதமாக இல்லை; முகவர் வசூலிக்க எதுவும் இல்லை.",
+  reorderAgent: (count, names) =>
+    `இந்த வாரம் ${count} பொருட்கள் தீர்ந்துவிடும்: ${names}. நீங்கள் ஒப்புக்கொண்ட பிறகு, கடைசி பில் அளவில் முகவர் ஆர்டர் செய்யும்.`,
+  reorderNothing: "இந்த வாரம் எதுவும் தீராது; ஆர்டர் செய்ய எதுவும் இல்லை.",
 };
 
 export function answerWordsFor(lang: "en" | "ta"): AnswerWords {

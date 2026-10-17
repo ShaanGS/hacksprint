@@ -107,6 +107,14 @@ export function answerText(question: Question, facts: AnswerFacts, lang: "en" | 
       if (loan.loanPaise === 0) return words.noLoan(loan.latePaise);
       return words.loan(loan.festival, loan.needPaise, loan.loanPaise, loan.band ?? "");
     }
+    case "collect_agent":
+      return week.lateCustomers > 0
+        ? words.collectAgent(week.lateCustomers, week.latePaise)
+        : words.collectNobody;
+    case "reorder":
+      return facts.low.length > 0
+        ? words.reorderAgent(facts.low.length, facts.low.slice(0, LIST_MAX).join(", "))
+        : words.reorderNothing;
     case "items": {
       const notSold = question.missing.length > 0 ? words.notSold(question.missing.join(", ")) : "";
       if (facts.items.length === 0) return notSold ? notSold.trim() : words.noItems;

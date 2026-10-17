@@ -84,4 +84,24 @@ describe("answers to spoken questions", () => {
       "உங்கள் கடைப் பட்டியலில் இல்லை: புடலங்காய்.",
     );
   });
+
+  it("hands collecting to the agent with the late payers' total", () => {
+    expect(answerText(ask("collect_agent"), facts, "en")).toBe(
+      "3 late payers owe ₹9,600. The agent writes each reminder with a payment link; you send them from your WhatsApp.",
+    );
+    const nobodyLate = { ...facts, week: { ...facts.week, lateCustomers: 0, latePaise: 0 } };
+    expect(answerText(ask("collect_agent"), nobodyLate, "en")).toBe(
+      "Nobody is late, so there is nothing for the agent to collect.",
+    );
+  });
+
+  it("hands reordering to the agent only for what runs out this week", () => {
+    const low = { ...facts, low: ["Aachi Chilli Powder"] };
+    expect(answerText(ask("reorder"), low, "en")).toBe(
+      "1 item runs out this week: Aachi Chilli Powder. The agent orders them at your last bill's quantity, after you approve.",
+    );
+    expect(answerText(ask("reorder"), facts, "ta")).toBe(
+      "இந்த வாரம் எதுவும் தீராது; ஆர்டர் செய்ய எதுவும் இல்லை.",
+    );
+  });
 });

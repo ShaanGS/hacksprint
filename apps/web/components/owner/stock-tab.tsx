@@ -1,11 +1,12 @@
 "use client";
 
-import { ChevronRight } from "lucide-react";
+import { Bot, ChevronRight } from "lucide-react";
 import { useCallback, useState } from "react";
 import { BillScan } from "@/components/owner/bill-scan";
 import { useLive } from "@/components/owner/live";
 import { Margins } from "@/components/owner/margins";
 import { useOwnerLanguage } from "@/components/owner/owner-language";
+import { useOwnerScreen } from "@/components/owner/owner-screen";
 import { Failed, Loading } from "@/components/owner/screen-state";
 import { Section } from "@/components/owner/section";
 import { PriceSheet } from "@/components/owner/source-sheet";
@@ -15,8 +16,10 @@ import { useDates } from "@/components/owner/use-dates";
 import { Amount } from "@/components/ui/amount";
 import { Art, toArtName } from "@/components/ui/art";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import { ListRow } from "@/components/ui/list-row";
 import { Ticker } from "@/components/ui/ticker";
+import { agentWordsFor } from "@/lib/i18n/agents";
 import type { ProductUnit } from "@/lib/orders/quantity";
 import { ownerApi, type ShelfRow } from "@/lib/owner/api";
 
@@ -25,7 +28,8 @@ import { ownerApi, type ShelfRow } from "@/lib/owner/api";
  * to count by voice, and every item's estimate. Tapping an item shows the bill behind its cost.
  */
 export function StockTab({ onBank }: { onBank: () => void }) {
-  const { text } = useOwnerLanguage();
+  const { lang, text } = useOwnerLanguage();
+  const { openAgent } = useOwnerScreen();
   const dates = useDates();
   const stock = useLive(ownerApi.stock, ["stock"]);
   const stuck = useLive(ownerApi.stuck, ["stock"]);
@@ -68,6 +72,10 @@ export function StockTab({ onBank }: { onBank: () => void }) {
             {text.costUnknown(stock.data.cost_unknown.length)}
           </p>
         )}
+        <Button className="mt-4" onClick={() => openAgent("reorder")}>
+          <Bot aria-hidden className="size-5" />
+          {agentWordsFor(lang).letAgentReorder}
+        </Button>
       </section>
 
       <div className="mt-4">
