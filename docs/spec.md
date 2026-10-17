@@ -146,6 +146,8 @@ Decision, Oct 17: there is no Flutter app for the hackathon. The owner app is th
 
 Customer voice ordering (frozen), automated reorder sending (salesmen already book orders), WhatsApp Business API (we use the owner's own WhatsApp), lending itself (we never hold or move loan money), credit scores (lenders score), Account Aggregator pull (P2: lenders pull bank data directly with consent), comparing suppliers' prices (P2), collecting caste, religion or similar data for any scheme (never).
 
+**Agents (decided Oct 17):** reorder sending comes back in, as an agent the owner approves. The reorder agent lists only what runs out this week, at the quantity and price of its last bill, and leaves out slow stock, so it never ties up more money on the shelf. Nothing goes until he taps Send; then n8n emails the distributor, the one n8n job that is not owner-facing. The collection agent does A3 to A5 in one go: it writes each late payer's reminder with a payment link and watches the money come in, while the owner still sends each message from his own WhatsApp (rule 3).
+
 ## 9. Calculations
 
 Deterministic code in `lib/rotation`, one pure function per item, each unit-tested with edge cases. All money in integer paise. All dates in Asia/Kolkata. The model never runs these. Every result carries its source label: `verified_payment`, `supplier_bill`, `owner_said`, or `estimate`.
@@ -313,7 +315,7 @@ New migration only; never edit an applied migration.
 
 - **Sarvam:** owner speech to text (Tamil, Hindi, Kannada, mixed); voice for the nightly summary (P1). Reminder texts are fixed templates per language, written by us, so no translation call per message.
 - **Gemini:** reading bill photos and notebook pages into structured lines; turning owner speech into one of the entry types through function calling. Set thinking low. It never produces a number that is not in the input.
-- **Paytm:** payment links in reminders, verified repayment callbacks (this is what turns a payment into "verified collection"), verified digital sales for the statement. Long term, the product fits as a module inside Paytm for Business.
+- **Paytm:** payment links in reminders, verified repayment callbacks (this is what turns a payment into "verified collection"), verified digital sales for the statement. Each link names our webhook as its status callback, and the server also asks Paytm's Fetch Transaction API, because Paytm turns the link webhook on only through support. Long term, the product fits as a module inside Paytm for Business.
 - **n8n:** owner-facing jobs only: morning short-week alert, nightly summary, monthly statement. About 2 runs a shop a day. At scale this moves to self-hosted n8n, since cloud pricing is per run.
 
 ## 15. Trust, privacy and lending rules (never break)
@@ -325,7 +327,7 @@ New migration only; never edit an applied migration.
 5. Every number carries its source label and links to its source rows. Estimates say "estimate".
 6. The owner never has to type.
 7. Statements and loan packs contain totals only. No customer names or phone numbers leave the shop's own view.
-8. We never hold, move or lend money. Loans go from the lender to the shop's bank account. We never charge the shop for a loan, never route him to a particular lender, and never send his data to a lender. He takes his pack himself.
+8. We never hold, move or lend money. Loans go from the lender to the shop's bank account. We never charge the shop for a loan, never route him to a particular lender, and never send his data to a lender. He takes his pack himself. One labelled exception, test mode only (decided Oct 17): the reorder agent can open a Paytm test checkout for a sent order, to show how paying a distributor would work. In test mode the money lands in a test account, not the distributor's; the screen says so, and the payment is never counted as sales or cash. Paying distributors for real would need Paytm Payouts and is not built.
 9. Scheme facts come only from `lib/schemes/catalog.ts`, each with its official source and checked date. Official links only. Never promise approval. Always show the fee warning.
 10. Collect only what a feature needs. Never collect caste, religion or similar. Never read the phone's contact list: a customer's number comes from the owner's voice or the system contact picker, one contact at a time.
 11. Privacy roles (DPDP Act): the shop owns its customers' data and we process it for him. Reminders use the number the customer gave the shop for that purpose. Customer data is deleted on the owner's request. Production data stays in India (Supabase Mumbai region).

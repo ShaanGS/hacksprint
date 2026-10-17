@@ -169,7 +169,17 @@ Request: `{}` (amount is the customer's balance).
 
 Paytm's paid callback. Verified by checksum and merchant id; idempotent (a second callback for
 the same payment changes nothing). A paid reminder link writes a `verified_payment` repayment,
-clears the reminder and broadcasts `credit` and `rotation`. Not for the app.
+clears the reminder and broadcasts `credit` and `rotation`. Not for the app. The link is found by
+`linkId`, or by `MERC_UNQ_REF`, where Paytm's link webhook puts it (at times as `LI_<id>`). Each
+link names this URL as its `statusCallbackUrl`.
+
+### POST /api/payments/{paymentId}/check
+
+Whether a payment link has been paid. A Paytm link still waiting is asked about at Paytm (Fetch
+Transaction, signed with our key, server to server); a success for the full amount goes through
+the same idempotent path as the webhook. Paytm switches its link webhook on only through support,
+so the app checks every 5 to 6 seconds while a reminder or an agent is open.
+`200 {"paid": true}`; `404` for another shop's payment.
 
 ### POST /api/dev/payments/{paymentId}/mark-paid
 
@@ -231,7 +241,10 @@ answer written by code from the shop's numbers, in the language sent as the form
 ```
 
 `answer.topic` is `week`, `collect`, `customer`, `stock`, `dues`, `loan` or `items` (a list of
-items priced at the shop's own selling prices). When the words are not understood:
+items priced at the shop's own selling prices), or a job for an agent: `collect_agent` ("collect
+from the late payers") or `reorder` ("order what's running low"). For those two the app offers
+"Let the agent do it", which opens the collection or reorder agent. When the words are not
+understood:
 `200 {"entry_id": null, "transcript": "…", "kind": null, "card": null, "needs": [], "choices": []}`.
 
 ### POST /api/voice/owner/{entryId}/confirm
@@ -404,6 +417,70 @@ are listed in `cost_unknown`.
 ```
 
 These are the products not to reorder now.
+
+## Agents (decision of Oct 17)
+
+The collection agent uses the routes above: `GET /api/rotation/collect` for the late payers in
+collect order, `POST /api/credit/{customerId}/remind` for each, then `POST
+/api/payments/{paymentId}/check` while it watches. The owner sends each message himself.
+
+### GET /api/reorder
+
+The reorder agent's list: products that run out this week (`low`), at the quantity and price of
+their last confirmed bill, grouped by that bill's distributor. Slow stock is never low, so it is
+never ordered. Seeded demo, after the owner counted Maggi at 10 packets:
+
+```json
+{
+  "groups": [
+    {
+      "distributor_id": "9856…",
+      "distributor": "Murugan Traders",
+      "total_paise": 73200,
+      "label": "supplier_bill",
+      "lines": [
+        {
+          "product_id": "c83c…",
+          "name": "Maggi Masala Noodles",
+          "art": "noodles",
+          "unit": "pack",
+          "qty": 61,
+          "unit_cost_paise": 1200,
+          "line_paise": 73200,
+          "billed_on": "2026-10-12"
+        }
+      ]
+    }
+  ],
+  "skipped": { "slow": 10, "stuck_paise": 4592700, "lasting": 9, "no_bill": [] }
+}
+```
+
+### POST /api/reorder
+
+The owner approved one distributor's lines. Request:
+`{ "distributor_id": "…", "product_ids": ["…"] }`. The server works the list out again, so
+quantities never come from the phone; `409` "The list changed. Look again." if it no longer
+matches. It saves a purchase order (`festival` empty, so never the festival order) with its items,
+which the next bill from that distributor is checked against (B4), then posts
+`{ "shopName", "distributorName", "lines": [{ "name", "qty", "unit" }] }` to `N8N_WEBHOOK_URL`
+with the header `x-munim-secret: N8N_WEBHOOK_SECRET`; the n8n workflow emails the distributor.
+`502` when n8n cannot be reached (the order stays a draft). Audited as `reorder.sent`.
+
+```json
+{ "purchase_order_id": "…", "distributor": "Murugan Traders", "total_paise": 73200, "lines": 1 }
+```
+
+### POST /api/reorder/{orderId}/pay
+
+Test mode only: a payment link for a sent order at its last bill prices (a Paytm test link with
+Paytm keys in, else our `/pay` page). Asking again gives the same link. In test mode the money
+lands in a test account, not the distributor's; the payment is kept apart
+(`payments.purchase_order_id`) and never counted as sales or cash, so no number changes.
+
+```json
+{ "payment_id": "…", "url": "https://…", "amount_paise": 73200, "paid": false }
+```
 
 ## Proof and loans (D1 to D4)
 
