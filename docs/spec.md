@@ -80,11 +80,13 @@ Ledgers, supplier dues, reminders, voice entry, bill-photo reading and quick app
 
 | Surface | Who | Built with | Owner |
 | --- | --- | --- | --- |
-| Owner app | Shop owner | Flutter | Crystal |
+| Owner app | Shop owner | Next.js web app in this repo (no Flutter, decided Oct 17) | Shaan |
 | API, calculations, workflows, data | System | Next.js API routes, Supabase, n8n | Thilak, Josiah |
 | Statement and loan pack pages | Owner, bank | Next.js pages, browser print to PDF | Shaan |
 | Demo screen | Judges | Next.js page | Shaan |
 | Customer voice ordering | Frozen | Keep the code; out of the demo and navigation | None |
+
+Decision, Oct 17: there is no Flutter app for the hackathon. The owner app is the web app in this repo, built as a finished product, and this repo also builds the API, the calculations and the data.
 
 ## 8. Features (locked)
 
@@ -275,7 +277,7 @@ New migration only; never edit an applied migration.
 - Keep everything else from v3 (customers.language, credit_ledger.source and payment_id, payables.paid_at and paid_via, purchase_orders as the salesman list, owner_voice_entries, statements)
 - Source label values are now `verified_payment`, `supplier_bill`, `owner_said`, `estimate` (rename from v3's `verified_paytm` and `owner_recorded`; the label text on screen says "verified by Paytm" where the payment came through Paytm)
 
-## 13. API contract (Flutter and web both use this; keep docs/api.md in sync)
+## 13. API contract (the owner app and scripts use this; keep docs/api.md in sync)
 
 | Method and path | Purpose |
 | --- | --- |
@@ -301,9 +303,9 @@ New migration only; never edit an applied migration.
 | GET /api/summary/today | E1 numbers for n8n |
 | POST /api/demo/reset | Reseed with dates relative to now; only when DEMO_MODE is on |
 
-**Auth for the hackathon:** one demo shop. Every API call carries `Authorization: Bearer <SHOP_TOKEN>`, checked in one helper that returns the shop id. The service role key stays on the server. The Flutter app never gets it.
+**Auth for the hackathon:** one demo shop. Scripts and n8n send `Authorization: Bearer <SHOP_TOKEN>`; the web owner app sends the owner's PIN session cookie instead, so the browser never holds the token. One helper accepts either and returns the shop id. The service role key stays on the server.
 
-**Realtime:** after any write that changes the numbers, the server sends a broadcast on channel `shop:{shopId}` with event `changed` and the area (`rotation`, `credit`, `stock`). No data in the message. Flutter and the demo screen listen with the publishable key and refetch from the API.
+**Realtime:** after any write that changes the numbers, the server sends a broadcast on channel `shop:{shopId}` with event `changed` and the area (`rotation`, `credit`, `stock`). No data in the message. The owner app and the demo screen listen with the publishable key and refetch from the API.
 
 ## 14. Sponsor jobs
 
