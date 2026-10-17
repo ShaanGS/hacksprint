@@ -36,7 +36,7 @@ Build from the primitives in `apps/web/components/ui/` and check them at `/style
 - Every spoken line also shows as text, in the customer's language: Tamil, Hindi, Kannada or English, in its own script.
 - Plain everyday words. No em dashes, no exclamation marks, no "seamless" or "optimise".
 - Money is `formatMoney(paise)`: `₹1,240`, `₹23.50`. Times are 12 hour ("6:40 PM").
-- Real data only: real product names, rupee amounts and Indian customer names. Never print "Demo", "Sample" or "Mock" on a screen.
+- Real data only: real product names, rupee amounts and Indian customer names. Never print "Sample" or "Mock" on a screen. While the shop runs on seeded demo data, one quiet "Demo data" label shows it (spec rule 12).
 
 ## Art recipe
 
