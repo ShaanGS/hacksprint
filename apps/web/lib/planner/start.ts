@@ -16,8 +16,17 @@ import type { Shop } from "@/lib/shop";
 // One planning run, start to end: read the shop once, save the run, let the model plan over
 // the tools (or the rules when it cannot), check the plan, and stream each step as it happens.
 
+/** Model calls in a run and the tokens they used, summed. */
+export type RunUsage = {
+  calls: number;
+  input_tokens: number;
+  output_tokens: number;
+  thought_tokens: number;
+};
+
 export type PlanLine =
-  { type: "step"; name: string; meta: Record<string, unknown> } | ({ type: "plan" } & PlanResponse);
+  | { type: "step"; name: string; meta: Record<string, unknown> }
+  | ({ type: "plan"; usage: RunUsage } & PlanResponse);
 
 const readTools = [
   "look_at_week",
@@ -59,9 +68,17 @@ export async function planWeek(
       send({ type: "step", name, meta: metaOf(name, result) });
     };
 
+    // What the run cost in context: every model call's tokens, saved and summed for the screen.
+    const usage: RunUsage = { calls: 0, input_tokens: 0, output_tokens: 0, thought_tokens: 0 };
     let seen = nothingSeen();
     const model = await modelPlan(facts, seen, goal, async (event) => {
-      if (event.kind === "tool_call") await record("tool_call", event.name, {});
+      if (event.kind === "model_call") {
+        usage.calls += 1;
+        usage.input_tokens += event.usage?.inputTokens ?? 0;
+        usage.output_tokens += event.usage?.outputTokens ?? 0;
+        usage.thought_tokens += event.usage?.thoughtTokens ?? 0;
+        await record("note", "model_call", { call: event.call, ...event.usage });
+      } else if (event.kind === "tool_call") await record("tool_call", event.name, {});
       else await shown(event.name, event.result);
     });
     let plan = model.plan;
@@ -78,10 +95,10 @@ export async function planWeek(
       checked = checkPlan(plan, facts, seen);
     }
     const plannedBy = usable ? "model" : "rules";
-    const response = planResponse(checked ?? { steps: [], dropped: [] }, facts, {
-      id: runId,
-      plannedBy,
-    });
+    const response = {
+      ...planResponse(checked ?? { steps: [], dropped: [] }, facts, { id: runId, plannedBy }),
+      usage,
+    };
     await record("plan", "plan", response);
     await finishRun(db, runId, { status: "done", plannedBy });
     await audit(db, shop.id, [
@@ -90,7 +107,7 @@ export async function planWeek(
         action: "planner.plan",
         entityType: "agent_run",
         entityId: runId,
-        payload: { planned_by: plannedBy, actions: response.steps.map((s) => s.action) },
+        payload: { planned_by: plannedBy, actions: response.steps.map((s) => s.action), usage },
       },
     ]);
     send({ type: "plan", ...response });

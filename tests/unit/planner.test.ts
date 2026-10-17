@@ -219,10 +219,23 @@ describe("runPlanner", () => {
     const events: string[] = [];
     const seen = nothingSeen();
     const outcome = await runPlanner(
-      { generate, onEvent: async (event) => void events.push(`${event.kind}:${event.name}`) },
+      {
+        generate,
+        onEvent: async (event) =>
+          void events.push(
+            event.kind === "model_call"
+              ? `model_call:${event.call}`
+              : `${event.kind}:${event.name}`,
+          ),
+      },
       { facts, seen, goal: "" },
     );
-    expect(events).toEqual(["tool_call:list_late_payers", "tool_result:list_late_payers"]);
+    expect(events).toEqual([
+      "model_call:1",
+      "tool_call:list_late_payers",
+      "tool_result:list_late_payers",
+      "model_call:2",
+    ]);
     expect(outcome.plan?.steps[0].ids).toEqual(["c1"]);
     expect(seen.customers.has("c1")).toBe(true);
   });

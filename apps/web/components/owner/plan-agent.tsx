@@ -122,6 +122,8 @@ function Planning({ goal, onOpen }: { goal: string; onOpen: (target: PlanTarget)
       {plan && (
         <p className="mt-5 text-sm text-night-muted">
           {plan.planned_by === "model" ? words.byModel : words.byRules}{" "}
+          {plan.usage.calls > 0 &&
+            `${words.usage(plan.usage.calls, plan.usage.input_tokens.toLocaleString("en-IN"))} `}
           <a
             className="underline underline-offset-2"
             href={`/api/agent/runs/${plan.run_id}`}

@@ -14,6 +14,17 @@ export function geminiPlanner(): Generate {
       contents,
       config: { ...config, abortSignal: AbortSignal.timeout(CALL_TIMEOUT_MS) },
     });
-    return { functionCalls: response.functionCalls, content: response.candidates?.[0]?.content };
+    const usage = response.usageMetadata;
+    return {
+      functionCalls: response.functionCalls,
+      content: response.candidates?.[0]?.content,
+      usage: usage
+        ? {
+            inputTokens: usage.promptTokenCount ?? 0,
+            outputTokens: usage.candidatesTokenCount ?? 0,
+            thoughtTokens: usage.thoughtsTokenCount ?? 0,
+          }
+        : undefined,
+    };
   };
 }

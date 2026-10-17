@@ -30,6 +30,7 @@ export type PlannerWords = {
   open: Record<Target, string>;
   byModel: string;
   byRules: string;
+  usage: (calls: number, tokens: string) => string;
   record: string;
   nothingToDo: string;
   failed: string;
@@ -95,6 +96,8 @@ const en: PlannerWords = {
   },
   byModel: "Planned by Gemini from your numbers. The app works out every amount.",
   byRules: "Planned by fixed rules: the AI could not answer just now.",
+  usage: (calls, tokens) =>
+    `${calls} model ${calls === 1 ? "call" : "calls"}, ${tokens} tokens of context in all.`,
   record: "See how it decided",
   nothingToDo: "This week is fine. There is nothing to do now.",
   failed: "Could not plan just now. Try again.",
@@ -158,6 +161,7 @@ const ta: PlannerWords = {
   },
   byModel: "உங்கள் எண்களிலிருந்து Gemini திட்டமிட்டது. ஒவ்வொரு தொகையையும் செயலியே கணக்கிடுகிறது.",
   byRules: "நிலையான விதிகளால் திட்டமிடப்பட்டது: AI இப்போது பதில் தரவில்லை.",
+  usage: (calls, tokens) => `${calls} முறை AI-யிடம் கேட்டது, மொத்தம் ${tokens} டோக்கன்கள்.`,
   record: "எப்படி முடிவு செய்தது என்று பாருங்கள்",
   nothingToDo: "இந்த வாரம் சரியாக உள்ளது. இப்போது செய்ய எதுவும் இல்லை.",
   failed: "இப்போது திட்டமிட முடியவில்லை. மீண்டும் முயற்சிக்கவும்.",

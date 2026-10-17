@@ -19,7 +19,10 @@ import { plannerTools, runPlannerTool, type Seen } from "@/lib/planner/tools";
 
 const MAX_CALLS = 5;
 
-export type ModelResponse = { functionCalls?: FunctionCall[]; content?: Content };
+/** Tokens one model call used: what went in (the context), what came out, and its thinking. */
+export type Usage = { inputTokens: number; outputTokens: number; thoughtTokens: number };
+
+export type ModelResponse = { functionCalls?: FunctionCall[]; content?: Content; usage?: Usage };
 export type Generate = (
   contents: Content[],
   config: GenerateContentConfig,
@@ -27,6 +30,7 @@ export type Generate = (
 
 /** One thing the run did, for the live step rail and the run's saved record. */
 export type PlannerEvent =
+  | { kind: "model_call"; call: number; usage: Usage | null }
   | { kind: "tool_call"; name: string }
   | { kind: "tool_result"; name: string; result: Record<string, unknown> };
 
@@ -63,6 +67,7 @@ export async function runPlanner(
   try {
     for (let call = 1; call <= MAX_CALLS; call++) {
       const response = await deps.generate(contents, call === MAX_CALLS ? finishOnly : anyTool);
+      await deps.onEvent({ kind: "model_call", call, usage: response.usage ?? null });
       const calls = response.functionCalls ?? [];
       if (calls.length === 0) return { plan: null, problem: "the model called no tool" };
 
