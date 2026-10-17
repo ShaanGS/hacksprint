@@ -32,7 +32,7 @@ export default function Home() {
           right, so nothing needs a scroll. On a phone they stack. */}
       <div className="flex flex-col overflow-hidden lg:h-dvh lg:max-h-232 lg:min-h-160">
         <p className="flex flex-wrap items-center justify-center gap-x-6 gap-y-1 px-4 pt-3 text-xs text-ink-muted">
-          <span>Speaks Tamil, Hindi, Kannada and English</span>
+          <span>Talk in Tamil or English. Reminders go out in four languages</span>
           <span className="hidden sm:inline">We never hold or move your money</span>
         </p>
 
