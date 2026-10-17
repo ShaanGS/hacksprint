@@ -38,8 +38,8 @@ provider confirmed), `supplier_bill` (a confirmed bill), `estimate` (worked out 
 `owner_said` (the owner's own words, confirmed by him). A total takes the label of its weakest
 input.
 
-**Demo data.** While `DEMO_MODE` is on, `GET /api/rotation` and `GET /api/statement` carry
-`"demo_data": true`, and screens label the data as demo data.
+**Demo data.** While `DEMO_MODE` is on, `GET /api/rotation`, `GET /api/statement` and
+`POST /api/bill-pay/run` carry `"demo_data": true`, and screens label the data as demo data.
 
 **Realtime.** After any write that changes numbers the server broadcasts on channel
 `shop:{shopId}`, event `changed`, payload `{"area": "rotation" | "credit" | "stock"}`. No data is
@@ -97,7 +97,7 @@ cash entry in the last 28).
     "likely": {
       "paise": 5900000,
       "parts": [
-        { "key": "money_now", "paise": 720000, "label": "owner_said", "said_at": "2026-10-16T21:30:00+05:30", "verified_after_paise": 0 },
+        { "key": "money_now", "paise": 720000, "label": "owner_said", "said_at": "2026-10-16T21:30:00+05:30", "verified_after_paise": 0, "paid_out_after_paise": 0 },
         { "key": "usual_week_sales", "paise": 4900000, "label": "owner_said", "days_used": 27 },
         { "key": "from_customers", "paise": 280000, "label": "owner_said", "customers": 2 }
       ]
@@ -112,7 +112,9 @@ cash entry in the last 28).
 
 `state` is `short` (gap below 0), `close` (gap under 10% of `needed`, the named constant
 `CLOSE_SHARE`) or `ok`. `late` is never part of `likely`: it is the "if you collect from late
-payers" line.
+payers" line. `money_now` is the money in hand said in the last 2 days, plus verified payments
+since (`verified_after_paise`), minus bills marked paid since (`paid_out_after_paise`): a bill
+paid today leaves the bills due, so it leaves the money in hand too.
 
 ### GET /api/rotation/collect
 
@@ -533,6 +535,105 @@ lands in a test account, not the distributor's; the payment is kept apart
 { "payment_id": "…", "url": "https://…", "amount_paise": 73200, "paid": false }
 ```
 
+## Bill-pay agent (decision of Oct 18)
+
+The owner sets a mandate by tapping chips: how much the agent may pay in any 7 days and how much
+money must stay in hand. For each unpaid supplier bill the agent decides pay or hold, by fixed
+rules (`lib/rotation/mandate.ts`), never the model. A Paytm link collects money for the shop and
+cannot pay a distributor, so a bill to pay gets a UPI link
+(`upi://pay?pa=<upi id>&pn=<distributor>&am=<rupees.paise>&cu=INR&tn=<bill number>`) that opens
+the owner's own UPI app; he pays there with his UPI PIN and then says he paid. We never hold or
+move the money.
+
+### GET /api/bill-pay/mandate
+
+```json
+{
+  "mandate": {
+    "weekly_limit_paise": 2500000,
+    "keep_in_hand_paise": 200000,
+    "set_at": "2026-10-18T15:02:11+05:30",
+    "label": "owner_said"
+  }
+}
+```
+
+`mandate` is null until the owner sets one, and after he stops it.
+
+### PUT /api/bill-pay/mandate
+
+Request: `{ "weekly_limit_paise": 1000000 | 2500000 | 5000000, "keep_in_hand_paise": 100000 |
+200000 | 500000 }`, the chip amounts only (400 otherwise). The live mandate is revoked first, then
+the new one added, so every limit he set stays on record and a failed save leaves no limit rather
+than an old one. Audited as `mandate.set`; broadcasts `rotation`. `200 {"mandate": {...}}` as
+above; `409` if another save landed at the same moment.
+
+### DELETE /api/bill-pay/mandate
+
+Stop: the agent pays nothing until a new limit is set. Audited as `mandate.stopped`; broadcasts
+`rotation`. `200 {"ok": true}`; `409` if there is no live mandate.
+
+### POST /api/bill-pay/run
+
+One run of the agent, saved in `agent_runs` (`agent` `bill_pay`, `planned_by` `rules`) with its
+decisions as one `agent_steps` row (`kind` `plan`, `name` `decisions`), audited as
+`bill_pay.run`. Nothing is paid by a run. The rules walk the unpaid supplier bills, most overdue
+first, then by due date (loan EMIs are left out):
+
+- the festival order's bill: hold, `festival_order` (the loan is for it);
+- due more than 2 days ahead: hold, `not_due_yet`;
+- no mandate: hold, `no_mandate`;
+- more than the limit has left (the weekly limit minus the agent's payments in the last 7 days
+  minus the bills this run already chose): hold, `over_limit`;
+- more than the money in hand above the floor, after the bills already chosen: hold,
+  `not_enough_in_hand`, with `needs_more_paise` (how much more money in hand it would take, the
+  floor included);
+- the distributor has no UPI id: hold, `no_upi_id`;
+- else pay, `within_limit`. A bill is paid whole or not at all.
+
+The money in hand is the week's `money_now` (see `GET /api/rotation`). Seeded demo, with the
+limit at ₹25,000 and ₹2,000 kept, after the three late payers paid ₹9,600 by link:
+
+```json
+{
+  "run_id": "…",
+  "mandate": { "weekly_limit_paise": 2500000, "keep_in_hand_paise": 200000, "set_at": "…", "label": "owner_said" },
+  "money_in_hand_paise": 1680000,
+  "money_in_hand_label": "owner_said",
+  "keep_in_hand_paise": 200000,
+  "limit_left_paise": 1100000,
+  "in_hand_after_paise": 280000,
+  "bills_total_paise": 10550000,
+  "festival": "Deepavali",
+  "decisions": [
+    { "payable_id": "…", "distributor": "Sri Balaji Agencies", "distributor_id": "…", "bill_number": "SB-2070", "amount_paise": 2150000, "label": "supplier_bill", "due_date": "2026-10-15", "due_in_days": 0, "overdue_days": 3, "decision": "hold", "reason": "not_enough_in_hand", "needs_more_paise": 670000, "upi_id": null, "upi_url": null },
+    { "payable_id": "…", "distributor": "Murugan Traders", "distributor_id": "…", "bill_number": "MT-140", "amount_paise": 1400000, "label": "supplier_bill", "due_date": "2026-10-20", "due_in_days": 2, "overdue_days": 0, "decision": "pay", "reason": "within_limit", "needs_more_paise": 0, "upi_id": "murugantraders.demo@example", "upi_url": "upi://pay?pa=murugantraders.demo@example&pn=Murugan%20Traders&am=14000.00&cu=INR&tn=MT-140" },
+    { "payable_id": "…", "distributor": "Sri Balaji Agencies", "distributor_id": "…", "bill_number": "DV-1", "amount_paise": 4850000, "label": "supplier_bill", "due_date": "2026-10-22", "due_in_days": 4, "overdue_days": 0, "decision": "hold", "reason": "festival_order", "needs_more_paise": 0, "upi_id": null, "upi_url": null },
+    { "payable_id": "…", "distributor": "Sri Balaji Agencies", "distributor_id": "…", "bill_number": "SB-2072", "amount_paise": 2150000, "label": "supplier_bill", "due_date": "2026-10-29", "due_in_days": 11, "overdue_days": 0, "decision": "hold", "reason": "not_due_yet", "needs_more_paise": 0, "upi_id": null, "upi_url": null }
+  ],
+  "paid_this_week": [],
+  "demo_data": true
+}
+```
+
+`limit_left_paise` and `in_hand_after_paise` are after the bills this run would pay.
+`paid_this_week` lists the bills paid under the agent in the last 7 days
+(`payable_id`, `distributor`, `bill_number`, `amount_paise`, `paid_at`, `label` `owner_said`):
+what `limit_left_paise` already took off. The demo distributors' UPI ids use a handle no UPI app
+has registered, so no real money can move on stage.
+
+### POST /api/bill-pay/{payableId}/paid
+
+Request: `{ "run_id": "…" }`. The owner paid this bill from his UPI app and says so. The rules
+decide again first: `409` "This bill can no longer be paid inside your limit. Look again." unless
+the bill is still `pay`; `404` for an unknown run. The bill is marked paid by `upi` (his word,
+`owner_said`, never `verified_payment`) with the run on it (`payables.agent_run_id`), which counts
+it against the limit. Audited as `bill_pay.paid`; broadcasts `rotation`.
+
+```json
+{ "payable_id": "…", "amount_paise": 1400000, "paid_via": "upi", "label": "owner_said" }
+```
+
 ## Proof and loans (D1 to D4)
 
 ### GET /api/statement?months=3
@@ -679,6 +780,7 @@ Each row is a `kind` with its facts, so a screen writes it in the reader's langu
 | `cost` | `cost` (`rent`, `staff`, `home`, `cash_purchases`, `other`), `period` | `weekly_costs` |
 | `money_in_hand` | `at` | `money_now` |
 | `payment` | `at` | `money_now` |
+| `bill_paid` | `distributor`, `bill_number`, `at` (its `paise` is negative: money that went out) | `money_now` |
 | `day_sales` | `date` | `usual_week_sales` |
 | `customer` | `name`, `status`, `oldest_unpaid` | `from_customers`, `late`, `with_customers` |
 | `product` | `name`, `art`, `counted_at` | `on_shelf` |

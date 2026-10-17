@@ -2,6 +2,7 @@
 
 import { FileText, ReceiptText, Wallet } from "lucide-react";
 import { useState } from "react";
+import { BillLimitCard } from "@/components/owner/bill-limit-card";
 import { useLive } from "@/components/owner/live";
 import { LoanCheck } from "@/components/owner/loan-check";
 import { useOwnerLanguage } from "@/components/owner/owner-language";
@@ -20,7 +21,7 @@ import { ownerApi, type Payable } from "@/lib/owner/api";
 
 /**
  * D1 to D4 and the setup behind the week (B7): the loan check, the statement for the bank,
- * what is owed to suppliers, and the weekly costs he said.
+ * the limit for the bill-pay agent, what is owed to suppliers, and the weekly costs he said.
  */
 export function BankTab({ onCollect }: { onCollect: () => void }) {
   const { lang, text } = useOwnerLanguage();
@@ -89,6 +90,8 @@ export function BankTab({ onCollect }: { onCollect: () => void }) {
           )}
         </div>
       </section>
+
+      <BillLimitCard />
 
       {payables.data && (
         <Section title={text.duesTitle} total={payables.data.total_paise}>

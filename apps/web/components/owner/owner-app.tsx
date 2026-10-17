@@ -12,6 +12,7 @@ import { Listening, type ListeningState } from "@/components/owner/listening";
 import { LiveUpdates } from "@/components/owner/live";
 import { useOwnerLanguage } from "@/components/owner/owner-language";
 import { OwnerScreenContext, type AgentKind } from "@/components/owner/owner-screen";
+import { PayAgent } from "@/components/owner/pay-agent";
 import { PlanAgent, type PlanTarget } from "@/components/owner/plan-agent";
 import { ReorderAgent } from "@/components/owner/reorder-agent";
 import { StockTab } from "@/components/owner/stock-tab";
@@ -158,6 +159,14 @@ export function OwnerApp({
           <Listening state={listening} />
           <CollectAgent open={agent === "collect"} onClose={closeAgent} />
           <ReorderAgent open={agent === "reorder"} onClose={closeAgent} />
+          <PayAgent
+            open={agent === "pay"}
+            onClose={closeAgent}
+            onSetLimit={() => {
+              setAgent(null);
+              setTab("bank");
+            }}
+          />
           <PlanAgent
             open={agent === "plan"}
             goal={planGoal}

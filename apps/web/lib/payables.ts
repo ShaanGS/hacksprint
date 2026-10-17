@@ -28,15 +28,24 @@ export function payablesResponse(data: ShopData) {
   };
 }
 
+/**
+ * The owner says he paid a bill. `agentRunId` is set when he paid it from the bill-pay agent's
+ * UPI link: the same write records the run, so the payment counts against the agent's limit.
+ */
 export async function markPayablePaid(
   db: SupabaseClient,
   shopId: string,
   payableId: string,
   paidVia: "cash" | "bank" | "upi",
+  agentRunId: string | null = null,
 ) {
   const { data, error } = await db
     .from("payables")
-    .update({ paid_at: new Date().toISOString(), paid_via: paidVia })
+    .update({
+      paid_at: new Date().toISOString(),
+      paid_via: paidVia,
+      ...(agentRunId === null ? {} : { agent_run_id: agentRunId }),
+    })
     .eq("id", payableId)
     .eq("shop_id", shopId)
     .is("paid_at", null)
@@ -47,10 +56,10 @@ export async function markPayablePaid(
   await audit(db, shopId, [
     {
       actor: "owner",
-      action: "payable.paid",
+      action: agentRunId === null ? "payable.paid" : "bill_pay.paid",
       entityType: "payable",
       entityId: payableId,
-      payload: { paidVia },
+      payload: agentRunId === null ? { paidVia } : { paidVia, agentRunId },
     },
   ]);
   await broadcastChanged(db, shopId, ["rotation"]);
