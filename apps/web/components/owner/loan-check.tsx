@@ -1,6 +1,6 @@
 "use client";
 
-import { Bot, Check, ExternalLink, FileText, Landmark } from "lucide-react";
+import { Bot, Check, ClipboardCheck, ExternalLink, FileText, Landmark } from "lucide-react";
 import { useCallback, useState, type ReactNode } from "react";
 import { ApplyAgent } from "@/components/owner/apply-agent";
 import { useOwnerLanguage } from "@/components/owner/owner-language";
@@ -11,6 +11,7 @@ import { Button, LinkButton } from "@/components/ui/button";
 import { IconCircle } from "@/components/ui/icon-circle";
 import { Sheet } from "@/components/ui/sheet";
 import { cn } from "@/lib/cn";
+import { loanTrackerWordsFor } from "@/lib/i18n/loan-tracker";
 import { formatMoney } from "@/lib/money";
 import { ownerApi, type Link, type LoanPurpose, type LoanReady } from "@/lib/owner/api";
 import { schemeWords } from "@/lib/schemes/catalog";
@@ -129,6 +130,26 @@ export function LoanCheck({ onCollect }: { onCollect: () => void }) {
                 >
                   <FileText aria-hidden className="size-5" />
                   {text.makePack}
+                </Button>
+              )}
+              {!answer.no_loan_needed && (
+                <Button
+                  wide
+                  variant="soft"
+                  className="mt-2"
+                  disabled={busy}
+                  onClick={() =>
+                    run(
+                      () => ownerApi.startLoan(answer.loan_request_id),
+                      () => {
+                        setAnswer(null);
+                        notify(loanTrackerWordsFor(lang).tracking);
+                      },
+                    )
+                  }
+                >
+                  <ClipboardCheck aria-hidden className="size-5" />
+                  {loanTrackerWordsFor(lang).startTracking}
                 </Button>
               )}
               {demo && !answer.no_loan_needed && (

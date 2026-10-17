@@ -548,6 +548,56 @@ amount, the need is the approved Deepavali order (`supplier_bill`); with one, it
 When collecting is enough: `"loan_needed_paise": 0, "no_loan_needed": true, "scheme": null`,
 and the screen links the collect list.
 
+### Loan tracker: GET and POST /api/loans
+
+After a loan check, the owner taps "I applied at the bank" and then each step the bank takes.
+Every step and amount is his word (`owner_said`); we never hold or move loan money (rule 8).
+
+- `POST /api/loans` with `{ "loan_request_id": uuid }` starts tracking at `applied`. 409 when the
+  check needed no loan or the loan is already tracked.
+- `POST /api/loans/{id}/status` with `{ "status": "docs_asked" | "sanctioned" | "disbursed" |
+  "rejected" }`. Steps go applied, docs_asked (optional), sanctioned, disbursed; rejected ends any
+  step before disbursal; 409 otherwise. `sanctioned` also needs `sanctioned_paise`, `emi_paise`
+  and `tenure_months` from the bank's letter. `disbursed` writes one `loan_emi` payable per month
+  from the next month (day 29 to 31 becomes 28), so the week ahead counts EMIs like bills (9.16).
+- `POST /api/loans/emi/{payableId}/set-aside` with `{ "amount_paise": int }`: what he kept aside
+  tonight for that EMI, in his own account.
+- `GET /api/loans` returns `{ "loan": null }` or the latest loan:
+
+```json
+{
+  "loan": {
+    "id": "uuid",
+    "status": "disbursed",
+    "loan_needed_paise": 2700000,
+    "purpose": "stock_rotation",
+    "sanctioned_paise": 2700000,
+    "emi_paise": 240000,
+    "tenure_months": 12,
+    "disbursed_on": "2026-10-17",
+    "steps": [{ "status": "applied", "at": "2026-10-17T05:00:00Z" }],
+    "next_steps": [],
+    "emis": { "paid": 0, "total": 12 },
+    "next_emi": {
+      "payable_id": "uuid",
+      "amount_paise": 240000,
+      "due_date": "2026-11-17",
+      "overdue_days": 0,
+      "kept_paise": 0,
+      "remaining_paise": 240000,
+      "tonight_paise": 0,
+      "days_left": 31,
+      "started": false,
+      "label": "owner_said"
+    }
+  }
+}
+```
+
+`tonight_paise` follows 9.16: from 7 days before the EMI, what is still not kept aside over the
+days left, scaled by today's sales against a usual day (between half and double), rounded up to
+Rs 10, never more than remains; on the last night, all that remains.
+
 ### POST /api/loan-apply
 
 The apply agent, only while `DEMO_MODE` is on (404 otherwise). A simulation: it returns the

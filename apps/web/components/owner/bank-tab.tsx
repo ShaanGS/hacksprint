@@ -4,6 +4,7 @@ import { FileText, ReceiptText, Wallet } from "lucide-react";
 import { useState } from "react";
 import { useLive } from "@/components/owner/live";
 import { LoanCheck } from "@/components/owner/loan-check";
+import { LoanTrackerCard } from "@/components/owner/loan-tracker";
 import { useOwnerLanguage } from "@/components/owner/owner-language";
 import { useOwnerScreen } from "@/components/owner/owner-screen";
 import { Section } from "@/components/owner/section";
@@ -61,6 +62,7 @@ export function BankTab({ onCollect }: { onCollect: () => void }) {
     <main className="px-4 pt-2 pb-44">
       <TabHeader title={text.bankTitle} />
       <LoanCheck onCollect={onCollect} />
+      <LoanTrackerCard />
 
       <section className="mt-4 rounded-3xl bg-surface p-4 shadow-card">
         <div className="flex items-start gap-3">

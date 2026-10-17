@@ -40,6 +40,8 @@ export type ShopData = {
 };
 
 const iso = (value: string) => new Date(value).toISOString();
+/** What an EMI is called where a bill shows its distributor. */
+export const LOAN_EMI_NAME = "Loan EMI";
 const label = z.enum(sourceLabels);
 
 const customerRow = z.object({
@@ -62,7 +64,8 @@ const payableRow = z.object({
   paid_via: z.string().nullable(),
   kind: z.enum(["supplier_bill", "loan_emi"]),
   created_at: z.string(),
-  distributors: z.object({ name: z.string() }),
+  /** Null for a loan EMI, which is owed to the loan, not to a distributor. */
+  distributors: z.object({ name: z.string() }).nullable(),
   bills: z
     .object({ bill_number: z.string().nullable(), purchase_order_id: z.string().nullable() })
     .nullable(),
@@ -185,7 +188,7 @@ export async function loadShopData(
       paidVia: p.paid_via,
       kind: p.kind,
       createdAt: iso(p.created_at),
-      distributor: p.distributors.name,
+      distributor: p.distributors?.name ?? LOAN_EMI_NAME,
       billNumber: p.bills?.bill_number ?? null,
       purchaseOrderId: p.bills?.purchase_order_id ?? null,
     })),

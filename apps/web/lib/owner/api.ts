@@ -5,6 +5,8 @@ import { call, post, upload } from "@/lib/owner/fetch";
 import type { SourceLabel } from "@/lib/rotation/labels";
 import type { Reason, rotationResponse } from "@/lib/rotation/responses";
 import type { ChecklistItem } from "@/lib/loans/pack";
+import type { LoanStatus } from "@/lib/loans/track";
+import type { LoanTracker } from "@/lib/loans/tracker";
 import type { QuestionTopic } from "@/lib/owner-voice/types";
 import type { payStockOrder } from "@/lib/reorder/pay";
 import type { groupJson, reorderResponse } from "@/lib/reorder/plan";
@@ -194,6 +196,10 @@ export type ReorderPlan = ReturnType<typeof reorderResponse>;
 export type SentReorder = Awaited<ReturnType<typeof sendReorder>>;
 export type StockOrderPayment = Awaited<ReturnType<typeof payStockOrder>>;
 
+export type { LoanStatus, LoanTracker };
+
+export type LoanSanction = { sanctioned_paise: number; emi_paise: number; tenure_months: number };
+
 const recordingName = (audio: Blob) => (audio.type.includes("mp4") ? "owner.mp4" : "owner.webm");
 
 export const ownerApi = {
@@ -225,6 +231,13 @@ export const ownerApi = {
     post<Application>("/api/loan-apply", { loan_request_id: loanRequestId }),
   loanPack: (loanRequestId: string) =>
     post<{ share_url: string }>("/api/loan-pack", { loan_request_id: loanRequestId }),
+  loanTracker: () => call<LoanTracker>("/api/loans"),
+  startLoan: (loanRequestId: string) =>
+    post<{ loan_id: string }>("/api/loans", { loan_request_id: loanRequestId }),
+  moveLoan: (loanId: string, status: LoanStatus, sanction?: LoanSanction) =>
+    post<{ ok: true }>(`/api/loans/${loanId}/status`, { status, ...sanction }),
+  keepAside: (payableId: string, amountPaise: number) =>
+    post<{ ok: true }>(`/api/loans/emi/${payableId}/set-aside`, { amount_paise: amountPaise }),
   hear: (audio: Blob, lang: Lang) => {
     const form = new FormData();
     form.append("audio", audio, recordingName(audio));
