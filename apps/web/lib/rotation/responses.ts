@@ -51,6 +51,7 @@ export function rotationResponse(snapshot: Snapshot, now: Date, demoData: boolea
             label: week.likely.now.label,
             said_at: week.likely.now.saidAt === null ? null : indiaTime(week.likely.now.saidAt),
             verified_after_paise: week.likely.now.verifiedAfterPaise,
+            paid_out_after_paise: week.likely.now.paidOutAfterPaise,
           },
           {
             key: "usual_week_sales",

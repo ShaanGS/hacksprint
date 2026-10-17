@@ -1,7 +1,7 @@
 import { z } from "zod";
 import type { CustomerPosition } from "@/lib/rotation/credit";
 import { addDays, shopDate } from "@/lib/time";
-import { FORECAST_DAYS, overdueDays, SALES_WINDOW_DAYS } from "@/lib/rotation/forecast";
+import { FORECAST_DAYS, overdueDays, paidAfter, SALES_WINDOW_DAYS } from "@/lib/rotation/forecast";
 import type { SourceLabel } from "@/lib/rotation/labels";
 import type { ShopData } from "@/lib/rotation/load";
 import type { Snapshot } from "@/lib/rotation/snapshot";
@@ -40,6 +40,7 @@ export type SourceRow = Base &
     | { kind: "cost"; cost: string; period: "week" | "month" }
     | { kind: "money_in_hand"; at: string }
     | { kind: "payment"; at: string }
+    | { kind: "bill_paid"; distributor: string; bill_number: string | null; at: string }
     | { kind: "day_sales"; date: string }
     | {
         kind: "customer";
@@ -95,6 +96,15 @@ function moneyNowRows(data: ShopData, snapshot: Snapshot): SourceRow[] {
         paise: p.amountPaise,
         label: "verified_payment",
       })),
+    // Money that went out since, so the rows still add up to the money now.
+    ...paidAfter(data.payables, said).map((p): SourceRow => ({
+      kind: "bill_paid",
+      distributor: p.distributor,
+      bill_number: p.billNumber,
+      at: indiaTime(p.paidAt),
+      paise: -p.amountPaise,
+      label: p.paidVia === "paytm" ? "verified_payment" : "owner_said",
+    })),
   ];
 }
 

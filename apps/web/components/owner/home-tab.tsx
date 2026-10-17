@@ -243,6 +243,8 @@ export function HomeTab({ onTab }: { onTab: (tab: OwnerTab) => void }) {
                     text.saidAt(dates.dayAndTime(inHand.said_at)),
                     inHand.verified_after_paise > 0 &&
                       text.paidSince(formatMoney(inHand.verified_after_paise)),
+                    inHand.paid_out_after_paise > 0 &&
+                      text.billsPaidSince(formatMoney(inHand.paid_out_after_paise)),
                   ]
                     .filter(Boolean)
                     .join(" · ")

@@ -13,7 +13,7 @@ import { lastFullMonths, shopDate } from "@/lib/time";
 
 export type ShopPayable = Payable & {
   kind: "supplier_bill" | "loan_emi";
-  paidAt: string | null;
+  distributorId: string;
   paidVia: string | null;
   createdAt: string;
 };
@@ -56,6 +56,7 @@ const ledgerRow = z.object({
 });
 const payableRow = z.object({
   id: z.string(),
+  distributor_id: z.string(),
   amount_paise: z.number().int(),
   due_date: z.string(),
   paid_at: z.string().nullable(),
@@ -136,7 +137,7 @@ export async function loadShopData(
       db
         .from("payables")
         .select(
-          "id, amount_paise, due_date, paid_at, paid_via, kind, created_at, distributors(name), bills(bill_number, purchase_order_id)",
+          "id, distributor_id, amount_paise, due_date, paid_at, paid_via, kind, created_at, distributors(name), bills(bill_number, purchase_order_id)",
         )
         .eq("shop_id", shopId),
       db.from("shop_costs").select("kind, amount_paise, period").eq("shop_id", shopId),
@@ -185,6 +186,7 @@ export async function loadShopData(
       paidVia: p.paid_via,
       kind: p.kind,
       createdAt: iso(p.created_at),
+      distributorId: p.distributor_id,
       distributor: p.distributors.name,
       billNumber: p.bills?.bill_number ?? null,
       purchaseOrderId: p.bills?.purchase_order_id ?? null,

@@ -69,6 +69,7 @@ export type MoneyText = {
   saidAt: (time: string) => string;
   notSaidLately: string;
   paidSince: (amount: Money) => string;
+  billsPaidSince: (amount: Money) => string;
   daysUsed: (days: number) => string;
   customersDue: (count: number) => string;
   asks: { money_in_hand: string; cash_sales: string };
@@ -91,6 +92,7 @@ export type MoneyText = {
   perWeek: string;
   moneyInHandSaid: string;
   paymentIn: string;
+  billPaidAt: (time: string) => string;
   daySales: string;
   status: Record<CustomerStatus["kind"], string>;
   owesSince: (date: string) => string;
@@ -263,6 +265,7 @@ const en: MoneyText = {
   saidAt: (time) => `You said at ${time}`,
   notSaidLately: "Not said in the last 2 days",
   paidSince: (amount) => `plus ${amount} paid since`,
+  billsPaidSince: (amount) => `minus ${amount} in bills paid since`,
   daysUsed: (days) => `From ${days} days of your numbers`,
   customersDue: (count) => `${count} ${plural(count, "customer", "customers")} usually pay by then`,
   asks: {
@@ -298,6 +301,7 @@ const en: MoneyText = {
   perWeek: "Each week",
   moneyInHandSaid: "Money in hand, as you said",
   paymentIn: "Payment received",
+  billPaidAt: (time) => `Bill paid ${time}`,
   daySales: "Cash you said plus verified payments",
   status: {
     late: "Late",
@@ -502,6 +506,7 @@ const ta: MoneyText = {
   saidAt: (time) => `நீங்கள் ${time}-க்குச் சொன்னது`,
   notSaidLately: "கடந்த 2 நாளில் சொல்லவில்லை",
   paidSince: (amount) => `பிறகு வந்த ${amount} சேர்த்து`,
+  billsPaidSince: (amount) => `பிறகு கட்டிய ${amount} பில் கழித்து`,
   daysUsed: (days) => `உங்கள் ${days} நாள் கணக்கிலிருந்து`,
   customersDue: (count) => `${count} பேர் வழக்கமாக அதற்குள் தருவார்கள்`,
   asks: {
@@ -537,6 +542,7 @@ const ta: MoneyText = {
   perWeek: "ஒவ்வொரு வாரமும்",
   moneyInHandSaid: "நீங்கள் சொன்ன கையிருப்பு",
   paymentIn: "வந்த பணம்",
+  billPaidAt: (time) => `${time} கட்டிய பில்`,
   daySales: "நீங்கள் சொன்ன ரொக்கம் + சரிபார்த்த பணம்",
   status: {
     late: "தாமதம்",

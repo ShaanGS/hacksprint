@@ -21,6 +21,7 @@ export type Payable = {
   amountPaise: number;
   dueDate: string;
   paid: boolean;
+  paidAt: string | null;
   distributor: string;
   billNumber: string | null;
   purchaseOrderId: string | null;
@@ -70,10 +71,17 @@ export function weeklyCosts(costs: Cost[]) {
 }
 
 /**
- * The money in hand the owner said in the last 2 days plus verified payments since. Older than
- * that, it is left out and the screen asks for tonight's figure.
+ * The money in hand the owner said in the last 2 days, plus verified payments since, minus bills
+ * paid since. A bill paid today drops out of the bills due, so it must come out of the money too,
+ * or the week would look better than it is. Older than 2 days, the figure is left out and the
+ * screen asks for tonight's.
  */
-export function moneyNow(dayCloses: DayClose[], payments: Payment[], now: Date) {
+export function moneyNow(
+  dayCloses: DayClose[],
+  payments: Payment[],
+  payables: Payable[],
+  now: Date,
+) {
   const fresh = dayCloses
     .filter((d) => d.moneyInHandPaise !== null)
     .filter((d) => now.getTime() - Date.parse(d.recordedAt) <= MONEY_IN_HAND_MAX_DAYS * 86_400_000)
@@ -84,19 +92,32 @@ export function moneyNow(dayCloses: DayClose[], payments: Payment[], now: Date) 
       label: "owner_said" as SourceLabel,
       saidAt: null,
       verifiedAfterPaise: 0,
+      paidOutAfterPaise: 0,
       missing: true,
     };
   }
   const verifiedAfterPaise = payments
     .filter((p) => p.paidAt > fresh.recordedAt)
     .reduce((total, p) => total + p.amountPaise, 0);
+  const paidOutAfterPaise = paidAfter(payables, fresh.recordedAt).reduce(
+    (total, p) => total + p.amountPaise,
+    0,
+  );
   return {
-    paise: (fresh.moneyInHandPaise ?? 0) + verifiedAfterPaise,
+    paise: (fresh.moneyInHandPaise ?? 0) + verifiedAfterPaise - paidOutAfterPaise,
     label: "owner_said" as SourceLabel,
     saidAt: fresh.recordedAt,
     verifiedAfterPaise,
+    paidOutAfterPaise,
     missing: false,
   };
+}
+
+/** Bills paid after an instant, such as the night's money-in-hand figure. */
+export function paidAfter<T extends Pick<Payable, "paidAt">>(payables: T[], instant: string) {
+  return payables.filter(
+    (p): p is T & { paidAt: string } => p.paidAt !== null && p.paidAt > instant,
+  );
 }
 
 /**
@@ -158,7 +179,7 @@ export function weekForecast(input: ForecastInput) {
   const today = shopDate(input.now);
   const due = dueThisWeek(input.payables, today, input.leaveOut);
   const costs = weeklyCosts(input.costs);
-  const now = moneyNow(input.dayCloses, input.payments, input.now);
+  const now = moneyNow(input.dayCloses, input.payments, input.payables, input.now);
   const sales = usualWeekSales(input.dayCloses, input.payments, today);
   const customers = likelyFromCustomers(input.positions);
   const neededPaise = due.paise + costs.paise;

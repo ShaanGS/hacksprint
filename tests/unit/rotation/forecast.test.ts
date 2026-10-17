@@ -47,10 +47,11 @@ describe("money needed (9.7)", () => {
 
 describe("money likely (9.7)", () => {
   it("takes the money in hand said last night", () => {
-    expect(moneyNow(dayCloses, payments, NOW)).toMatchObject({
+    expect(moneyNow(dayCloses, payments, payables, NOW)).toMatchObject({
       paise: 720_000,
       missing: false,
       verifiedAfterPaise: 0,
+      paidOutAfterPaise: 0,
     });
   });
 
@@ -59,15 +60,30 @@ describe("money likely (9.7)", () => {
       ...payments,
       { paidAt: at(TODAY, "12:00"), amountPaise: 420_000, isCreditRepayment: true },
     ];
-    expect(moneyNow(dayCloses, later, NOW)).toMatchObject({
+    expect(moneyNow(dayCloses, later, payables, NOW)).toMatchObject({
       paise: 1_140_000,
       verifiedAfterPaise: 420_000,
     });
   });
 
+  it("takes off bills paid after it, and not the ones paid before", () => {
+    const collected = [
+      ...payments,
+      { paidAt: at(TODAY, "11:00"), amountPaise: 960_000, isCreditRepayment: true },
+    ];
+    const paidToday = payables.map((p) =>
+      p.id === "murugan" ? { ...p, paid: true, paidAt: at(TODAY, "14:00") } : p,
+    );
+    expect(moneyNow(dayCloses, collected, paidToday, NOW)).toMatchObject({
+      paise: 280_000,
+      verifiedAfterPaise: 960_000,
+      paidOutAfterPaise: 1_400_000,
+    });
+  });
+
   it("leaves out money in hand older than 2 days and asks for it", () => {
     const old = dayCloses.filter((d) => d.businessDate < daysAgo(2));
-    expect(moneyNow(old, payments, NOW)).toMatchObject({ paise: 0, missing: true });
+    expect(moneyNow(old, payments, payables, NOW)).toMatchObject({ paise: 0, missing: true });
     expect(weekForecast({ ...input, dayCloses: old }).asks).toContain("money_in_hand");
   });
 
@@ -116,6 +132,16 @@ describe("the week's state", () => {
     expect(week.state).toBe("short");
     expect(week.late.paise).toBe(960_000);
     expect(week.asks).toEqual([]);
+  });
+
+  it("keeps the gap as it was when a bill is paid after the night's figure", () => {
+    const paidToday = payables.map((p) =>
+      p.id === "murugan" ? { ...p, paid: true, paidAt: at(TODAY, "14:00") } : p,
+    );
+    const week = weekForecast({ ...input, payables: paidToday });
+    expect(week.needed.paise).toBe(8_150_000);
+    expect(week.likely.paise).toBe(4_500_000);
+    expect(week.gapPaise).toBe(-3_650_000);
   });
 
   it("finds a normal week, without the festival bill, ok with ₹12,000 spare", () => {

@@ -115,6 +115,12 @@ function SourceRowView({ row }: { row: SourceRow }) {
           title: text.paymentIn,
           meta: dates.dayAndTime(row.at),
         };
+      case "bill_paid":
+        return {
+          art: <Art name="bill" size={44} />,
+          title: [row.distributor, row.bill_number].filter(Boolean).join(" · "),
+          meta: text.billPaidAt(dates.dayAndTime(row.at)),
+        };
       case "day_sales":
         return {
           art: <Art name="coins" size={44} />,
