@@ -128,7 +128,9 @@ export function shelf(
       weeklySales: sales,
       daysLeft: days,
       unitCostPaise,
-      valuePaise: unitCostPaise === null ? null : Math.round(estimate.qty * unitCostPaise),
+      // An estimate is shown to the rupee; paise would claim a precision it does not have.
+      valuePaise:
+        unitCostPaise === null ? null : Math.round((estimate.qty * unitCostPaise) / 100) * 100,
       tags: tagsFor(days),
       countAsked: false,
     };

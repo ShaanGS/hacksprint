@@ -115,3 +115,16 @@ describe("the shelf (9.3, 9.10)", () => {
     ).toEqual(["atta", "detergent"]);
   });
 });
+
+describe("shelf value", () => {
+  it("is an estimate to the rupee, never to the paisa", () => {
+    const [item] = shelf(
+      [{ id: "atta", name: "Atta", art: "atta", unit: "pack", packSize: "5 kg" }],
+      [count(7, 10)],
+      [receipt(10, 3, "atta", 25_370)],
+      NOW,
+    );
+    expect(item.valuePaise).not.toBeNull();
+    expect((item.valuePaise ?? 1) % 100).toBe(0);
+  });
+});
