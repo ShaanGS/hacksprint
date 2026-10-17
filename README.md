@@ -22,7 +22,7 @@
 <p align="center">
   <a href="https://hacksprint-jet.vercel.app"><b>Live app</b></a> ·
   <a href="https://hacksprint-jet.vercel.app/demo"><b>Judges' screen</b></a> ·
-  <a href="https://github.com/ShaanGS/hacksprint/releases/tag/v1.0-hack-sprint"><b>Demo video</b></a> ·
+  <a href="https://hacksprint-jet.vercel.app/video/demo.mp4"><b>Demo video (2 min)</b></a> ·
   <a href="docs/spec.md">Spec</a> ·
   <a href="docs/api.md">API</a>
 </p>
