@@ -1,4 +1,5 @@
 import { describe, expect, it } from "vitest";
+import { checklist } from "@/lib/loans/pack";
 import { loanNeeded } from "@/lib/rotation/loan";
 import { mudraBand, registrationStep } from "@/lib/schemes/band";
 import { fixedLines, loanForms } from "@/lib/schemes/catalog";
@@ -79,5 +80,28 @@ describe("before applying", () => {
       "The bank decides; we do not promise approval.",
       "Applying for Mudra or Udyam costs nothing. Anyone asking you for a fee is not the government.",
     ]);
+  });
+});
+
+describe("the loan pack's documents (D4)", () => {
+  const profile = { udyamStatus: "no" as const, hasPan: true, repaidTarunBefore: false };
+  const status = (hasQuotation: boolean) =>
+    Object.fromEntries(checklist(profile, hasQuotation).map((item) => [item.key, item.status]));
+
+  it("says have or missing only for what the shop told us, and bring for the rest", () => {
+    expect(status(true)).toEqual({
+      aadhaar: "bring",
+      pan: "have",
+      udyam: "missing",
+      business_proof: "bring",
+      address_proof: "bring",
+      photos: "bring",
+      quotation: "have",
+      bank_statements: "bring",
+    });
+  });
+
+  it("has no quotation when the loan is for an amount he said, not a festival order", () => {
+    expect(status(false).quotation).toBe("missing");
   });
 });

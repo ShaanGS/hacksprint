@@ -64,8 +64,18 @@ describe("the statement (9.13)", () => {
       { billedOn: "2026-09-09", totalPaise: 1_400_000 },
     ],
     payables: [
-      { dueDate: "2026-09-17", paidAt: at("2026-09-17", "11:00"), paidVia: "bank" },
-      { dueDate: "2026-09-16", paidAt: at("2026-09-19", "18:00"), paidVia: "cash" },
+      {
+        dueDate: "2026-09-17",
+        paidAt: at("2026-09-17", "11:00"),
+        paidVia: "bank",
+        amountPaise: 2_150_000,
+      },
+      {
+        dueDate: "2026-09-16",
+        paidAt: at("2026-09-19", "18:00"),
+        paidVia: "cash",
+        amountPaise: 1_400_000,
+      },
     ],
     stockValueByMonth: [14_000_000, 15_000_000, 16_000_000],
     moneyCycleDays: 12.4,
@@ -86,16 +96,43 @@ describe("the statement (9.13)", () => {
       count: [0, 0, 2],
     });
     expect(blocks.declared.cashSales.label).toBe("owner_said");
-    expect(blocks.declared.averageStockValue).toEqual({ label: "estimate", paise: 15_000_000 });
+    expect(blocks.declared.averageStockValue).toMatchObject({
+      label: "estimate",
+      paise: 15_000_000,
+    });
   });
 
   it("calls bills paid on time the owner's word unless the payment was verified", () => {
-    expect(blocks.declared.billsPaidOnTime).toEqual({ label: "owner_said", percent: 50, bills: 2 });
+    expect(blocks.declared.billsPaidOnTime).toMatchObject({
+      label: "owner_said",
+      percent: 50,
+      bills: 2,
+    });
+    expect(blocks.declared.billsPaidOnTime.rows).toEqual([
+      { date: "2026-09-16", paise: 1_400_000, late: true },
+      { date: "2026-09-17", paise: 2_150_000, late: false },
+    ]);
   });
 
   it("reports repayments by link with the median days those customers took", () => {
     expect(blocks.verified.creditRecoveredByLink.byMonth[1]).toBe(210_000 + 140_000);
     // Link settlements took 6, 7, 8, 10 and 13 days.
     expect(blocks.verified.creditRecoveredByLink.medianDays).toBe(8);
+  });
+
+  it("keeps the rows behind each number, adding up to it, with no names", () => {
+    const sum = (rows: { paise: number }[]) => rows.reduce((total, row) => total + row.paise, 0);
+    const total = (cells: number[]) => cells.reduce((a, b) => a + b, 0);
+    for (const metric of [
+      blocks.verified.digitalPayments,
+      blocks.verified.creditRecoveredByLink,
+      blocks.verified.supplierBills,
+      blocks.declared.cashSales,
+      blocks.declared.creditGiven,
+      blocks.declared.creditRecoveredCash,
+    ]) {
+      expect(sum(metric.rows)).toBe(total(metric.byMonth));
+      for (const row of metric.rows) expect(Object.keys(row).sort()).toEqual(["date", "paise"]);
+    }
   });
 });

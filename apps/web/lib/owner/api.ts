@@ -3,51 +3,16 @@ import type { Lang } from "@/lib/i18n/languages";
 import type { Margin } from "@/lib/margins";
 import { call, post, upload } from "@/lib/owner/fetch";
 import type { SourceLabel } from "@/lib/rotation/labels";
+import type { Reason, rotationResponse } from "@/lib/rotation/responses";
 import type { RotationPart, SourceRow } from "@/lib/rotation/sources";
 import type { MudraBandKey } from "@/lib/schemes/catalog";
 import type { PriceSource } from "@/lib/sources/types";
 
 // The owner app's calls to the money API, typed as docs/api.md describes them.
 
-type Labelled = { paise: number; label: SourceLabel };
+export type Rotation = ReturnType<typeof rotationResponse>;
 
-export type Rotation = {
-  as_of: string;
-  demo_data: boolean;
-  now: {
-    on_shelf: Labelled & { cost_unknown: { product_id: string; name: string }[] };
-    with_customers: Labelled;
-    owed_to_suppliers: Labelled;
-  };
-  week: {
-    from: string;
-    to: string;
-    needed: {
-      paise: number;
-      parts: [
-        Labelled & { key: "due_7d"; bills: number; overdue_paise: number },
-        Labelled & { key: "weekly_costs" },
-      ];
-    };
-    likely: {
-      paise: number;
-      parts: [
-        Labelled & { key: "money_now"; said_at: string | null; verified_after_paise: number },
-        Labelled & { key: "usual_week_sales"; days_used: number },
-        Labelled & { key: "from_customers"; customers: number },
-      ];
-    };
-    gap_paise: number;
-    state: "short" | "close" | "ok";
-    late: Labelled & { customers: number };
-    asks: ("money_in_hand" | "cash_sales")[];
-  };
-};
-
-export type Reason =
-  | { kind: "late"; usual_days: number; days_late: number }
-  | { kind: "unknown"; settled: number }
-  | { kind: "due" | "later"; usual_days: number; due_in_days: number };
+export type { Reason };
 
 export type CustomerRow = {
   customer_id: string;

@@ -1,7 +1,6 @@
 import type { Metadata, Viewport } from "next";
 import { Geist, Noto_Sans_Devanagari, Noto_Sans_Kannada, Noto_Sans_Tamil } from "next/font/google";
 import { colors } from "@design/tokens";
-import { AppFrame } from "@/components/app/app-frame";
 import { cn } from "@/lib/cn";
 import { previewShop } from "@/lib/preview/data";
 import "./globals.css";
@@ -23,7 +22,8 @@ const kannada = Noto_Sans_Kannada({
 
 export const metadata: Metadata = {
   title: previewShop.name,
-  description: "Order by voice from your kirana, in your language",
+  description:
+    "Where a kirana's money is, whether this week's bills are covered, who to collect from, and the papers for a bank loan.",
 };
 
 export const viewport: Viewport = {
@@ -43,9 +43,7 @@ export default function RootLayout({
       lang="en"
       className={cn(geist.variable, tamil.variable, devanagari.variable, kannada.variable)}
     >
-      <body>
-        <AppFrame>{children}</AppFrame>
-      </body>
+      <body>{children}</body>
     </html>
   );
 }

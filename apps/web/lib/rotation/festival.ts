@@ -59,19 +59,22 @@ function payableIdOf(bill: z.infer<typeof billRow> | null): string | null {
   return Array.isArray(bill.payables) ? (bill.payables[0]?.id ?? null) : bill.payables.id;
 }
 
+/** The latest approved festival order, or the one a loan check was for when `orderId` is given. */
 export async function loadFestivalOrder(
   db: SupabaseClient,
   shopId: string,
   receipts: ShopReceipt[],
+  orderId?: string,
 ): Promise<FestivalOrder | null> {
-  const { data, error } = await db
+  const query = db
     .from("purchase_orders")
     .select(
       "id, festival, distributors(name), purchase_order_items(qty_ordered, products(id, name))",
     )
     .eq("shop_id", shopId)
     .not("festival", "is", null)
-    .not("approved_at", "is", null)
+    .not("approved_at", "is", null);
+  const { data, error } = await (orderId ? query.eq("id", orderId) : query)
     .order("approved_at", { ascending: false })
     .limit(1)
     .maybeSingle();

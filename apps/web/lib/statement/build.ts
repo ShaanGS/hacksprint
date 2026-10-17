@@ -7,6 +7,7 @@ import type { ShopData } from "@/lib/rotation/load";
 import { snapshotOf } from "@/lib/rotation/snapshot";
 import { statementBlocks, type StatementBlocks } from "@/lib/rotation/statement";
 import type { Shop } from "@/lib/shop";
+import type { StoredStatement } from "@/lib/statement/load";
 import { lastFullMonths } from "@/lib/time";
 
 // The shop statement (D1, D2): worked out from the records, then frozen with a share link, as a
@@ -44,6 +45,7 @@ export function statementPayload(shop: Shop, data: ShopData): StatementPayload {
       dueDate: p.dueDate,
       paidAt: p.paidAt,
       paidVia: p.paidVia,
+      amountPaise: p.amountPaise,
     })),
     stockValueByMonth: months.map((month) => snapshotOf(asOf(data, monthEnd(month))).onShelf.paise),
     moneyCycleDays: cycle === null ? null : Math.round(cycle.days * 10) / 10,
@@ -57,8 +59,8 @@ export function statementPayload(shop: Shop, data: ShopData): StatementPayload {
   };
 }
 
-/** Freezes a statement and returns its id and share link. */
-export async function saveStatement(db: SupabaseClient, shopId: string, payload: StatementPayload) {
+/** Freezes a statement and returns its id and share link; typed as it is read back. */
+export async function saveStatement(db: SupabaseClient, shopId: string, payload: StoredStatement) {
   const shareToken = randomBytes(12).toString("base64url");
   const { data, error } = await db
     .from("statements")
@@ -75,5 +77,45 @@ export async function saveStatement(db: SupabaseClient, shopId: string, payload:
   return {
     id: z.object({ id: z.string() }).parse(data).id,
     shareUrl: `${appEnv().APP_URL}/statement/${shareToken}`,
+  };
+}
+
+/** The statement as docs/api.md shows it: snake case, totals only. The rows stay on the page. */
+export function statementJson(payload: StatementPayload) {
+  const { months, verified, declared } = payload.blocks;
+  const monthly = (metric: { label: string; byMonth: number[] }) => ({
+    label: metric.label,
+    by_month: metric.byMonth,
+  });
+  return {
+    shop: payload.shop,
+    period: payload.period,
+    generated_at: payload.generated_at,
+    demo_data: payload.demo_data,
+    months,
+    verified: {
+      digital_payments: monthly(verified.digitalPayments),
+      credit_recovered_by_link: {
+        ...monthly(verified.creditRecoveredByLink),
+        median_days: verified.creditRecoveredByLink.medianDays,
+      },
+      supplier_bills: { ...monthly(verified.supplierBills), count: verified.supplierBills.count },
+    },
+    declared: {
+      cash_sales: monthly(declared.cashSales),
+      credit_given: monthly(declared.creditGiven),
+      credit_recovered_cash: monthly(declared.creditRecoveredCash),
+      bills_paid_on_time: {
+        label: declared.billsPaidOnTime.label,
+        percent: declared.billsPaidOnTime.percent,
+        bills: declared.billsPaidOnTime.bills,
+      },
+      regular_credit_customers: declared.regularCreditCustomers,
+      average_stock_value: {
+        label: declared.averageStockValue.label,
+        paise: declared.averageStockValue.paise,
+      },
+      money_cycle_days: declared.moneyCycleDays,
+    },
   };
 }

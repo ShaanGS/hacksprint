@@ -384,7 +384,10 @@ label of its weakest input. Creates the share link.
 {
   "statement_id": "…",
   "share_url": "https://…/statement/k9f2…",
+  "shop": "Lakshmi Stores",
   "period": { "from": "2026-07-01", "to": "2026-09-30" },
+  "generated_at": "2026-10-18T09:30:00.000Z",
+  "demo_data": true,
   "months": ["2026-07", "2026-08", "2026-09"],
   "verified": {
     "digital_payments": { "label": "verified_payment", "by_month": [6200000, 6200000, 6000000] },
@@ -395,7 +398,7 @@ label of its weakest input. Creates the share link.
     "cash_sales": { "label": "owner_said", "by_month": [15500000, 15500000, 15000000] },
     "credit_given": { "label": "owner_said", "by_month": [1820000, 1750000, 1900000] },
     "credit_recovered_cash": { "label": "owner_said", "by_month": [1510000, 1700000, 1480000] },
-    "bills_paid_on_time": { "label": "owner_said", "percent": 82 },
+    "bills_paid_on_time": { "label": "owner_said", "percent": 82, "bills": 22 },
     "regular_credit_customers": { "label": "owner_said", "count": 9 },
     "average_stock_value": { "label": "estimate", "paise": 14800000 },
     "money_cycle_days": { "label": "estimate", "days": 14 }
@@ -405,7 +408,8 @@ label of its weakest input. Creates the share link.
 
 ### GET /statement/{shareToken}?lang=ta|en
 
-The printable statement page (browser print to PDF).
+The printable statement page (browser print to PDF). Each number opens the rows behind it: a day
+and an amount, never a customer's name.
 
 ### POST /api/loan-ready
 

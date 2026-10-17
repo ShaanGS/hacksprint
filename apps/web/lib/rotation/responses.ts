@@ -40,7 +40,7 @@ export function rotationResponse(snapshot: Snapshot, now: Date, demoData: boolea
             overdue_paise: week.needed.due.overduePaise,
           },
           { key: "weekly_costs", paise: week.needed.costs.paise, label: week.needed.costs.label },
-        ],
+        ] as const,
       },
       likely: {
         paise: week.likely.paise,
@@ -64,7 +64,7 @@ export function rotationResponse(snapshot: Snapshot, now: Date, demoData: boolea
             label: week.likely.customers.label,
             customers: week.likely.customers.customers,
           },
-        ],
+        ] as const,
       },
       gap_paise: week.gapPaise,
       state: week.state,
@@ -74,8 +74,13 @@ export function rotationResponse(snapshot: Snapshot, now: Date, demoData: boolea
   };
 }
 
+export type Reason =
+  | { kind: "late"; usual_days: number; days_late: number }
+  | { kind: "unknown"; settled: number }
+  | { kind: "due" | "later"; usual_days: number; due_in_days: number };
+
 /** A customer's status as the wire shows it: a code with its numbers, words left to screens. */
-export function reasonOf(status: CustomerStatus) {
+export function reasonOf(status: CustomerStatus): Reason {
   switch (status.kind) {
     case "late":
       return {

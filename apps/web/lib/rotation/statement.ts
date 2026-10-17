@@ -8,7 +8,15 @@ import { monthOf, shopDate } from "@/lib/time";
 // owner said and what we estimate. Each metric takes the label of its weakest input.
 
 export type StatementBill = { billedOn: string; totalPaise: number };
-export type StatementPayable = { dueDate: string; paidAt: string | null; paidVia: string | null };
+export type StatementPayable = {
+  dueDate: string;
+  paidAt: string | null;
+  paidVia: string | null;
+  amountPaise: number;
+};
+
+/** One row behind a statement number: a day and an amount, never a name (rule 7). */
+export type StatementRow = { date: string; paise: number; late?: boolean };
 
 export type StatementInput = {
   months: string[];
@@ -33,6 +41,19 @@ function byMonth<T>(
       .filter((item) => monthOfItem(item) === month)
       .reduce((sum, item) => sum + amount(item), 0),
   );
+}
+
+/** The rows a monthly total is made of, oldest first, so they add up to its cells. */
+function rowsOf<T>(
+  months: string[],
+  items: T[],
+  dateOf: (item: T) => string,
+  amount: (item: T) => number,
+): StatementRow[] {
+  return items
+    .filter((item) => months.includes(monthOf(dateOf(item))))
+    .map((item) => ({ date: dateOf(item), paise: amount(item) }))
+    .sort((a, b) => a.date.localeCompare(b.date));
 }
 
 function median(values: number[]): number | null {
@@ -75,6 +96,12 @@ export function statementBlocks(input: StatementInput) {
           (p) => monthOf(shopDate(p.paidAt)),
           (p) => p.amountPaise,
         ),
+        rows: rowsOf(
+          months,
+          input.payments,
+          (p) => shopDate(p.paidAt),
+          (p) => p.amountPaise,
+        ),
       },
       creditRecoveredByLink: {
         label: "verified_payment" as SourceLabel,
@@ -82,6 +109,12 @@ export function statementBlocks(input: StatementInput) {
           months,
           repayments.filter((r) => r.source === "verified_payment"),
           (r) => monthOf(shopDate(r.at)),
+          (r) => -r.amountPaise,
+        ),
+        rows: rowsOf(
+          months,
+          repayments.filter((r) => r.source === "verified_payment"),
+          (r) => shopDate(r.at),
           (r) => -r.amountPaise,
         ),
         medianDays: median(linkSettlements.map((s) => s.days)),
@@ -100,6 +133,12 @@ export function statementBlocks(input: StatementInput) {
           (b) => monthOf(b.billedOn),
           (b) => b.totalPaise,
         ),
+        rows: rowsOf(
+          months,
+          input.bills,
+          (b) => b.billedOn,
+          (b) => b.totalPaise,
+        ),
       },
     },
     declared: {
@@ -111,6 +150,12 @@ export function statementBlocks(input: StatementInput) {
           (d) => monthOf(d.businessDate),
           (d) => d.cashSalesPaise ?? 0,
         ),
+        rows: rowsOf(
+          months,
+          input.dayCloses.filter((d) => d.cashSalesPaise !== null),
+          (d) => d.businessDate,
+          (d) => d.cashSalesPaise ?? 0,
+        ),
       },
       creditGiven: {
         label: "owner_said" as SourceLabel,
@@ -118,6 +163,12 @@ export function statementBlocks(input: StatementInput) {
           months,
           credits,
           (c) => monthOf(shopDate(c.at)),
+          (c) => c.amountPaise,
+        ),
+        rows: rowsOf(
+          months,
+          credits,
+          (c) => shopDate(c.at),
           (c) => c.amountPaise,
         ),
       },
@@ -129,6 +180,12 @@ export function statementBlocks(input: StatementInput) {
           (r) => monthOf(shopDate(r.at)),
           (r) => -r.amountPaise,
         ),
+        rows: rowsOf(
+          months,
+          repayments.filter((r) => r.source !== "verified_payment"),
+          (r) => shopDate(r.at),
+          (r) => -r.amountPaise,
+        ),
       },
       billsPaidOnTime: {
         label:
@@ -137,6 +194,13 @@ export function statementBlocks(input: StatementInput) {
             : ("owner_said" as SourceLabel),
         percent: paidBills.length > 0 ? Math.round((onTime.length / paidBills.length) * 100) : null,
         bills: paidBills.length,
+        rows: paidBills
+          .map((p) => ({
+            date: p.dueDate,
+            paise: p.amountPaise,
+            late: !onTime.includes(p),
+          }))
+          .sort((a, b) => a.date.localeCompare(b.date)),
       },
       regularCreditCustomers: {
         label: "owner_said" as SourceLabel,
@@ -146,6 +210,7 @@ export function statementBlocks(input: StatementInput) {
         label: "estimate" as SourceLabel,
         paise:
           stock.length > 0 ? Math.round(stock.reduce((a, b) => a + b, 0) / stock.length) : null,
+        rows: months.map((month, index) => ({ date: month, paise: stock[index] ?? 0 })),
       },
       moneyCycleDays: { label: "estimate" as SourceLabel, days: input.moneyCycleDays },
     },
