@@ -10,7 +10,7 @@ const tones: Record<CardTone, string> = {
   night: "rounded-3xl bg-night-raised text-night-ink",
 };
 
-/** A rounded surface: white cards sit on the mint canvas, muted ones inside a card. */
+/** A rounded surface: white cards sit on the white canvas with a soft shadow, muted ones inside. */
 export function Card({
   className,
   tone = "base",

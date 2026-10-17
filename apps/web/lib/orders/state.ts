@@ -1,7 +1,7 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
 
-// The order states from spec section 8, and the only moves between them. Every status change
-// goes through `transition` (guardrail 4), which calls the database function that also
+// The order states of the frozen ordering flow, and the only moves between them. Every status
+// change goes through `transition` (guardrail 4), which calls the database function that also
 // moves stock and credit in the same transaction.
 
 export const orderStatuses = [

@@ -7,7 +7,7 @@ import { approveOrder, rejectOrder } from "@/lib/owner/decide";
 import { speechToText } from "@/lib/sarvam/client";
 
 /**
- * The owner's spoken decision (spec A6): "seri" approves, "venda" rejects, "kanakku" puts it on
+ * The owner's spoken decision (guardrail 3): "seri" approves, "venda" rejects, "kanakku" puts it on
  * account. Nothing happens unless one of those words was heard; the owner then sees what was heard
  * and what was done.
  */

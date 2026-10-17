@@ -2,7 +2,7 @@ import { z } from "zod";
 import { sarvamEnv } from "@/lib/env";
 
 const SARVAM_URL = "https://api.sarvam.ai";
-// A voice turn has a 4 s budget (spec section 8); a hung request must not stall the demo.
+// A voice turn has a 4 s budget; a hung request must not stall the demo.
 const TIMEOUT_MS = 8_000;
 // Saaras v4 takes up to 50 key terms of up to 64 characters each.
 const MAX_KEYTERMS = 50;

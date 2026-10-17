@@ -19,7 +19,7 @@ export type OwnerOrder = {
   id: string;
   number: number;
   customer: string;
-  /** The language the customer ordered in; the owner reads it in theirs (spec A2). */
+  /** The language the customer ordered in; the owner reads it in theirs. */
   lang: Lang | null;
   newCustomer: boolean;
   /** What the customer owed before this order. */

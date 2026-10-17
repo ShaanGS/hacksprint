@@ -8,7 +8,7 @@ import { createPaymentLink } from "@/lib/paytm/client";
 import { broadcastChanged } from "@/lib/realtime";
 import type { Shop } from "@/lib/shop";
 
-// Payment links (spec A4, A7) and the one way a payment becomes paid (A5). The shop's payment
+// Payment links (spec A4) and the one way a payment becomes paid (A5). The shop's payment
 // mode picks the provider: Paytm when its keys are in, otherwise our own test payment page. A
 // paid credit link writes a verified repayment; a paid order link moves the (frozen) order; a
 // paid stock-order link (test mode) is only recorded.

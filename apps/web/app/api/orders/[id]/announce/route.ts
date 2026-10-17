@@ -7,7 +7,7 @@ import { ownerOrders } from "@/lib/owner/orders";
 import { textToSpeech } from "@/lib/sarvam/client";
 import { startOfShopDay } from "@/lib/time";
 
-/** The new order, spoken in the owner's language on the owner's phone (spec A2, A6). */
+/** The new order, spoken in the owner's language on the owner's phone. */
 export function GET(_request: Request, context: { params: Promise<{ id: string }> }) {
   return handle(async () => {
     const id = (await context.params).id;

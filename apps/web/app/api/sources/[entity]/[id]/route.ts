@@ -9,7 +9,7 @@ import { rotationPart, rotationSource } from "@/lib/rotation/sources";
 import { orderPriceSources, productPriceSources } from "@/lib/sources/prices";
 
 /**
- * Where a number came from (spec E3): rotation/{part} for the money screens and price/{productId}
+ * Where a number came from (rule 5): rotation/{part} for the money screens and price/{productId}
  * for the owner; cart/current and order/{orderId} serve the frozen customer ordering.
  */
 export function GET(

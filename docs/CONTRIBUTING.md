@@ -72,7 +72,7 @@ first migrations cite these as "guardrail N".
 | `pnpm demo:check` | Prints the demo shop's numbers and asserts the demo story            |
 
 `pnpm lint`, `pnpm typecheck` and `pnpm test` must pass before a change is done. CI runs them on
-every push.
+every push and pull request.
 
 ## Commits
 

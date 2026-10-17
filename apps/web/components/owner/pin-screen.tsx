@@ -56,7 +56,7 @@ export function PinScreen({
     shake.start({ x: [0, -12, 12, -8, 8, 0], transition: { duration: 0.4 } });
   }
 
-  // A laptop at the presenter's desk can type the PIN too.
+  // On the stage laptop the PIN can be typed on the keyboard too.
   const pressRef = useRef(press);
   useEffect(() => {
     pressRef.current = press;

@@ -22,7 +22,7 @@ const tones = {
   yellow: "bg-yellow text-yellow-ink",
 } as const;
 
-/** One message; with onClick it is a button. Lime asks the owner to do something. */
+/** One message; with onClick it is a button. Yellow asks the owner to do something. */
 export function Pill({
   icon,
   tone = "ink",

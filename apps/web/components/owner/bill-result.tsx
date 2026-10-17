@@ -9,8 +9,8 @@ import type { BillIssue, BillOutcome } from "@/lib/bills/types";
 import { formatMoney } from "@/lib/money";
 
 /**
- * After the bill went in: what did not come (spec B4) and what got dearer (C1) first, since they
- * need the owner; then every shelf the delivery filled (B1).
+ * After the bill went in: what did not come (spec B4) and what got dearer (B3) first, since they
+ * need the owner; then every shelf the delivery filled (B2).
  */
 export function BillResult({
   outcome,

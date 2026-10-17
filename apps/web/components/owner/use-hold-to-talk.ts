@@ -6,8 +6,8 @@ import type { Recorder } from "@/lib/audio/recorder";
 const MIN_HOLD_MS = 400;
 
 /**
- * Hold the mic, speak, let go: the recording goes to whatever the release asks for, such as an
- * order decision (spec A6) or a credit entry (D1). The press can end before the microphone is
+ * Hold the mic, speak, let go: the recording goes to whatever the release asks for, such as a
+ * voice entry (spec B1) or an order decision (frozen). The press can end before the microphone is
  * ready, and touch screens can send two releases; both are ignored.
  */
 export function useHoldToTalk(handlers: {

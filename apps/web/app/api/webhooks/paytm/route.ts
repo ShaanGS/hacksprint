@@ -6,7 +6,7 @@ import { verifyPaytm } from "@/lib/paytm/checksum";
 import { getShop } from "@/lib/shop";
 import { createServiceClient } from "@/lib/supabase/server";
 
-// Paytm's payment status callback for our links (spec A7, guardrail 5). It is trusted only if
+// Paytm's payment status callback for our links (spec A5, rule 4). It is trusted only if
 // its checksum verifies with our merchant key, the merchant id is ours and the status is a
 // success; then the same markPaid as the test page runs, which does nothing the second time.
 

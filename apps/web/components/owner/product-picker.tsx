@@ -17,7 +17,7 @@ export function likelyFirst(products: Pickable[], printedName: string): Pickable
   return [...products].sort((a, b) => shared(b) - shared(a) || a.name.localeCompare(b.name));
 }
 
-/** Pick the product a bill line is, by tapping (rule 7: the owner never types). */
+/** Pick the product a bill line is, by tapping (rule 6: the owner never types). */
 export function ProductPicker({
   products,
   printedName,

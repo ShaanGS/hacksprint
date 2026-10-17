@@ -2,7 +2,7 @@ import type { SupabaseClient } from "@supabase/supabase-js";
 import { z } from "zod";
 import type { PriceSource } from "@/lib/sources/types";
 
-// Every price points at the bill line that printed it (rule 6): the product's price_source, or
+// Every price points at the bill line that printed it (rule 5): the product's price_source, or
 // for an order, the line's price_source from when it was added. A customer sees the MRP and the
 // bill it came from; only the owner sees what the shop paid, and the photo of the bill.
 

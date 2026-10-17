@@ -11,8 +11,8 @@ import { HttpError } from "@/lib/http";
 import type { Shop } from "@/lib/shop";
 import { addDays, shopDate } from "@/lib/time";
 
-// A photo of today's bill becomes a parsed bill waiting for the owner (spec B1). The photo is kept
-// in the private bills bucket, so any price it sets can show where it came from (rule 6).
+// A photo of today's bill becomes a parsed bill waiting for the owner (spec B2). The photo is kept
+// in the private bills bucket, so any price it sets can show where it came from (rule 5).
 
 const addedRow = z.object({ created_at: z.string() });
 

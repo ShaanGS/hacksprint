@@ -1,5 +1,6 @@
-// The app's look in numbers: a white page, black ink and pills, yellow highlights and violet promo
-// cards (the owner's landing reference), and a dark layer for voice and the agents. This file is the source of truth.
+// The app's look in numbers: a white page, black ink and pills, yellow highlights and violet cards
+// (after the team's banner, docs/banner.png, and design/references), and a dark layer for voice
+// and the agents. This file is the source of truth.
 // apps/web/app/globals.css mirrors the colours and text sizes in its @theme block, and
 // tests/unit/tokens.test.ts fails if the two drift apart.
 
@@ -76,7 +77,7 @@ export const heights = {
 } as const;
 
 export const shadows = {
-  /** White cards on the mint canvas. */
+  /** Lifts white cards off the white canvas. */
   card: "0 1px 2px rgb(17 17 17 / 0.04), 0 8px 24px rgb(17 17 17 / 0.06)",
   /** Things that float: the tab bar, toasts, the mic. */
   float: "0 12px 32px rgb(17 17 17 / 0.16)",

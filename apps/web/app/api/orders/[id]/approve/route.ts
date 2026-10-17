@@ -5,7 +5,7 @@ import { approveOrder } from "@/lib/owner/decide";
 
 const body = z.object({ payment_mode: z.enum(["link", "credit"]).optional() });
 
-/** Approve (spec A6, A7): on account, or with a payment link for the customer. */
+/** The owner's approval (guardrail 3): on account, or with a payment link for the customer. */
 export function POST(request: Request, context: { params: Promise<{ id: string }> }) {
   return handle(async () => {
     const { payment_mode } = await readJson(request, body);

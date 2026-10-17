@@ -1,6 +1,6 @@
 # Design rules
 
-Two moods, one app. The owner's everyday screens are clean and calm, like the app in the owner's landing reference: a plain white page, black type and black pill buttons, yellow pills for the things an agent does, violet promo cards, and real product photos. When he speaks, or hands a job to an agent, the app switches to a dark layer with a yellow mic and a listening orb, after `references/11-indigo-voice.jpg`; the card and row shapes come from `references/10-teal-grocery.jpg`. The yellow, the light headlines and the white front page come from the team's banner (`docs/banner.png`). Copy the references' visual language, never their wording or flows. Spec section 9 decides the screens; this file decides the look.
+Two moods, one app. The owner's everyday screens are clean and calm, in the look of the team's banner (`docs/banner.png`): a plain white page, black type and black pill buttons, light headlines, and yellow for the mic and the things an agent does. The card and row shapes and the product photos on soft tiles come from `references/10-teal-grocery.jpg`. When he speaks, or hands a job to an agent, the app switches to a dark layer with a yellow mic and a listening orb, after `references/11-indigo-voice.jpg`, which also gives the violet card. Copy the references' visual language, never their wording or flows. Spec section 8 decides the features; this file decides the look.
 
 Build from the primitives in `apps/web/components/ui/` and check them at `/styleguide`. Values live in `tokens.ts`.
 
@@ -22,7 +22,7 @@ Build from the primitives in `apps/web/components/ui/` and check them at `/style
 ## Look
 
 - **Colours:** black (`accent`) for actions and the active tab; yellow for agent actions and the mic; violet (`indigo`) for the promo card; `accentSoft` greys for chips and icon circles. Green (`success`) only for paid and collected, amber (`warning`) only for running low, red (`danger`) only for overdue, failures and a short week. Status is a `Badge`, never a tinted card.
-- **Pictures:** every product shows its own photo (`ProductImage`, from `public/products`), like a quick-commerce listing. Ideas (money, bills, customers) are plain icons in soft circles (`IconCircle`). No toy art.
+- **Pictures:** a product shows its own photo (`ProductImage`, from `public/products`), like a quick-commerce listing, or a plain icon until it has one. Ideas (money, bills, customers) are plain icons in soft circles (`IconCircle`). The frozen ordering screens and several owner screens (among them the bill check, the source sheets, the agents and the PIN screen) still use the earlier 3D art set (`Art`, `apps/web/components/ui/art.tsx`).
 - **Radius:** 24px cards and sheet tops, 16px inner tiles, full for buttons, inputs, chips, badges and avatars.
 - **Spacing:** a 4px grid, 16px side gutters, 12px between cards in a grid, 16px inside cards.
 - **Type:** Plus Jakarta Sans for English and every number, Noto Sans for Tamil, Devanagari and Kannada. Body 14 to 17px. Headlines 22 to 32px bold. Hero numbers 44px extra-bold with `tabular-nums`. Tamil labels may take 2 lines; nothing is cut mid-word.
@@ -44,9 +44,9 @@ Build from the primitives in `apps/web/components/ui/` and check them at `/style
 - Money is `formatMoney(paise)`: `₹1,240`, `₹23.50`. Times are 12 hour ("6:40 PM").
 - Real data only: real product names, rupee amounts and Indian customer names. Never print "Sample" or "Mock" on a screen. While the shop runs on seeded demo data, one quiet "Demo data" label shows it (spec rule 12).
 
-## Art recipe
+## Recipe for the earlier art set
 
-All art comes from Magnific's image generator (auto mode), so new pieces match. Use this template word for word and change only the subject.
+The earlier 3D art set came from Magnific's image generator (auto mode). To add a piece that matches it, use this template word for word and change only the subject.
 
 **Objects** (1:1, background removed, then trimmed and padded to the same 8% margin, saved as 512px PNG in `apps/web/public/art/`):
 

@@ -45,7 +45,7 @@ import type { RotationPart } from "@/lib/rotation/sources";
 
 /**
  * A1, A2 and the measured value (11a): this week's verdict first, then where the money sits and
- * every part of the week. Each number opens the rows it came from (E3).
+ * every part of the week. Each number opens the rows it came from (rule 5).
  */
 export function HomeTab({ onTab }: { onTab: (tab: OwnerTab) => void }) {
   const { lang, text } = useOwnerLanguage();

@@ -6,9 +6,9 @@ import { isLang, langInfo, langs } from "@/lib/i18n/languages";
 import { speechToText } from "@/lib/sarvam/client";
 import { takeChoice, takeTurn } from "@/lib/voice/conversation";
 
-// Spec section 9: customer audio (or typed words, or a tapped choice) in; the transcript and the
-// shop's reply out. The reply streams as two lines of JSON, so the customer sees their own words
-// the moment they are heard, before the agent has answered.
+// Customer audio (or typed words, or a tapped choice) in; the transcript and the shop's reply
+// out. The reply streams as two lines of JSON, so the customer sees their own words the moment
+// they are heard, before the agent has answered.
 
 const typedBody = z.object({ lang: z.enum(langs), text: z.string().trim().min(1).max(300) });
 const choiceBody = z.object({

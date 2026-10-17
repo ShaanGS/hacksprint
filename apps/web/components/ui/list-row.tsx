@@ -14,7 +14,7 @@ type ListRowProps = {
   note?: ReactNode;
   /** Usually an <Amount>, on the title's baseline. */
   trailing?: ReactNode;
-  /** The chosen row gets a 2px teal outline. */
+  /** The chosen row gets a 2px outline: black on light screens, yellow at night. */
   selected?: boolean;
   href?: string;
   onClick?: () => void;

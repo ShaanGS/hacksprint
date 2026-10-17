@@ -16,7 +16,7 @@ import type { RotationPart, SourceRow } from "@/lib/rotation/sources";
 import type { PriceSource } from "@/lib/sources/types";
 
 /**
- * E3: the rows behind a number on the money screens, and what they add up to, which is the
+ * Rule 5: the rows behind a number on the money screens, and what they add up to, which is the
  * number tapped. Each row says where it came from.
  */
 export function RotationSourceSheet({
@@ -146,7 +146,10 @@ function SourceRowView({ row }: { row: SourceRow }) {
   );
 }
 
-/** E3 for a cost: the bill line that printed it, what the shop paid, and the bill's photo. */
+/**
+ * Where a cost came from (rule 5): the bill line that printed it, what the shop paid, and the
+ * bill's photo.
+ */
 export function PriceSheet({
   productId,
   onClose,

@@ -9,7 +9,7 @@ import { lineTotalPaise } from "@/lib/orders/totals";
 import { broadcastChanged } from "@/lib/realtime";
 import type { Shop } from "@/lib/shop";
 
-// The owner's yes to a bill (spec B1, B4, C1). confirm_bill does everything in one transaction:
+// The owner's yes to a bill (spec B2 to B4). confirm_bill does everything in one transaction:
 // stock, prices from the MRP, the payable, the delivery check and price rises. This side checks
 // the lines first and turns the result into what the owner reads.
 

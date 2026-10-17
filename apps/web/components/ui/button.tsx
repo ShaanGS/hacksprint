@@ -4,7 +4,7 @@ import { cn } from "@/lib/cn";
 
 type ButtonVariant = "primary" | "soft" | "white" | "ghost" | "danger" | "yellow" | "night";
 
-// One primary button per screen: a full-width 56px pill whose label names the choice. Teal on the
+// One primary button per screen: a full-width 56px pill whose label names the choice. Black on the
 // light screens; yellow for anything an agent does and on the dark voice layer.
 const base =
   "inline-flex min-h-14 items-center justify-center gap-2 rounded-full px-6 text-base font-semibold transition-transform active:scale-98 disabled:opacity-40 disabled:active:scale-100";

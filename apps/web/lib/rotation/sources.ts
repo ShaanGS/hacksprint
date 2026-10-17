@@ -7,9 +7,9 @@ import type { ShopData } from "@/lib/rotation/load";
 import type { Snapshot } from "@/lib/rotation/snapshot";
 import { indiaTime } from "@/lib/rotation/responses";
 
-// Where a number on the money screens came from (spec E3, rule 5): the rows behind it, which add
-// up to it. Each row is a kind with its facts, so screens write it in the owner's language. The
-// owner's own view, so customer names may appear here.
+// Where a number on the money screens came from (rule 5): the rows behind it, which add up to
+// it. Each row is a kind with its facts, so screens write it in the owner's language. The owner's
+// own view, so customer names may appear here.
 
 export const rotationParts = [
   "due_7d",

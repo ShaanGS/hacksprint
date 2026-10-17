@@ -3,7 +3,7 @@ import { requireShop } from "@/lib/auth/shop";
 import { creditDetail } from "@/lib/credit/detail";
 import { handle, HttpError } from "@/lib/http";
 
-/** One customer's credit entries, newest first, each with its source label (E3). */
+/** One customer's credit entries, newest first, each with its source label (rule 5). */
 export function GET(request: Request, context: { params: Promise<{ customerId: string }> }) {
   return handle(async () => {
     const { customerId } = await context.params;

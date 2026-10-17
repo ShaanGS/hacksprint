@@ -51,6 +51,8 @@ export type CustomerBackend = {
   pay(number: number): Promise<void>;
   /** Where the shop's spoken reply is, or null when there is no audio. */
   audioUrl(turnId: number): string | null;
-  /** The bill behind each price in the order (spec E3): MRPs and bills, never the shop's costs. */
+  /**
+   * The bill behind each price in the order (guardrail 6): MRPs and bills, never the shop's costs.
+   */
   priceSources(): Promise<PriceSource[]>;
 };

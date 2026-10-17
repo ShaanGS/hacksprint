@@ -5,9 +5,10 @@ import { HttpError } from "@/lib/http";
 import { getShop, type Shop } from "@/lib/shop";
 import { createServiceClient } from "@/lib/supabase/server";
 
-// Every v4 route starts here (spec section 13). The owner's phone sends the PIN session cookie;
-// scripts and n8n send "Authorization: Bearer <SHOP_TOKEN>". Either way the route gets the shop,
-// and the service key never leaves the server.
+// Most owner routes start here (spec section 13); GET /api/margins and the frozen order routes
+// take the cookie only. The owner's phone sends the PIN session cookie; scripts and n8n send
+// "Authorization: Bearer <SHOP_TOKEN>". Either way the route gets the shop, and the service key
+// never leaves the server.
 
 function bearerMatches(request: Request): boolean {
   const header = request.headers.get("authorization") ?? "";

@@ -19,7 +19,7 @@ async function orderUrl(): Promise<string> {
   return `${head.get("x-forwarded-proto") ?? "https"}://${host}/order`;
 }
 
-/** The QR for the counter and the projector: scan it and order by voice (spec A1). */
+/** The QR for the counter and the projector: scan it and order by voice. */
 export default async function QrPage() {
   const url = await orderUrl();
   const shopName = isPreview() ? previewShop.name : (await getShop(createServiceClient())).name;

@@ -40,7 +40,7 @@ export function canConfirm(bill: ScannedBill, lines: CheckLine[], distributorId:
 }
 
 /**
- * The bill as read, for the owner to check by tapping (spec B1, rule 7: no typing). A line the
+ * The bill as read, for the owner to check by tapping (spec B2, rule 6: no typing). A line the
  * photo did not match gets "Which product?"; a quantity that disagrees with the printed amount
  * is flagged and fixed with the stepper; a line can be left out and put back.
  */

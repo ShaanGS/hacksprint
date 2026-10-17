@@ -1,6 +1,6 @@
 # Product spec v4: money rotation and loans for kiranas
 
-Single source of truth. Replaces v3 on Oct 17, 2026, after a full recheck of the idea. The product has no name yet; do not invent one.
+Single source of truth. Replaces v3 on Oct 17, 2026, after a full recheck of the idea. The product has no name yet.
 
 What changed from v3, in one list (details in each section):
 
@@ -39,7 +39,7 @@ One shop visit (Chennai, Oct 17) plus published reports. Treat everything from t
 | Stock and credit matter most | Owner; 60 Decibels survey (2022) | One shop plus one survey |
 | Banks do not respect kirana owners | Owner; MSME credit gap reports | The feeling is real. The reason (no records a bank trusts) is our hypothesis |
 | He would use a govt loan scheme | Owner said "absolutely" when asked | Weak: a yes to a hypothetical. Ask what happened when he last tried for a loan |
-| Shops will pay Rs 499 a month | One owner | Not proven. Free apps exist; Vyapar costs Rs 699 to 2,099 a year. See business model in the playbook |
+| Shops will pay Rs 499 a month | One owner | Not proven. Free apps exist; Vyapar costs Rs 699 to 2,099 a year |
 | No app shows customer credit and supplier dues together | v3 moat | Wrong. OkCredit records suppliers and sends WhatsApp and SMS reminders; VoiceKhata takes credit by voice; Vyapar tracks receivables, payables and stock, and reads purchase-bill photos |
 | Merchant loans already reach these shops | Paytm for Business up to Rs 10 lakh at 15% to 46% a year; PhonePe, BharatPe, Khatabook and OkCredit (as a lending service provider) also lend | Holds. The gap is cost: public sector bank Mudra loans run 9.15% to 12.80% |
 | Nobody forecasts the week from bills plus each customer's habit | Checked OkCredit, Khatabook, Vyapar, VoiceKhata, Paytm, PhonePe, BharatPe | Holds as far as we found. This is the lead |
@@ -78,13 +78,13 @@ Ledgers, supplier dues, reminders, voice entry, bill-photo reading and quick app
 
 ## 7. Surfaces
 
-| Surface | Who | Built with | Owner |
-| --- | --- | --- | --- |
-| Owner app | Shop owner | Next.js web app in this repo (no Flutter, decided Oct 17) | Shaan |
-| API, calculations, workflows, data | System | Next.js API routes, Supabase, n8n | Thilak, Josiah |
-| Statement and loan pack pages | Owner, bank | Next.js pages, browser print to PDF | Shaan |
-| Demo screen | Judges | Next.js page | Shaan |
-| Customer voice ordering | Frozen | Keep the code; out of the demo and navigation | None |
+| Surface | Who | Built with |
+| --- | --- | --- |
+| Owner app | Shop owner | Next.js web app in this repo (no Flutter, decided Oct 17) |
+| API, calculations, workflows, data | System | Next.js API routes, Supabase, n8n |
+| Statement and loan pack pages | Owner, bank | Next.js pages, browser print to PDF |
+| Demo screen | Judges | Next.js page |
+| Customer voice ordering | Frozen | Keep the code; out of the demo and navigation |
 
 Decision, Oct 17: there is no Flutter app for the hackathon. The owner app is the web app in this repo, built as a finished product, and this repo also builds the API, the calculations and the data.
 
@@ -343,7 +343,7 @@ New migration only; never edit an applied migration.
 
 ## 17. Build order (from now)
 
-1. Commit current work. Replace this spec and CLAUDE.md.
+1. Commit current work. Replace the old spec with this one.
 2. A new migration for section 12. Update the seed, dates relative to now():
    - 28 days of day-close entries (cash sales and money in hand)
    - weekly costs, and a shop profile with Udyam "no" and PAN "yes"
@@ -359,7 +359,7 @@ New migration only; never edit an applied migration.
    - loan_needed exactly Rs 50,000
    - loan_needed 0 when collections cover the need
 4. `lib/schemes`: the catalog with the section 10 facts only, and the band function with tests.
-5. API changes, docs/api.md updated, and hand it to Crystal at once (A2 changed shape).
+5. API changes, with docs/api.md updated at once (A2 changed shape).
 6. Voice day-close entry, reminder with wa.me link, Paytm link and callback, broadcast.
 7. Statement page, loan pack page, demo reset.
 8. Deploy, then 10 full rehearsals. Then P1.

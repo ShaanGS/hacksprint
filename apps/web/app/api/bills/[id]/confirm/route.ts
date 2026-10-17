@@ -23,7 +23,7 @@ const body = z.object({
     .max(60),
 });
 
-/** The owner's yes: stock, prices, payable, delivery check and price alerts (spec B1, B4, C1). */
+/** The owner's yes: stock, prices, payable, delivery check and price alerts (spec B2 to B4). */
 export function POST(request: Request, context: { params: Promise<{ id: string }> }) {
   return handle(async () => {
     const id = (await context.params).id;

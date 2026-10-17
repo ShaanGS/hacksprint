@@ -5,9 +5,9 @@ import type { OwnerBackend, VoiceDecision } from "@/lib/owner/backend";
 import { SignedOutError } from "@/lib/owner/fetch";
 import type { OwnerOrder } from "@/lib/owner/types";
 
-// The owner's orders, fetched every 2 seconds (spec section 13). A decision shows at once and
-// the next fetch confirms it: a fetch that started before the owner acted is thrown away, so the
-// screen never flicks back to the old state.
+// The owner's orders, fetched every 2 seconds. A decision shows at once and the next fetch
+// confirms it: a fetch that started before the owner acted is thrown away, so the screen never
+// flicks back to the old state.
 const POLL_MS = 2000;
 
 type Events = {

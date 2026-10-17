@@ -3,7 +3,7 @@ import { createPlayer, type Player } from "@/lib/audio/player";
 import { createRecorder, openMicrophone, type Recorder } from "@/lib/audio/recorder";
 
 // The owner phone's speaker and microphone. A new order rings, then is spoken in the owner's
-// language (spec A2, A6); announcements wait their turn so two orders never talk over each other.
+// language; announcements wait their turn so two orders never talk over each other.
 
 const CHIME = "/sounds/new-order.mp3";
 

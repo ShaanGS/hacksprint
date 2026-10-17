@@ -3,8 +3,8 @@ import type { Lang } from "@/lib/i18n/languages";
 import type { ProductUnit } from "@/lib/orders/quantity";
 import type { RejectReason } from "@/lib/orders/state";
 
-// The owner app's words. The owner reads and hears the shop in their own language (spec A2),
-// whatever language the customer ordered in. Tamil is checked by a native speaker before the demo.
+// The owner app's words. The owner reads and hears the shop in their own language, whatever
+// language the customer ordered in. Tamil is checked by a native speaker before the demo.
 
 export type OwnerText = {
   pinTitle: string;

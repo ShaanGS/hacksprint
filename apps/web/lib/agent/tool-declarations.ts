@@ -1,6 +1,6 @@
 import type { FunctionDeclaration } from "@google/genai";
 
-// The only way the model touches data (spec section 10). Every parameter is a product code, a
+// The only way the model touches data (guardrail 1). Every parameter is a product code, a
 // quantity or the customer's own words; prices, totals and stock counts never go either way.
 
 const code = { type: "string", description: "A product code from the list" };

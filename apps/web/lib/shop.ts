@@ -14,14 +14,14 @@ export type Shop = {
   id: string;
   name: string;
   ownerName: string;
-  /** The language the owner reads and hears the app in (spec A2). */
+  /** The language the owner reads and hears the app in. */
   ownerLang: Lang;
   paymentMode: "test" | "paytm";
 };
 
 /**
- * The shop this app runs. There is exactly one (spec section 1). It is looked up rather than set
- * in env because the presenter's demo reset recreates it with a new id.
+ * The shop this app runs. There is exactly one (spec section 13). It is looked up rather than set
+ * in env because the demo reset recreates it with a new id.
  */
 export async function getShop(db: SupabaseClient): Promise<Shop> {
   const { data, error } = await db

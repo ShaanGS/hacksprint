@@ -20,7 +20,7 @@ import type { PriceSource } from "@/lib/sources/types";
 /**
  * The cart and the order review in one sheet. Changing a line goes straight to the cart, with
  * no AI in between. Lines and the total come from the server; the footer keeps Send in reach.
- * Tapping the total shows the bill behind every price (spec E3).
+ * Tapping the total shows the bill behind every price (guardrail 6).
  */
 export function CartSheet({
   open,

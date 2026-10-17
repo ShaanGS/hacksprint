@@ -3,7 +3,7 @@ import { z } from "zod";
 import type { Product } from "@/lib/catalog";
 import { createGemini } from "@/lib/gemini/client";
 
-// Reading a bill photo (spec B1). The model copies what is printed, line by line, and says which
+// Reading a bill photo (spec B2). The model copies what is printed, line by line, and says which
 // of our products each line is; it never works a number out. Code checks every line afterwards,
 // and the owner confirms before anything changes.
 

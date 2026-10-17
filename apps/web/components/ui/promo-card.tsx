@@ -82,7 +82,7 @@ export function PromoCard({
   return <div className={shell}>{body}</div>;
 }
 
-/** A screen's big number on deep teal. One per screen. */
+/** A screen's big number on black. One per screen. */
 export function HeroCard({
   visual,
   className,

@@ -156,7 +156,7 @@ export async function markReviewed(db: SupabaseClient, orderId: string): Promise
   if (error) throw new Error(`Could not mark the order read back: ${error.message}`);
 }
 
-/** A changed cart has not been read back yet (spec A5). */
+/** A changed cart has not been read back yet. */
 async function clearReview(db: SupabaseClient, orderId: string): Promise<void> {
   const { error } = await db.from("orders").update({ reviewed_at: null }).eq("id", orderId);
   if (error) throw new Error(`Could not update the order: ${error.message}`);

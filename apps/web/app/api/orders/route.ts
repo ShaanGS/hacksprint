@@ -3,7 +3,7 @@ import { requireOwner } from "@/lib/owner/context";
 import { ownerOrders } from "@/lib/owner/orders";
 import { startOfShopDay } from "@/lib/time";
 
-/** The owner's orders (spec section 9): today's, and any still open. Polled every 2 seconds. */
+/** The owner's orders: today's, and any still open. Polled every 2 seconds. */
 export function GET(request: Request) {
   return handle(async () => {
     const { db, shop } = await requireOwner();

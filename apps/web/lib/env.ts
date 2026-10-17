@@ -72,7 +72,7 @@ export const appEnv = () => parse("App", appSchema);
 export const supabaseEnv = () => parse("Supabase", supabaseSchema);
 export const geminiEnv = () => parse("Gemini", geminiSchema);
 export const sarvamEnv = () => parse("Sarvam", sarvamSchema);
-// Paytm and n8n are checked on first use: Paytm keys may arrive late (spec 5.4), n8n only for reorders.
+// Paytm and n8n are checked on first use: Paytm keys may arrive late, n8n only for reorders.
 export const paytmEnv = () => parse("Paytm", paytmSchema);
 export const n8nEnv = () => parse("n8n", n8nSchema);
 

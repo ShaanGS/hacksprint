@@ -2,7 +2,7 @@ import type { SupabaseClient } from "@supabase/supabase-js";
 import { z } from "zod";
 import type { Product } from "@/lib/catalog";
 
-// Profit per item and the cheaper distributor (spec C2, C3), worked out by code from confirmed
+// Profit per item and the cheaper distributor (spec C4), worked out by code from confirmed
 // bill lines: the selling price minus the latest cost, and each distributor's latest cost.
 
 export type CostLine = {

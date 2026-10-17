@@ -1,4 +1,4 @@
-> Written for spec v1. Spec v2 (`docs/spec.md`) now decides the features and the build order; the screens and flows here still describe the voice order.
+> Historical. This plan was written for spec v1, the customer voice-ordering flow, which is now frozen: its code stays, out of the navigation. The current product is in [docs/spec.md](spec.md) (v4.1), and how we build is in [docs/CONTRIBUTING.md](CONTRIBUTING.md). This file is kept because the frozen ordering code and one migration cite it.
 
 # Product plan: screens, flows and logic
 

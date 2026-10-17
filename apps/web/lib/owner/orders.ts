@@ -4,8 +4,8 @@ import { langs } from "@/lib/i18n/languages";
 import { lineTotalPaise } from "@/lib/orders/totals";
 import type { OwnerOrder } from "@/lib/owner/types";
 
-// The owner's order list (spec section 9, GET /api/orders): today's orders and anything still
-// open, in four queries whatever the number of orders (no N+1).
+// The owner's order list (GET /api/orders): today's orders and anything still open, in four
+// queries whatever the number of orders (no N+1).
 
 const OPEN = ["pending_approval", "awaiting_payment", "paid", "on_credit"] as const;
 

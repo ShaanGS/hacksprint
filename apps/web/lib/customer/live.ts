@@ -3,8 +3,8 @@ import type { Lang } from "@/lib/i18n/languages";
 import type { Cart } from "@/lib/orders/cart";
 import type { PriceSource } from "@/lib/sources/types";
 
-// The customer screens on the real API (spec section 9). Every call is a plain fetch; the
-// server keeps the cart, the conversation and the session cookie.
+// The customer screens on the real API. Every call is a plain fetch; the server keeps the cart,
+// the conversation and the session cookie.
 
 async function post<T>(url: string, body: unknown): Promise<T> {
   const response = await fetch(url, {

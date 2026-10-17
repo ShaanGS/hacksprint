@@ -1,7 +1,6 @@
-// "Ramesh 200 on account" (spec D1, parse_credit_entry). The amount is read by code from the
-// words heard, never by a model (rule 1): digits, or number words in Tamil, Hindi, Kannada or
-// English. The name is matched against the shop's customers; if no single one fits, the owner
-// taps the right one.
+// "Ramesh 200 on account" (spec B1). The amount is read by code from the words heard, never by a
+// model (rule 1): digits, or number words in Tamil, Hindi, Kannada or English. The name is
+// matched against the shop's customers; if no single one fits, the owner taps the right one.
 
 /** Number words up to the hundreds, as one word each (Tamil and Kannada say 200 as one word). */
 const words: Record<string, number> = {

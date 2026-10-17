@@ -6,8 +6,8 @@ import type { PaymentMode } from "@/lib/orders/submit";
 import { paymentLinkFor } from "@/lib/payments";
 import type { Shop } from "@/lib/shop";
 
-// The owner's three decisions on an order (spec A6, A7). Every move goes through transition()
-// (guardrail 4), which writes the audit log; money only moves after the owner says yes.
+// The owner's three decisions on an order. Every move goes through transition() (guardrail 4),
+// which writes the audit log; money only moves after the owner says yes (guardrail 3).
 
 const orderRow = z.object({
   id: z.string(),

@@ -1,5 +1,5 @@
-// What the owner said, as a decision (spec A6, parse_approval). Plain word matching, not a model:
-// three outcomes, a handful of words each, and it must never guess wrong on a money decision.
+// What the owner said, as a decision (guardrail 3). Plain word matching, not a model: three
+// outcomes, a handful of words each, and it must never guess wrong on a money decision.
 // "Put it on account" is checked first and "no" before "yes", so "venda, kanakku" never approves.
 
 export type Decision = "approve" | "reject" | "credit";

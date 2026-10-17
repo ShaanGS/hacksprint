@@ -54,7 +54,7 @@ describe("totals (paise)", () => {
 });
 
 describe("order states", () => {
-  it("allows exactly the moves in spec section 8", () => {
+  it("allows exactly the moves of the ordering flow", () => {
     const moves = orderStatuses.flatMap((from) =>
       orderStatuses.filter((to) => canTransition(from, to)).map((to) => `${from}>${to}`),
     );

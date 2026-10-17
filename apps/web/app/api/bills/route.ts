@@ -5,7 +5,7 @@ import { requireShop } from "@/lib/auth/shop";
 // The phone shrinks the photo to 1600 px before sending, which is well under this.
 const MAX_PHOTO_BYTES = 6 * 1024 * 1024;
 
-/** A photo of today's bill in; its lines out, for the owner to check (spec B1). */
+/** A photo of today's bill in; its lines out, for the owner to check (spec B2). */
 export function POST(request: Request) {
   return handle(async () => {
     const { db, shop } = await requireShop(request);

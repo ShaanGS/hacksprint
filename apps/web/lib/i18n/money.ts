@@ -79,7 +79,7 @@ export type MoneyText = {
   cycle: string;
   cycleMeaning: string;
   cycleLine: (now: number | null, first: number | null) => string;
-  // Where a number came from (E3)
+  // Where a number came from (rule 5)
   addsUpTo: string;
   usualWeek: string;
   usualWeekNote: string;

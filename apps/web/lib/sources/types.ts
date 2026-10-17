@@ -1,5 +1,5 @@
-// Where a price on screen comes from (spec E3, rule 5). Dates are ISO strings; screens write
-// them in the reader's language.
+// Where a price on screen comes from (rule 5). Dates are ISO strings; screens write them in the
+// reader's language.
 
 /** A price and the bill line that printed it; null when no bill has set it yet. */
 export type PriceSource = {

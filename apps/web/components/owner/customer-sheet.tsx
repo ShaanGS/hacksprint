@@ -19,7 +19,7 @@ import { ownerApi, type CustomerDetail, type CustomerRow, type Reminder } from "
 const CHECK_MS = 6_000;
 
 /**
- * One customer (A4, E3): what they owe, every entry behind it with its source, and the reminder.
+ * One customer (A4, rule 5): what they owe, each entry behind it with its source, and the reminder.
  * The reminder is a fixed message in the customer's language with a payment link; WhatsApp opens
  * with it and the owner presses send himself (rule 3).
  */

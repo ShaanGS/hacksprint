@@ -6,8 +6,8 @@ const usualRow = z.object({ product_id: z.string(), usual_qty: z.coerce.number()
 export type UsualLine = { productId: string; qty: number };
 
 /**
- * A regular's usual basket (spec A3), from the customer_usual view: what they buy in at least
- * half their orders, at their most common quantity. Empty for a new customer.
+ * A regular's usual basket, from the customer_usual view: what they buy in at least half their
+ * orders, at their most common quantity. Empty for a new customer.
  */
 export async function usualBasket(db: SupabaseClient, customerId: string): Promise<UsualLine[]> {
   const { data, error } = await db

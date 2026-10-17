@@ -1,6 +1,6 @@
 import type { ProductUnit } from "@/lib/orders/quantity";
 
-// A delivery bill on its way from photo to stock (spec B1, B4, C1): the photo is read into lines,
+// A delivery bill on its way from photo to stock (spec B2 to B4): the photo is read into lines,
 // the owner checks them by tapping, and confirming moves stock, prices and what the shop owes.
 
 /** One printed line as read from the photo, matched to a product where one fits. */
