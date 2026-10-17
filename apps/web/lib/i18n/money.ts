@@ -24,8 +24,12 @@ export type MoneyText = {
   loadFailed: string;
   tryAgain: string;
   holdAndSpeak: string;
+  holdLonger: string;
+  micAllow: string;
   // The voice card (B1)
   entryTitles: Record<EntryKind, string>;
+  notUnderstoodEntry: string;
+  sayEntryAgain: string;
   cashSales: string;
   moneyInHand: string;
   counted: string;
@@ -176,12 +180,16 @@ const en: MoneyText = {
   loadFailed: "Could not reach the shop.",
   tryAgain: "Try again",
   holdAndSpeak: "Hold and speak",
+  holdLonger: "Hold the mic while you speak",
+  micAllow: "Allow the microphone to speak your entries",
   entryTitles: {
     credit_given: "Credit given",
     credit_repaid_cash: "Paid back in cash",
     day_close: "Tonight's numbers",
     stock_count: "Stock count",
   },
+  notUnderstoodEntry: "Not understood",
+  sayEntryAgain: "Say it again: credit given, cash paid back, tonight's sales, or a stock count.",
   cashSales: "Cash sales today",
   moneyInHand: "Money in hand, cash and bank",
   counted: "Counted",
@@ -379,12 +387,17 @@ const ta: MoneyText = {
   loadFailed: "கடையின் கணக்கை எடுக்க முடியவில்லை.",
   tryAgain: "மீண்டும் முயற்சி",
   holdAndSpeak: "பிடித்துப் பேசுங்கள்",
+  holdLonger: "பேசும்போது மைக்கைப் பிடித்தே இருங்கள்",
+  micAllow: "குரலில் சொல்ல, மைக்கை அனுமதியுங்கள்",
   entryTitles: {
     credit_given: "கடன் கொடுத்தது",
     credit_repaid_cash: "ரொக்கமாகத் திருப்பித் தந்தது",
     day_close: "இன்றைய கணக்கு",
     stock_count: "சரக்கு எண்ணிக்கை",
   },
+  notUnderstoodEntry: "புரியவில்லை",
+  sayEntryAgain:
+    "மீண்டும் சொல்லுங்கள்: கொடுத்த கடன், ரொக்கமாகத் தந்தது, இன்றைய விற்பனை, அல்லது சரக்கு எண்ணிக்கை.",
   cashSales: "இன்றைய ரொக்க விற்பனை",
   moneyInHand: "கையிருப்பு, ரொக்கமும் வங்கியும்",
   counted: "எண்ணியது",

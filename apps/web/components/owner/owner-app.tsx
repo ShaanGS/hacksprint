@@ -44,8 +44,8 @@ export function OwnerApp({
   const [hearing, setHearing] = useState(false);
   const hold = useHoldToTalk({
     askMicrophone: voice.askMicrophone,
-    onTooShort: () => notify(text.holdToSay),
-    onMicBlocked: () => notify(text.micBlocked),
+    onTooShort: () => notify(text.holdLonger),
+    onMicBlocked: () => notify(text.micAllow),
   });
 
   async function hear(audio: Blob) {

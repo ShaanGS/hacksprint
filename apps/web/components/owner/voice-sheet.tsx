@@ -48,8 +48,7 @@ export function VoiceSheet({ card, onDone }: { card: VoiceCard | null; onDone: (
     onDone();
   }
 
-  const amountMissing =
-    card?.needs.includes("amount") || card?.needs.includes("qty") || card?.kind === null;
+  const amountMissing = card?.needs.includes("amount") || card?.needs.includes("qty");
   const label = (() => {
     if (!card?.kind || !fields) return null;
     const amount = formatMoney(fields.amount_paise ?? 0);
@@ -69,7 +68,7 @@ export function VoiceSheet({ card, onDone }: { card: VoiceCard | null; onDone: (
     <Sheet
       open={card !== null}
       onOpenChange={(open) => !open && dismiss()}
-      title={card?.kind ? text.entryTitles[card.kind] : text.notUnderstood}
+      title={card?.kind ? text.entryTitles[card.kind] : text.notUnderstoodEntry}
       description={card?.transcript ? text.heard(card.transcript) : undefined}
       footer={
         card && (
@@ -88,6 +87,7 @@ export function VoiceSheet({ card, onDone }: { card: VoiceCard | null; onDone: (
     >
       {card && (
         <div className="space-y-4">
+          {card.kind === null && <p className="py-2 text-center text-base">{text.sayEntryAgain}</p>}
           {amountMissing && <p className="py-2 text-center text-base">{text.sayAgain}</p>}
           {(card.kind === "credit_given" || card.kind === "credit_repaid_cash") &&
             fields?.amount_paise && (
