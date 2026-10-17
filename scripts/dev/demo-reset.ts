@@ -15,6 +15,9 @@ async function main() {
   console.log(
     `Demo shop restored in ${seconds.toFixed(1)} s${seconds > 5 ? " (over the 5 s budget)" : ""}.`,
   );
+  // The realtime client keeps a timer running after the change message; the work is done, so the
+  // command ends here instead of a minute later.
+  process.exit(0);
 }
 
 main().catch((error: unknown) => {

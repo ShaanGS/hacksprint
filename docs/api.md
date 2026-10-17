@@ -52,16 +52,23 @@ cash entry in the last 28).
 
 ```json
 {
-  "as_of": "2026-10-18T15:00:00+05:30",
+  "as_of": "2026-10-17T15:10:52+05:30",
   "demo_data": true,
   "now": {
-    "on_shelf": { "paise": 15200000, "label": "estimate", "cost_unknown": [] },
+    "on_shelf": {
+      "paise": 11455700,
+      "label": "estimate",
+      "cost_unknown": [
+        { "product_id": "…", "name": "Lay's Classic Salted" },
+        { "product_id": "…", "name": "Narasu's Filter Coffee" }
+      ]
+    },
     "with_customers": { "paise": 1450000, "label": "owner_said" },
-    "owed_to_suppliers": { "paise": 9300000, "label": "supplier_bill" }
+    "owed_to_suppliers": { "paise": 10550000, "label": "supplier_bill" }
   },
   "week": {
-    "from": "2026-10-18",
-    "to": "2026-10-25",
+    "from": "2026-10-17",
+    "to": "2026-10-24",
     "needed": {
       "paise": 9550000,
       "parts": [
@@ -72,7 +79,7 @@ cash entry in the last 28).
     "likely": {
       "paise": 5900000,
       "parts": [
-        { "key": "money_now", "paise": 720000, "label": "owner_said", "said_at": "2026-10-17T21:30:00+05:30", "verified_after_paise": 0 },
+        { "key": "money_now", "paise": 720000, "label": "owner_said", "said_at": "2026-10-16T21:30:00+05:30", "verified_after_paise": 0 },
         { "key": "usual_week_sales", "paise": 4900000, "label": "owner_said", "days_used": 27 },
         { "key": "from_customers", "paise": 280000, "label": "owner_said", "customers": 2 }
       ]
@@ -298,9 +305,12 @@ else the distributor's terms) and flags price rises against the same distributor
 
 ```json
 {
-  "total_paise": 9300000,
+  "total_paise": 10550000,
   "payables": [
-    { "id": "…", "distributor": "Sri Balaji Agencies", "bill_number": "SB-2069", "amount_paise": 2150000, "due_date": "2026-10-15", "overdue_days": 3, "label": "supplier_bill", "festival": null }
+    { "id": "…", "distributor": "Sri Balaji Agencies", "bill_number": "SB-2070", "kind": "supplier_bill", "amount_paise": 2150000, "due_date": "2026-10-14", "overdue_days": 3, "label": "supplier_bill", "festival_order": false },
+    { "id": "…", "distributor": "Murugan Traders", "bill_number": "MT-140", "kind": "supplier_bill", "amount_paise": 1400000, "due_date": "2026-10-19", "overdue_days": 0, "label": "supplier_bill", "festival_order": false },
+    { "id": "…", "distributor": "Sri Balaji Agencies", "bill_number": "DV-1", "kind": "supplier_bill", "amount_paise": 4850000, "due_date": "2026-10-21", "overdue_days": 0, "label": "supplier_bill", "festival_order": true },
+    { "id": "…", "distributor": "Sri Balaji Agencies", "bill_number": "SB-2072", "kind": "supplier_bill", "amount_paise": 2150000, "due_date": "2026-10-28", "overdue_days": 0, "label": "supplier_bill", "festival_order": false }
   ]
 }
 ```
@@ -390,18 +400,18 @@ label of its weakest input. Creates the share link.
   "demo_data": true,
   "months": ["2026-07", "2026-08", "2026-09"],
   "verified": {
-    "digital_payments": { "label": "verified_payment", "by_month": [6200000, 6200000, 6000000] },
-    "credit_recovered_by_link": { "label": "verified_payment", "by_month": [310000, 0, 420000], "median_days": 11 },
-    "supplier_bills": { "label": "supplier_bill", "count": [8, 9, 8], "by_month": [15200000, 15600000, 15100000] }
+    "digital_payments": { "label": "verified_payment", "by_month": [6200000, 6550000, 6620000] },
+    "credit_recovered_by_link": { "label": "verified_payment", "by_month": [0, 350000, 620000], "median_days": 8 },
+    "supplier_bills": { "label": "supplier_bill", "count": [8, 9, 9], "by_month": [14200000, 15949600, 16510800] }
   },
   "declared": {
     "cash_sales": { "label": "owner_said", "by_month": [15500000, 15500000, 15000000] },
-    "credit_given": { "label": "owner_said", "by_month": [1820000, 1750000, 1900000] },
-    "credit_recovered_cash": { "label": "owner_said", "by_month": [1510000, 1700000, 1480000] },
-    "bills_paid_on_time": { "label": "owner_said", "percent": 82, "bills": 22 },
-    "regular_credit_customers": { "label": "owner_said", "count": 9 },
-    "average_stock_value": { "label": "estimate", "paise": 14800000 },
-    "money_cycle_days": { "label": "estimate", "days": 14 }
+    "credit_given": { "label": "owner_said", "by_month": [790000, 1250000, 1485000] },
+    "credit_recovered_cash": { "label": "owner_said", "by_month": [610000, 965000, 520000] },
+    "bills_paid_on_time": { "label": "owner_said", "percent": 78, "bills": 23 },
+    "regular_credit_customers": { "label": "owner_said", "count": 7 },
+    "average_stock_value": { "label": "estimate", "paise": 6457100 },
+    "money_cycle_days": { "label": "estimate", "days": 3.6 }
   }
 }
 ```
@@ -459,8 +469,8 @@ Measurable value (spec 11a).
 
 ```json
 {
-  "late_credit_recovered_30d": { "verified_paise": 310000, "declared_paise": 240000 },
-  "money_cycle_days": { "now": 14, "first_week": 21, "label": "estimate", "freed_per_day_paise": 580000 },
+  "late_credit_recovered_30d": { "verified_paise": 620000, "declared_paise": 40000 },
+  "money_cycle_days": { "now": 4, "first_weeks": 1, "label": "estimate", "freed_per_day_paise": 603571 },
   "short_weeks_seen_early": null
 }
 ```
