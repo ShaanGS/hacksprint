@@ -147,16 +147,12 @@ function metaOf(name: string, result: Record<string, unknown>): Record<string, u
       return { low: count("running_out"), groups: count("reorder") };
     case "check_loan":
       return { loan_needed_paise: result.loan_needed_paise, band: result.mudra_band };
-    case "check_bill_limit": {
-      const decisions = Array.isArray(result.decisions)
-        ? (result.decisions as { decision: string }[])
-        : [];
+    case "check_bill_limit":
       return {
         set: result.mandate !== null,
-        pay: decisions.filter((d) => d.decision === "pay").length,
-        hold: decisions.filter((d) => d.decision === "hold").length,
+        pay: count("can_pay_now") + count("can_pay_after_collecting"),
+        hold: count("on_hold"),
       };
-    }
     default:
       return {};
   }

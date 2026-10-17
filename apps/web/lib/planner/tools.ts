@@ -33,7 +33,8 @@ export const plannerTools: FunctionDeclaration[] = [
   },
   {
     name: "list_bills_due",
-    description: "Supplier bills due in the next 7 days or overdue, soonest first.",
+    description:
+      "Supplier bills due in the next 7 days or overdue, soonest first. This shows what is due, not what may be paid: check_bill_limit says that.",
     parametersJsonSchema: noArgs,
   },
   {
@@ -50,7 +51,7 @@ export const plannerTools: FunctionDeclaration[] = [
   {
     name: "check_bill_limit",
     description:
-      "The owner's weekly limit for bills the agent may pay; for each due bill, whether it can be paid now, and whether it could be paid if the late payers paid first.",
+      "The owner's weekly limit for bills the agent may pay: the bills it can pay now, the bills it could pay once the late payers pay, and the bills on hold with the reason.",
     parametersJsonSchema: noArgs,
   },
   {
@@ -141,9 +142,10 @@ export function runPlannerTool(
       };
     }
     case "list_bills_due":
+      // No ids here. Only the tool that allows an action hands out ids for it, so a bill can
+      // reach the plan only through check_bill_limit, which applies the owner's own limit.
       return {
         bills: facts.bills.slice(0, MAX_ROWS).map((bill) => ({
-          id: bill.payableId,
           distributor: bill.distributor,
           bill_number: bill.billNumber,
           amount_paise: bill.amountPaise,
@@ -194,20 +196,20 @@ export function runPlannerTool(
     }
     case "check_bill_limit": {
       const limit = facts.billLimit;
-      if (!limit) return { mandate: null, decisions: [] };
-      const rows = limit.decisions.slice(0, MAX_ROWS);
-      const later = limit.ifCollected.slice(0, MAX_ROWS);
-      rows.filter((r) => r.decision === "pay").forEach((r) => seen.payablesToPay.add(r.payableId));
-      later
-        .filter((r) => r.decision === "pay")
-        .forEach((r) => seen.payablesIfCollected.add(r.payableId));
-      const row = (r: (typeof rows)[number]) => ({
+      if (!limit) return { mandate: null, can_pay_now: [], on_hold: [] };
+      const now = limit.decisions.slice(0, MAX_ROWS);
+      // With nobody late, collecting changes nothing, so that view is left out.
+      const later = facts.latePayers.length > 0 ? limit.ifCollected.slice(0, MAX_ROWS) : [];
+      const payNow = now.filter((r) => r.decision === "pay");
+      const payLater = later.filter(
+        (r) => r.decision === "pay" && !payNow.some((p) => p.payableId === r.payableId),
+      );
+      payNow.forEach((r) => seen.payablesToPay.add(r.payableId));
+      payLater.forEach((r) => seen.payablesIfCollected.add(r.payableId));
+      const payable = (r: (typeof now)[number]) => ({
         payable_id: r.payableId,
         distributor: r.distributor,
         amount_paise: r.amountPaise,
-        decision: r.decision,
-        reason: r.reason,
-        needs_more_paise: r.needsMorePaise,
       });
       return {
         mandate: limit.mandate
@@ -218,8 +220,19 @@ export function runPlannerTool(
             }
           : null,
         limit_left_paise: limit.limitLeftPaise,
-        decisions: rows.map(row),
-        if_late_payers_pay_first: later.map(row),
+        can_pay_now: payNow.map(payable),
+        ...(payLater.length > 0 && { can_pay_after_collecting: payLater.map(payable) }),
+        // Held bills carry no id: a plan cannot point at a bill the owner's own rules hold.
+        on_hold: now
+          .filter(
+            (r) => r.decision === "hold" && !payLater.some((p) => p.payableId === r.payableId),
+          )
+          .map((r) => ({
+            distributor: r.distributor,
+            amount_paise: r.amountPaise,
+            reason: r.reason,
+            needs_more_paise: r.needsMorePaise,
+          })),
       };
     }
     default:
