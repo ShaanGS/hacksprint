@@ -66,15 +66,27 @@ const facts: PlannerFacts = {
   billLimit: {
     mandate: { weeklyLimitPaise: 2_500_000, keepInHandPaise: 200_000 },
     limitLeftPaise: 2_500_000,
+    // With ₹7,200 in hand nothing can be paid yet; once the late payers' ₹9,600 is in, Murugan
+    // Traders' ₹14,000 bill fits and leaves ₹2,800, above the ₹2,000 floor.
     decisions: [
+      {
+        payableId: "p-sb2070",
+        distributor: "Sri Balaji Agencies",
+        amountPaise: 2_150_000,
+        decision: "hold",
+        reason: "not_enough_in_hand",
+        needsMorePaise: 1_630_000,
+      },
       {
         payableId: "p-mt140",
         distributor: "Murugan Traders",
         amountPaise: 1_400_000,
-        decision: "pay",
-        reason: "within_limit",
-        needsMorePaise: 0,
+        decision: "hold",
+        reason: "not_enough_in_hand",
+        needsMorePaise: 880_000,
       },
+    ],
+    ifCollected: [
       {
         payableId: "p-sb2070",
         distributor: "Sri Balaji Agencies",
@@ -82,6 +94,14 @@ const facts: PlannerFacts = {
         decision: "hold",
         reason: "not_enough_in_hand",
         needsMorePaise: 670_000,
+      },
+      {
+        payableId: "p-mt140",
+        distributor: "Murugan Traders",
+        amountPaise: 1_400_000,
+        decision: "pay",
+        reason: "within_limit",
+        needsMorePaise: 0,
       },
     ],
   },
@@ -121,7 +141,27 @@ describe("checkPlan", () => {
       facts,
       seen,
     );
-    expect(checked.steps[0].ids).toEqual(["p-mt140"]);
+    expect(checked.steps).toEqual([]);
+  });
+
+  it("allows a bill that collecting makes payable, only after the collect step", () => {
+    const seen = nothingSeen();
+    runPlannerTool(facts, seen, "list_late_payers");
+    runPlannerTool(facts, seen, "check_bill_limit");
+    const checked = checkPlan(
+      {
+        steps: [
+          { action: "collect", ids: ["c1", "c2", "c3"], reason: "late_payers_first" },
+          { action: "pay_bills", ids: ["p-mt140", "p-sb2070"], reason: "within_your_limit" },
+        ],
+      },
+      facts,
+      seen,
+    );
+    expect(checked.steps.map((s) => [s.action, s.ids])).toEqual([
+      ["collect", ["c1", "c2", "c3"]],
+      ["pay_bills", ["p-mt140"]],
+    ]);
   });
 
   it("drops repeats, and the loan once the festival order is moved out of the week", () => {

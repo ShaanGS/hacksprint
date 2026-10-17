@@ -16,17 +16,24 @@ import { addDays, daysBetween } from "@/lib/time";
 // Phone numbers never get in here: the model has no use for them.
 
 /** What the bill-pay rules decided for each due bill (lib/rotation/mandate.ts). */
+type BillRow = {
+  payableId: string;
+  distributor: string;
+  amountPaise: number;
+  decision: "pay" | "hold";
+  reason: string;
+  needsMorePaise: number;
+};
+
+/**
+ * What the bill-pay rules (lib/rotation/mandate.ts) decide for each due bill: with today's money
+ * in hand, and if the late payers pay first.
+ */
 export type BillLimitFacts = {
   mandate: { weeklyLimitPaise: number; keepInHandPaise: number } | null;
   limitLeftPaise: number;
-  decisions: {
-    payableId: string;
-    distributor: string;
-    amountPaise: number;
-    decision: "pay" | "hold";
-    reason: string;
-    needsMorePaise: number;
-  }[];
+  decisions: BillRow[];
+  ifCollected: BillRow[];
 };
 
 /** How the last plan went: what it asked to collect, and how much of that has come in since. */

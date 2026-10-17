@@ -16,6 +16,11 @@ export function seenAll(facts: PlannerFacts): Seen {
         .filter((row) => row.decision === "pay")
         .map((row) => row.payableId),
     ),
+    payablesIfCollected: new Set(
+      (facts.billLimit?.ifCollected ?? [])
+        .filter((row) => row.decision === "pay")
+        .map((row) => row.payableId),
+    ),
     distributors: new Set(facts.reorder.map((row) => row.distributorId)),
     festival: facts.loan.festival !== null,
     loan: true,
@@ -31,7 +36,10 @@ export function rulesPlan(facts: PlannerFacts): RawPlan {
       reason: "late_payers_first",
     });
   }
-  const payable = (facts.billLimit?.decisions ?? []).filter((row) => row.decision === "pay");
+  // Collecting first can make a bill payable, so the rules look at the bills as they would be then.
+  const bills =
+    facts.latePayers.length > 0 ? facts.billLimit?.ifCollected : facts.billLimit?.decisions;
+  const payable = (bills ?? []).filter((row) => row.decision === "pay");
   if (payable.length > 0) {
     steps.push({
       action: "pay_bills",

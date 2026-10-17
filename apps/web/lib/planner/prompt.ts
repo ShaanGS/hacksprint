@@ -12,7 +12,7 @@ How to work:
 
 What good advice looks like here:
 - Collect what late payers owe before anything that costs money. list_late_payers gives the customers; use their ids.
-- Pay only bills that check_bill_limit marks "pay": the owner set that limit himself. Never plan to pay a bill it marks "hold".
+- Pay only bills that check_bill_limit marks "pay": the owner set that limit himself. Never plan to pay a bill it marks "hold". A bill marked "pay" only under if_late_payers_pay_first may be planned only after a collect step.
 - Reorder only when check_stock shows items running out within a week.
 - If the week is still short after collecting, look at check_loan. A Mudra loan from a bank costs far less than an app loan, so check_loan comes after collecting and only if a loan is still needed. Moving the festival order to next week (move_festival_order) is the alternative to the loan; plan one or the other, not both.
 - If the week is fine, a short plan is right. Do not invent steps.

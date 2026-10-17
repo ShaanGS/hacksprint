@@ -39,7 +39,7 @@ export async function planWeek(
   const [profile, previous, billLimit] = await Promise.all([
     loadProfile(db, shop.id),
     lastPlan(db, shop.id, data),
-    billLimitFacts(),
+    billLimitFacts(db, shop.id, data),
   ]);
   const facts = plannerFacts({
     data,

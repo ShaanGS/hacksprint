@@ -54,7 +54,7 @@ export function checkPlan(plan: RawPlan, facts: PlannerFacts, seen: Seen) {
       dropped.push({ action: step.action, why: "repeated" });
       continue;
     }
-    const checked = checkStep(step.action, step.reason, ids, facts, seen);
+    const checked = checkStep(step.action, step.reason, ids, facts, seen, has("collect"));
     if (typeof checked === "string") dropped.push({ action: step.action, why: checked });
     else steps.push(checked);
   }
@@ -75,6 +75,7 @@ function checkStep(
   ids: string[],
   facts: PlannerFacts,
   seen: Seen,
+  collectFirst: boolean,
 ): CheckedStep | string {
   const step = { action, reason };
   switch (action) {
@@ -95,11 +96,21 @@ function checkStep(
       };
     }
     case "pay_bills": {
-      const rows = (facts.billLimit?.decisions ?? []).filter(
-        (row) =>
-          row.decision === "pay" &&
+      // A bill payable now, or one that becomes payable once the late payers pay, when the
+      // plan collects first. Never a bill the owner's own rules hold.
+      const limit = facts.billLimit;
+      const payNow = (limit?.decisions ?? []).filter(
+        (row) => row.decision === "pay" && seen.payablesToPay.has(row.payableId),
+      );
+      const payLater = collectFirst
+        ? (limit?.ifCollected ?? []).filter(
+            (row) => row.decision === "pay" && seen.payablesIfCollected.has(row.payableId),
+          )
+        : [];
+      const rows = [...payNow, ...payLater].filter(
+        (row, index, all) =>
           ids.includes(row.payableId) &&
-          seen.payablesToPay.has(row.payableId),
+          all.findIndex((r) => r.payableId === row.payableId) === index,
       );
       if (rows.length === 0) return "no_payable_bill_seen";
       return {

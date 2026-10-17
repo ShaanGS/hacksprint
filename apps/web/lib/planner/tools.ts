@@ -50,7 +50,7 @@ export const plannerTools: FunctionDeclaration[] = [
   {
     name: "check_bill_limit",
     description:
-      "The owner's weekly limit for bills the agent may pay, and for each due bill whether it can be paid now inside the limit and the money in hand.",
+      "The owner's weekly limit for bills the agent may pay; for each due bill, whether it can be paid now, and whether it could be paid if the late payers paid first.",
     parametersJsonSchema: noArgs,
   },
   {
@@ -88,6 +88,8 @@ export const plannerTools: FunctionDeclaration[] = [
 export type Seen = {
   customers: Set<string>;
   payablesToPay: Set<string>;
+  /** Bills that become payable once the late payers pay. */
+  payablesIfCollected: Set<string>;
   distributors: Set<string>;
   festival: boolean;
   loan: boolean;
@@ -97,6 +99,7 @@ export function nothingSeen(): Seen {
   return {
     customers: new Set(),
     payablesToPay: new Set(),
+    payablesIfCollected: new Set(),
     distributors: new Set(),
     festival: false,
     loan: false,
@@ -193,9 +196,19 @@ export function runPlannerTool(
       const limit = facts.billLimit;
       if (!limit) return { mandate: null, decisions: [] };
       const rows = limit.decisions.slice(0, MAX_ROWS);
-      rows
-        .filter((row) => row.decision === "pay")
-        .forEach((row) => seen.payablesToPay.add(row.payableId));
+      const later = limit.ifCollected.slice(0, MAX_ROWS);
+      rows.filter((r) => r.decision === "pay").forEach((r) => seen.payablesToPay.add(r.payableId));
+      later
+        .filter((r) => r.decision === "pay")
+        .forEach((r) => seen.payablesIfCollected.add(r.payableId));
+      const row = (r: (typeof rows)[number]) => ({
+        payable_id: r.payableId,
+        distributor: r.distributor,
+        amount_paise: r.amountPaise,
+        decision: r.decision,
+        reason: r.reason,
+        needs_more_paise: r.needsMorePaise,
+      });
       return {
         mandate: limit.mandate
           ? {
@@ -205,14 +218,8 @@ export function runPlannerTool(
             }
           : null,
         limit_left_paise: limit.limitLeftPaise,
-        decisions: rows.map((row) => ({
-          payable_id: row.payableId,
-          distributor: row.distributor,
-          amount_paise: row.amountPaise,
-          decision: row.decision,
-          reason: row.reason,
-          needs_more_paise: row.needsMorePaise,
-        })),
+        decisions: rows.map(row),
+        if_late_payers_pay_first: later.map(row),
       };
     }
     default:
