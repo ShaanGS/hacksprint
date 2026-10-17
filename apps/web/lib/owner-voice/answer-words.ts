@@ -34,6 +34,7 @@ export type AnswerWords = {
   noOrder: string;
   items: (totalPaise: number, lines: string) => string;
   noItems: string;
+  notSold: (names: string) => string;
 };
 
 const en: AnswerWords = {
@@ -76,6 +77,7 @@ const en: AnswerWords = {
   noOrder: "There is no festival order to check a loan for. Open Bank to see your dues.",
   items: (total, lines) => `That comes to ${m(total)}: ${lines}.`,
   noItems: "I could not find those items in your shop.",
+  notSold: (names) => ` Not in your shop's list: ${names}.`,
 };
 
 const ta: AnswerWords = {
@@ -118,6 +120,7 @@ const ta: AnswerWords = {
     "கடன் பார்க்க பண்டிகை ஆர்டர் எதுவும் இல்லை. பாக்கியைப் பார்க்க வங்கி பக்கத்தைத் திறங்கள்.",
   items: (total, lines) => `மொத்தம் ${m(total)}: ${lines}.`,
   noItems: "அந்தப் பொருட்கள் உங்கள் கடையில் இல்லை.",
+  notSold: (names) => ` உங்கள் கடைப் பட்டியலில் இல்லை: ${names}.`,
 };
 
 export function answerWordsFor(lang: "en" | "ta"): AnswerWords {

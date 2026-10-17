@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { matchCustomer, parseRupees } from "@/lib/credit/parse";
+import { numbersSaid } from "@/lib/owner-voice/numbers";
 
 const customers = [
   { id: "ramesh", name: "Ramesh Kumar" },
@@ -40,5 +41,17 @@ describe("spoken credit names", () => {
     expect(matchCustomer("ரமேஷ் 200", customers)).toBeNull();
     expect(matchCustomer("Ra 200", customers)).toBeNull();
     expect(matchCustomer("Rahul and Ramesh 200", customers)).toBeNull();
+  });
+});
+
+describe("numbers the owner said", () => {
+  it("hears each Tamil quantity in a list, and keeps money words as one amount", () => {
+    const said = numbersSaid("ரெண்டு கிலோ தக்காளி, ஒரு மேகி, அரை கிலோ சர்க்கரை");
+    expect(said).toEqual(expect.arrayContaining([2, 1, 0.5]));
+    expect(numbersSaid("ரமேஷ் இருநூறு ஐம்பது கடன்")).toContain(250);
+  });
+
+  it("does not turn 'ஒரு இருநூறு' into 201 for money", () => {
+    expect(parseRupees("ஒரு இருநூறு ரூபாய்")).toBe(200);
   });
 });

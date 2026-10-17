@@ -108,14 +108,15 @@ export function answerText(question: Question, facts: AnswerFacts, lang: "en" | 
       return words.loan(loan.festival, loan.needPaise, loan.loanPaise, loan.band ?? "");
     }
     case "items": {
-      if (facts.items.length === 0) return words.noItems;
+      const notSold = question.missing.length > 0 ? words.notSold(question.missing.join(", ")) : "";
+      if (facts.items.length === 0) return notSold ? notSold.trim() : words.noItems;
       const total = orderTotalPaise(
         facts.items.map((i) => ({ qty: 1, unitPricePaise: i.linePaise })),
       );
       const lines = facts.items
         .map((i) => `${i.name} × ${i.qty} ${formatMoney(i.linePaise)}`)
         .join(", ");
-      return words.items(total, lines);
+      return words.items(total, lines) + notSold;
     }
   }
 }

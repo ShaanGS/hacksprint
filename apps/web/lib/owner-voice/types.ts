@@ -35,4 +35,6 @@ export type Question = {
   customerId: string | null;
   /** For "items": each product and the quantity he said. */
   items: { productId: string; qty: number }[];
+  /** For "items": what he asked for that the shop does not sell, as he said it. */
+  missing: string[];
 };

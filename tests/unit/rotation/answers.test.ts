@@ -48,6 +48,7 @@ const ask = (topic: Question["topic"], customerId: string | null = null): Questi
   topic,
   customerId,
   items: [],
+  missing: [],
 });
 
 describe("answers to spoken questions", () => {
@@ -75,5 +76,12 @@ describe("answers to spoken questions", () => {
 
   it("puts what is overdue before what is due next, in Tamil too", () => {
     expect(answerText(ask("dues"), facts, "ta")).toContain("கெடு தாண்டி 3 நாள்");
+  });
+
+  it("says which items the shop does not sell instead of not understanding", () => {
+    const snakeGourd = { ...ask("items"), missing: ["புடலங்காய்"] };
+    expect(answerText(snakeGourd, { ...facts, items: [] }, "ta")).toBe(
+      "உங்கள் கடைப் பட்டியலில் இல்லை: புடலங்காய்.",
+    );
   });
 });

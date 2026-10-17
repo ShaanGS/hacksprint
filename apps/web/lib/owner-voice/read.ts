@@ -74,7 +74,7 @@ const declarations: FunctionDeclaration[] = [
   {
     name: "price_items",
     description:
-      'He lists items with quantities, as a customer asks for them at the counter, like "2 kg tomatoes, 1 Maggi and 3 kg rice", to know what they cost.',
+      'Someone wants items: he lists items and quantities a customer asks for, to know what they cost, like "I want 2 kg tomatoes, 1 Maggi and 3 kg rice", "எனக்கு ரெண்டு கிலோ தக்காளி வேணும்" or "do kilo chawal chahiye". "வேணும்", "want", "give me" and "chahiye" mean this. Use it even for items the shop may not sell.',
     parametersJsonSchema: {
       type: "object",
       properties: {
@@ -83,10 +83,15 @@ const declarations: FunctionDeclaration[] = [
           items: {
             type: "object",
             properties: {
-              product_code: { type: "string", description: "A product code from the list" },
+              item: { type: "string", description: "The item as he said it" },
+              product_code: {
+                type: "string",
+                description:
+                  "The product code from the list, or empty if the shop does not sell it",
+              },
               quantity: { type: "number", description: "How many he said, exactly as said" },
             },
-            required: ["product_code", "quantity"],
+            required: ["item", "product_code", "quantity"],
           },
         },
       },
@@ -95,7 +100,8 @@ const declarations: FunctionDeclaration[] = [
   },
   {
     name: "stock_count",
-    description: 'He counted a product on the shelf, like "atta, 12 packs".',
+    description:
+      'He says how many of one product he counted on his own shelf, like "atta, 12 packs" or "ஆட்டா பன்னிரண்டு பாக்கெட் இருக்கு". Never when someone wants or asks for items.',
     parametersJsonSchema: {
       type: "object",
       properties: {
@@ -171,16 +177,31 @@ export async function readEntry(
   if (call.name === "ask_question") {
     const topic = questionTopics.find((t) => t === args.topic);
     if (!topic) return null;
-    return { kind: "question", topic, customerId: customerOf(args.customer, customers), items: [] };
+    return {
+      kind: "question",
+      topic,
+      customerId: customerOf(args.customer, customers),
+      items: [],
+      missing: [],
+    };
   }
   if (call.name === "price_items") {
-    const items = (Array.isArray(args.items) ? args.items : []).flatMap((item: unknown) => {
-      const line = item as { product_code?: unknown; quantity?: unknown };
+    const lines = (Array.isArray(args.items) ? args.items : []).map(
+      (item: unknown) => item as { item?: unknown; product_code?: unknown; quantity?: unknown },
+    );
+    const items = lines.flatMap((line) => {
       const product = products.find((p) => p.code === line.product_code);
       const qty = said(line.quantity, transcript);
       return product && qty !== null && qty > 0 ? [{ productId: product.id, qty }] : [];
     });
-    return items.length > 0 ? { kind: "question", topic: "items", customerId: null, items } : null;
+    const missing = lines.flatMap((line) =>
+      products.some((p) => p.code === line.product_code) || typeof line.item !== "string"
+        ? []
+        : [line.item],
+    );
+    return items.length + missing.length > 0
+      ? { kind: "question", topic: "items", customerId: null, items, missing }
+      : null;
   }
   if (call.name === "day_close") {
     const cash =
