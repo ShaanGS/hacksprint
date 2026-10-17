@@ -40,8 +40,7 @@ const tones = {
 
 /**
  * Where something is, step by step. A step ticks with a spring and the rail fills down to the
- * next one; steps that were already done when the screen opened just show as done. The agents
- * use the night tone: an indigo rail with yellow ticks.
+ * next one. The agents use the night tone: an indigo rail with yellow ticks.
  */
 export function Steps({ steps, tone = "light" }: { steps: Step[]; tone?: keyof typeof tones }) {
   const look = tones[tone];
@@ -60,8 +59,11 @@ export function Steps({ steps, tone = "light" }: { steps: Step[]; tone?: keyof t
                   step.state === "current" && cn("ring-2 ring-inset", look.current),
                 )}
               >
+                {/* Keyed on done, so a step that finishes mounts a fresh tick that always
+                    springs in, even when several steps finish in the same moment. */}
                 <motion.span
-                  initial={false}
+                  key={done ? "done" : "open"}
+                  initial={done ? { scale: 0.4, opacity: 0 } : false}
                   animate={{ scale: done ? 1 : 0.4, opacity: done ? 1 : 0 }}
                   transition={snappy}
                   className={cn("absolute inset-0 grid place-items-center rounded-full", look.tick)}
@@ -75,7 +77,8 @@ export function Steps({ steps, tone = "light" }: { steps: Step[]; tone?: keyof t
               {!last && (
                 <span aria-hidden className={cn("relative w-0.5 flex-1", look.rail)}>
                   <motion.span
-                    initial={false}
+                    key={done ? "done" : "open"}
+                    initial={done ? { scaleY: 0 } : false}
                     animate={{ scaleY: done ? 1 : 0 }}
                     transition={{ duration: 0.4 }}
                     className={cn("absolute inset-0 origin-top", look.fill)}
