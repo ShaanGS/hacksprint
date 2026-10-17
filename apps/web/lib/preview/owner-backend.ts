@@ -6,6 +6,7 @@ import { previewBills } from "@/lib/preview/bill";
 import { previewCredit } from "@/lib/preview/credit";
 import { previewProducts } from "@/lib/preview/data";
 import { creditRows, previewOwnerOrders } from "@/lib/preview/owner";
+import { margins } from "@/lib/margins";
 import { takings } from "@/lib/owner/summary";
 import type { HomeSource } from "@/lib/sources/types";
 
@@ -139,6 +140,9 @@ export function previewOwner(): OwnerBackend {
     },
     async addCredit(customerId, amountPaise, heard) {
       credit.add(customerId, amountPaise, heard);
+    },
+    async margins() {
+      return margins(products, bills.costLines());
     },
   };
   return backend;

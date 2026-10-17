@@ -1,6 +1,7 @@
 import type { BillOutcome, ConfirmLine, ScannedBill } from "@/lib/bills/types";
 import type { Product } from "@/lib/catalog";
 import type { CreditBook, CreditDraft, CreditEntry } from "@/lib/credit/types";
+import type { Margin } from "@/lib/margins";
 import type { PaymentMode } from "@/lib/orders/submit";
 import type { HomeNumbers, HomeSource, HomeSourceKind, PriceSource } from "@/lib/sources/types";
 import type { RejectReason } from "@/lib/orders/state";
@@ -65,4 +66,6 @@ export interface OwnerBackend {
   hearCredit(audio: Blob): Promise<CreditDraft>;
   /** The owner's yes to a spoken entry. */
   addCredit(customerId: string, amountPaise: number, heard: string): Promise<void>;
+  /** Profit per item and the cheaper distributor (spec C2, C3). */
+  margins(): Promise<Margin[]>;
 }

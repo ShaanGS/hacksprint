@@ -1,6 +1,7 @@
 import type { BillOutcome, ScannedBill } from "@/lib/bills/types";
 import type { Product } from "@/lib/catalog";
 import type { CreditBook, CreditDraft, CreditEntry } from "@/lib/credit/types";
+import type { Margin } from "@/lib/margins";
 import {
   RequestError,
   SignedOutError,
@@ -96,6 +97,9 @@ export const liveOwner: OwnerBackend = {
   },
   async addCredit(customerId, amountPaise, heard) {
     await post("/api/credit", { customer_id: customerId, amount_paise: amountPaise, heard });
+  },
+  margins() {
+    return call<Margin[]>("/api/margins");
   },
 };
 

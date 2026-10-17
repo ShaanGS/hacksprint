@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { BillScan } from "@/components/owner/bill-scan";
+import { Margins } from "@/components/owner/margins";
 import { PriceSheet } from "@/components/owner/source-sheet";
 import { StockTab } from "@/components/owner/stock-tab";
 import { useStock } from "@/components/owner/use-stock";
@@ -34,7 +35,12 @@ export function StockView({ backend }: { backend: OwnerBackend }) {
       <StockTab
         products={stock.products}
         onProduct={showPrice}
-        bill={<BillScan backend={backend} products={stock.products} onAdded={stock.reload} />}
+        bill={
+          <div className="space-y-3">
+            <BillScan backend={backend} products={stock.products} onAdded={stock.reload} />
+            <Margins backend={backend} />
+          </div>
+        }
       />
       <PriceSheet open={pricing !== null} source={source} onClose={() => setPricing(null)} />
     </>

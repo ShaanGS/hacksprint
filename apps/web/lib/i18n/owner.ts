@@ -114,6 +114,11 @@ export type OwnerText = {
   nobodyOwes: string;
   lastOn: (date: string) => string;
   entryKinds: { credit_sale: string; repayment: string };
+  marginsTitle: string;
+  marginsSummary: (cheaper: number) => string;
+  profit: (amount: string, percent: number) => string;
+  sellCost: (sell: string, cost: string, distributor: string) => string;
+  cheaperAt: (distributor: string, cost: string, saving: string) => string;
   /** What the phone says when an order arrives. */
   announce: (customer: string, items: string, total: string) => string;
 };
@@ -246,6 +251,17 @@ const en: OwnerText = {
   nobodyOwes: "Nobody owes anything.",
   lastOn: (date) => `Last on ${date}`,
   entryKinds: { credit_sale: "On account", repayment: "Paid back" },
+  marginsTitle: "Profit on each item",
+  marginsSummary: (cheaper) =>
+    cheaper === 0
+      ? "Every item comes from its cheapest distributor"
+      : cheaper === 1
+        ? "1 item is cheaper from another distributor"
+        : `${cheaper} items are cheaper from another distributor`,
+  profit: (amount, percent) => `${amount} profit (${percent}%)`,
+  sellCost: (sell, cost, distributor) => `Sell ${sell} · Cost ${cost} from ${distributor}`,
+  cheaperAt: (distributor, cost, saving) =>
+    `${distributor} sells it for ${cost}: save ${saving} each`,
   announce: (customer, items, total) =>
     `New order from ${customer}: ${items}. Total ${total}. Approve?`,
 };
@@ -378,6 +394,15 @@ const ta: OwnerText = {
   nobodyOwes: "யாரும் தர வேண்டியதில்லை.",
   lastOn: (date) => `கடைசியாக ${date}`,
   entryKinds: { credit_sale: "கணக்கில்", repayment: "திருப்பிக் கொடுத்தது" },
+  marginsTitle: "ஒவ்வொரு பொருளிலும் லாபம்",
+  marginsSummary: (cheaper) =>
+    cheaper === 0
+      ? "எல்லாப் பொருளும் மலிவான விநியோகஸ்தரிடமிருந்தே வருகிறது"
+      : `${cheaper} பொருட்கள் வேறு விநியோகஸ்தரிடம் மலிவு`,
+  profit: (amount, percent) => `லாபம் ${amount} (${percent}%)`,
+  sellCost: (sell, cost, distributor) => `விற்பது ${sell} · வாங்குவது ${cost} (${distributor})`,
+  cheaperAt: (distributor, cost, saving) =>
+    `${distributor}-இடம் ${cost}: ஒவ்வொன்றிலும் ${saving} மிச்சம்`,
   announce: (customer, items, total) =>
     `${customer} புதிய ஆர்டர்: ${items}. மொத்தம் ${total}. ஏற்கலாமா?`,
 };

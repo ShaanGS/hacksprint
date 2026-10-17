@@ -8,6 +8,7 @@ import type {
 } from "@/lib/bills/types";
 import type { Product } from "@/lib/catalog";
 import { lineTotalPaise } from "@/lib/orders/totals";
+import type { CostLine } from "@/lib/margins";
 import type { HomeSource, PriceSource } from "@/lib/sources/types";
 
 // The bill scan on sample data: whatever photo is taken, the preview "reads" today's delivery
@@ -183,5 +184,40 @@ export function previewBills(products: Product[]) {
     };
   }
 
-  return { scanBill, confirmBill, payables, priceSource };
+  /** Last month's bills as the seed has them, and today's once it is in. */
+  function costLines(): CostLine[] {
+    const cost = (code: string, share: number) => {
+      const price = products.find((p) => p.id === code)?.pricePaise ?? 0;
+      return Math.round((price * share) / 100) * 100;
+    };
+    const billed = (distributorId: string, days: number, codes: string[], share: number) =>
+      codes.map((code) => ({
+        productId: code,
+        distributorId,
+        distributor: distributors.find((d) => d.id === distributorId)?.name ?? "",
+        unitCostPaise:
+          lastCost[code] && distributorId === BALAJI ? lastCost[code] : cost(code, share),
+        at: daysFromNow(-days),
+      }));
+    const earlier = [
+      ...billed(
+        BALAJI,
+        10,
+        ["ponni-rice", "toor-dal", "sugar", "atta", "salt", "gold-winner-oil", "tea"],
+        0.86,
+      ),
+      ...billed("murugan", 6, ["aavin-milk", "butter", "bread", "eggs", "maggi"], 0.84),
+      ...billed("murugan", 6, ["atta", "gold-winner-oil"], 0.83),
+    ];
+    const todays = (today?.lines ?? []).map((line) => ({
+      productId: line.productId,
+      distributorId: BALAJI,
+      distributor: "Sri Balaji Agencies",
+      unitCostPaise: line.unitCostPaise,
+      at: new Date().toISOString(),
+    }));
+    return [...earlier, ...todays];
+  }
+
+  return { scanBill, confirmBill, payables, priceSource, costLines };
 }
