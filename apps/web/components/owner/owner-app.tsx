@@ -97,9 +97,7 @@ export function OwnerApp({
 
           {/* Keyed on the tab, so each tab opens at its top. */}
           <div key={tab} className="h-full overflow-y-auto">
-            {tab === "home" && (
-              <HomeTab onCollect={() => setTab("collect")} onStock={() => setTab("stock")} />
-            )}
+            {tab === "home" && <HomeTab onCollect={() => setTab("collect")} />}
             {tab === "collect" && <CollectTab />}
             {tab === "stock" && <StockTab onBank={() => setTab("bank")} />}
             {tab === "bank" && <BankTab onCollect={() => setTab("collect")} />}

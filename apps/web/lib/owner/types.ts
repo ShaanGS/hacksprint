@@ -37,17 +37,3 @@ export type OwnerOrder = {
 };
 
 export type CreditRow = { customer: string; since: string; owedPaise: number };
-
-export type ReorderLine = {
-  name: string;
-  qty: number;
-  unit: string;
-};
-
-export type DaySummary = {
-  totalOrders: number;
-  salesPaise: number;
-  creditPaise: number;
-  topSellers: { name: string; sold: number; unit?: string }[];
-  lowStock: { name: string; stock: number; threshold: number; unit: string }[];
-};

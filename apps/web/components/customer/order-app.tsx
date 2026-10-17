@@ -21,15 +21,7 @@ type Stage =
 const silent: Voice = { recorder: null, player: null };
 
 /** The customer's whole visit: welcome, then the voice order, then the order's progress. */
-export function OrderApp({
-  shopName,
-  live,
-  defaultLang,
-}: {
-  shopName: string;
-  live: boolean;
-  defaultLang?: string;
-}) {
+export function OrderApp({ shopName, live }: { shopName: string; live: boolean }) {
   const [stage, setStage] = useState<Stage>(
     live ? { name: "loading" } : { name: "welcome", known: null },
   );
@@ -70,18 +62,9 @@ export function OrderApp({
     });
   }
 
-  const initialLang = isLang(defaultLang) ? defaultLang : undefined;
-
   if (stage.name === "loading") return null;
   if (stage.name === "welcome") {
-    return (
-      <Welcome
-        shopName={shopName}
-        known={stage.known}
-        defaultLang={initialLang}
-        onStart={(details) => talk(details)}
-      />
-    );
+    return <Welcome shopName={shopName} known={stage.known} onStart={(details) => talk(details)} />;
   }
   if (stage.name === "talk") {
     return (

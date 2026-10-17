@@ -17,16 +17,14 @@ const firstLetter: Record<Lang, string> = { ta: "அ", hi: "अ", kn: "ಅ", en:
 export function Welcome({
   shopName,
   known,
-  defaultLang,
   onStart,
 }: {
   shopName: string;
   /** A returning customer: their language is chosen and their details are filled in. */
   known: Details | null;
-  defaultLang?: Lang;
   onStart: (details: Details) => Promise<void>;
 }) {
-  const [lang, setLang] = useState<Lang | null>(known?.lang ?? defaultLang ?? null);
+  const [lang, setLang] = useState<Lang | null>(known?.lang ?? null);
   if (!lang) return <ChooseLanguage shopName={shopName} onChoose={setLang} />;
   return (
     <YourDetails

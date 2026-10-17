@@ -9,17 +9,10 @@ import { createServiceClient } from "@/lib/supabase/server";
 export const metadata: Metadata = { title: "Order" };
 
 /** Where the shop's QR code points: the customer orders by voice. */
-export default async function OrderPage({
-  searchParams,
-}: {
-  searchParams?: Promise<{ lang?: string }>;
-}) {
-  const resolvedParams = searchParams ? await searchParams : undefined;
-  const lang = resolvedParams?.lang;
-
-  if (isPreview()) return <OrderApp shopName={previewShop.name} live={false} defaultLang={lang} />;
+export default async function OrderPage() {
+  if (isPreview()) return <OrderApp shopName={previewShop.name} live={false} />;
   // Read at request time: the presenter's reset can recreate the shop.
   await connection();
   const shop = await getShop(createServiceClient());
-  return <OrderApp shopName={shop.name} live defaultLang={lang} />;
+  return <OrderApp shopName={shop.name} live />;
 }
