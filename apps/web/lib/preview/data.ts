@@ -1,4 +1,5 @@
 import type { Product } from "@/lib/catalog";
+import type { Lang } from "@/lib/i18n/languages";
 import type { SubmittedStatus } from "@/lib/customer/backend";
 import type { RejectReason } from "@/lib/orders/state";
 import type { PaymentMode } from "@/lib/orders/submit";
@@ -11,6 +12,7 @@ import { orderTotalPaise } from "@/lib/orders/totals";
 export const previewShop = {
   name: "Lakshmi Stores",
   ownerName: "Murugan",
+  ownerLang: "ta" as const,
   distributorName: "Sri Balaji Agencies",
 };
 
@@ -91,13 +93,14 @@ export function previewTotal(lines: PreviewLine[]): number {
 export type PreviewOrder = {
   number: number;
   customer: string;
+  lang: Lang;
   newCustomer: boolean;
   placedAt: string;
   status: SubmittedStatus;
   paymentMode: PaymentMode;
   lines: PreviewLine[];
-  /** A swap the agent made, for the owner to see. */
-  note?: string;
+  /** What the shop said was out of stock while taking the order. */
+  outOfStock?: string[];
   rejectReason?: RejectReason;
 };
 
@@ -108,6 +111,7 @@ export const previewOrders: PreviewOrder[] = [
   {
     number: PREVIEW_ORDER_NUMBER,
     customer: "Lakshmi Raman",
+    lang: "ta",
     newCustomer: false,
     placedAt: "7:12 PM",
     status: "pending_approval",
@@ -117,11 +121,12 @@ export const previewOrders: PreviewOrder[] = [
       { code: "butter", qty: 1 },
       { code: "jaggery", qty: 0.5 },
     ],
-    note: "Jaggery instead of sugar, which is out of stock",
+    outOfStock: ["Sugar"],
   },
   {
     number: 9,
     customer: "Kavya Gowda",
+    lang: "kn",
     newCustomer: true,
     placedAt: "7:20 PM",
     status: "pending_approval",
@@ -134,6 +139,7 @@ export const previewOrders: PreviewOrder[] = [
   {
     number: 7,
     customer: "Arjun Reddy",
+    lang: "kn",
     newCustomer: false,
     placedAt: "6:42 PM",
     status: "paid",
@@ -146,6 +152,7 @@ export const previewOrders: PreviewOrder[] = [
   {
     number: 6,
     customer: "Meena Krishnan",
+    lang: "ta",
     newCustomer: false,
     placedAt: "5:52 PM",
     status: "on_credit",
@@ -158,6 +165,7 @@ export const previewOrders: PreviewOrder[] = [
   {
     number: 5,
     customer: "Rahul Sharma",
+    lang: "hi",
     newCustomer: false,
     placedAt: "4:50 PM",
     status: "delivered",
@@ -170,6 +178,7 @@ export const previewOrders: PreviewOrder[] = [
   {
     number: 4,
     customer: "Lakshmi Raman",
+    lang: "ta",
     newCustomer: false,
     placedAt: "4:02 PM",
     status: "delivered",

@@ -5,8 +5,9 @@ import { Amount } from "@/components/ui/amount";
 import { Art } from "@/components/ui/art";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
+import type { MicState } from "@/components/ui/hold-mic";
 import { ListRow } from "@/components/ui/list-row";
-import { MicButton, type MicState } from "@/components/ui/mic-button";
+import { MicButton } from "@/components/ui/mic-button";
 import { Sheet } from "@/components/ui/sheet";
 
 function ignore() {}

@@ -1,10 +1,10 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import type { MicState } from "@/components/ui/mic-button";
+import type { MicState } from "@/components/ui/hold-mic";
 import type { CustomerBackend, TurnResult } from "@/lib/customer/backend";
-import type { Player } from "@/lib/customer/player";
-import type { Recorder } from "@/lib/customer/recorder";
+import type { Player } from "@/lib/audio/player";
+import type { Recorder } from "@/lib/audio/recorder";
 import type { Lang } from "@/lib/i18n/languages";
 import { textFor } from "@/lib/i18n/text";
 import type { Cart } from "@/lib/orders/cart";

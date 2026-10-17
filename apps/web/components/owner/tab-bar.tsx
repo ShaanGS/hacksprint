@@ -1,29 +1,43 @@
+"use client";
+
 import { BookOpen, ClipboardList, Moon, Package, type LucideIcon } from "lucide-react";
+import { useOwnerLanguage } from "@/components/owner/owner-language";
 import { cn } from "@/lib/cn";
 
 export type OwnerTab = "orders" | "stock" | "credit" | "today";
 
-const tabs: { id: OwnerTab; label: string; icon: LucideIcon }[] = [
-  { id: "orders", label: "Orders", icon: ClipboardList },
-  { id: "stock", label: "Stock", icon: Package },
-  { id: "credit", label: "Credit", icon: BookOpen },
-  { id: "today", label: "Today", icon: Moon },
-];
+const icons: Record<OwnerTab, LucideIcon> = {
+  orders: ClipboardList,
+  stock: Package,
+  credit: BookOpen,
+  today: Moon,
+};
 
-/** The owner app's four places, floating over the page so the content scrolls under it. */
+const columns = ["", "grid-cols-1", "grid-cols-2", "grid-cols-3", "grid-cols-4"];
+
+/** The owner app's places, floating over the page so the content scrolls under it. */
 export function TabBar({
+  tabs,
   tab,
   onChange,
   waiting,
 }: {
+  tabs: OwnerTab[];
   tab: OwnerTab;
   onChange: (tab: OwnerTab) => void;
   /** Orders that need the owner, shown on the Orders tab. */
   waiting: number;
 }) {
+  const { text } = useOwnerLanguage();
   return (
-    <nav className="pb-safe absolute inset-x-0 bottom-0 z-30 grid grid-cols-4 border-t border-border bg-surface/90 pt-2 backdrop-blur">
-      {tabs.map(({ id, label, icon: Icon }) => {
+    <nav
+      className={cn(
+        "pb-safe absolute inset-x-0 bottom-0 z-30 grid border-t border-border bg-surface/90 pt-2 backdrop-blur",
+        columns[tabs.length],
+      )}
+    >
+      {tabs.map((id) => {
+        const Icon = icons[id];
         const active = tab === id;
         return (
           <button
@@ -49,7 +63,7 @@ export function TabBar({
                 </span>
               )}
             </span>
-            {label}
+            {text.tabs[id]}
           </button>
         );
       })}

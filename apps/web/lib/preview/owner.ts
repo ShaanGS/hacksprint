@@ -1,3 +1,4 @@
+import { takings } from "@/lib/owner/summary";
 import type { CreditRow, DaySummary, OwnerOrder } from "@/lib/owner/types";
 import { lineTotalPaise } from "@/lib/orders/totals";
 import {
@@ -45,8 +46,10 @@ export function previewOwnerOrders(): OwnerOrder[] {
 
 function toOwnerOrder(order: PreviewOrder): OwnerOrder {
   return {
+    id: `preview-${order.number}`,
     number: order.number,
     customer: order.customer,
+    lang: order.lang,
     newCustomer: order.newCustomer,
     balancePaise: 0,
     placedAt: order.placedAt,
@@ -64,27 +67,17 @@ function toOwnerOrder(order: PreviewOrder): OwnerOrder {
       };
     }),
     totalPaise: previewTotal(order.lines),
-    note: order.note ?? null,
+    outOfStock: order.outOfStock ?? [],
     rejectReason: order.rejectReason ?? null,
+    payUrl: null,
   };
-}
-
-function sum(orders: OwnerOrder[]): number {
-  return orders.reduce((total, order) => total + order.totalPaise, 0);
 }
 
 /** Today's numbers for the Today tab. */
 export function daySummary(orders: OwnerOrder[]): DaySummary {
-  const settled = (order: OwnerOrder, ...statuses: OwnerOrder["status"][]) =>
-    statuses.includes(order.status);
   return {
     orders: orders.filter((order) => order.status !== "rejected").length,
-    collectedPaise: sum(
-      orders.filter((o) => o.paymentMode === "link" && settled(o, "paid", "delivered")),
-    ),
-    creditPaise: sum(
-      orders.filter((o) => o.paymentMode === "credit" && settled(o, "on_credit", "delivered")),
-    ),
+    ...takings(orders),
     owedPaise: creditRows(orders).reduce((total, row) => total + row.owedPaise, 0),
   };
 }

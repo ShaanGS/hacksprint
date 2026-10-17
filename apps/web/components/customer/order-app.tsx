@@ -7,8 +7,8 @@ import type { Voice } from "@/components/customer/use-conversation";
 import { Welcome, type Details } from "@/components/customer/welcome";
 import type { CustomerBackend } from "@/lib/customer/backend";
 import { liveCustomer, startSession } from "@/lib/customer/live";
-import { createPlayer, type Player } from "@/lib/customer/player";
-import { createRecorder, openMicrophone } from "@/lib/customer/recorder";
+import { createPlayer, type Player } from "@/lib/audio/player";
+import { createRecorder, openMicrophone } from "@/lib/audio/recorder";
 import { isLang } from "@/lib/i18n/languages";
 import { previewCustomer } from "@/lib/preview/customer";
 
