@@ -5,6 +5,7 @@ import { call, post, upload } from "@/lib/owner/fetch";
 import type { SourceLabel } from "@/lib/rotation/labels";
 import type { Reason, rotationResponse } from "@/lib/rotation/responses";
 import type { ChecklistItem } from "@/lib/loans/pack";
+import type { SanctionLetter } from "@/lib/loans/read-sanction";
 import type { LoanStatus } from "@/lib/loans/track";
 import type { LoanTracker } from "@/lib/loans/tracker";
 import type { QuestionTopic } from "@/lib/owner-voice/types";
@@ -236,6 +237,8 @@ export const ownerApi = {
     post<{ loan_id: string }>("/api/loans", { loan_request_id: loanRequestId }),
   moveLoan: (loanId: string, status: LoanStatus, sanction?: LoanSanction) =>
     post<{ ok: true }>(`/api/loans/${loanId}/status`, { status, ...sanction }),
+  readSanction: (loanId: string, photo: Blob) =>
+    upload<SanctionLetter>(`/api/loans/${loanId}/sanction-letter`, "photo", photo, "letter.jpg"),
   keepAside: (payableId: string, amountPaise: number) =>
     post<{ ok: true }>(`/api/loans/emi/${payableId}/set-aside`, { amount_paise: amountPaise }),
   hear: (audio: Blob, lang: Lang) => {

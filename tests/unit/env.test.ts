@@ -1,7 +1,7 @@
 import { describe, expect, it, vi } from "vitest";
-import { assertStartupEnv, EnvError, isPreview, paytmEnv } from "@/lib/env";
+import { assertStartupEnv, EnvError, geminiEnv, isPreview, paytmEnv } from "@/lib/env";
 
-const startupEnv = {
+const startupEnv: Record<string, string | undefined> = {
   APP_URL: "http://localhost:3000",
   OWNER_PIN: "4321",
   SESSION_SECRET: "test-session-secret-at-least-32-characters",
@@ -11,6 +11,8 @@ const startupEnv = {
   SUPABASE_SECRET_KEY: "sb_secret_test",
   GEMINI_API_KEY: "test-gemini-key",
   GEMINI_MODEL: "gemini-3.8-flash",
+  GEMINI_USE_VERTEX: "false",
+  GOOGLE_CLOUD_API_KEY: undefined,
   SARVAM_API_KEY: "test-sarvam-key",
   SARVAM_STT_MODEL: "saaras:v4",
   SARVAM_TTS_MODEL: "bulbul:v3",
@@ -105,5 +107,35 @@ describe("paytm env", () => {
     expect(() => paytmEnv()).toThrow(
       "Paytm: PAYTM_MERCHANT_KEY must be 16 characters (the merchant key, not the MID)",
     );
+  });
+});
+
+describe("vertex switch", () => {
+  it("uses the Gemini API key while the switch is off", () => {
+    useEnv({});
+    expect(geminiEnv()).toEqual({
+      vertex: false,
+      apiKey: "test-gemini-key",
+      model: "gemini-3.8-flash",
+    });
+  });
+
+  it("uses the Google Cloud key once the switch is on, without a Gemini key", () => {
+    useEnv({
+      GEMINI_USE_VERTEX: "true",
+      GOOGLE_CLOUD_API_KEY: "test-cloud-key",
+      GEMINI_API_KEY: undefined,
+    });
+    expect(geminiEnv()).toEqual({
+      vertex: true,
+      apiKey: "test-cloud-key",
+      model: "gemini-3.8-flash",
+    });
+    expect(() => assertStartupEnv()).not.toThrow();
+  });
+
+  it("names the missing Google Cloud key when the switch is on", () => {
+    useEnv({ GEMINI_USE_VERTEX: "true" });
+    expect(startupError().problems).toEqual(["Vertex AI: GOOGLE_CLOUD_API_KEY is missing"]);
   });
 });

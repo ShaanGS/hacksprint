@@ -175,24 +175,26 @@ design/            screen references and design tokens
 <details>
 <summary><strong>Environment variables</strong> (all in <code>apps/web/.env.local</code>)</summary>
 
-| Variable                               | Checked             | Used for                                                      | Where to get it                                                                |
-| -------------------------------------- | ------------------- | ------------------------------------------------------------- | ------------------------------------------------------------------------------ |
-| `APP_URL`                              | at startup          | Public base URL: Paytm callbacks, QR codes                    | `http://localhost:3000` locally; the deployed https URL                        |
-| `OWNER_PIN`                            | at startup          | The owner app's 4-digit PIN                                   | Choose one; share it only with the owner                                       |
-| `SESSION_SECRET`                       | at startup          | Signs the owner and customer session cookies                  | `openssl rand -hex 32`                                                         |
-| `NEXT_PUBLIC_SUPABASE_URL`             | at startup          | Database                                                      | Supabase dashboard > Project Settings > Data API                               |
-| `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY` | at startup          | Browser access (Realtime)                                     | Supabase dashboard > Project Settings > API Keys (`sb_publishable_...`)        |
-| `SUPABASE_SECRET_KEY`                  | at startup          | Server database access; bypasses RLS, never sent to a browser | Supabase dashboard > Project Settings > API Keys (`sb_secret_...`)             |
-| `GEMINI_API_KEY`                       | at startup          | Conversational agent, bill reading                            | [Google AI Studio](https://aistudio.google.com/apikey)                         |
-| `GEMINI_MODEL`                         | at startup          | Model name, e.g. `gemini-3.8-flash`                           | [Gemini models](https://ai.google.dev/gemini-api/docs/models)                  |
-| `SARVAM_API_KEY`                       | at startup          | Speech to text, text to speech                                | [Sarvam dashboard](https://dashboard.sarvam.ai)                                |
-| `SARVAM_STT_MODEL`                     | at startup          | Speech to text model, e.g. `saaras:v4`                        | [Sarvam docs](https://docs.sarvam.ai)                                          |
-| `SARVAM_TTS_MODEL`                     | at startup          | Text to speech model, e.g. `bulbul:v3`                        | [Sarvam docs](https://docs.sarvam.ai)                                          |
-| `PAYTM_BASE_URL`                       | on first Paytm call | `https://securestage.paytmpayments.com` for staging           | Paytm docs                                                                     |
-| `PAYTM_MID`                            | on first Paytm call | Merchant ID                                                   | [Paytm dashboard > API Keys](https://dashboard.paytmpayments.com/next/apikeys) |
-| `PAYTM_MERCHANT_KEY`                   | on first Paytm call | Signs requests (16 characters)                                | [Paytm dashboard > API Keys](https://dashboard.paytmpayments.com/next/apikeys) |
-| `N8N_WEBHOOK_URL`                      | on first n8n call   | Base URL of the n8n webhooks                                  | n8n workflow settings                                                          |
-| `N8N_WEBHOOK_SECRET`                   | on first n8n call   | Signs webhooks between the app and n8n (32+ characters)       | `openssl rand -hex 32`                                                         |
+| Variable                               | Checked                       | Used for                                                      | Where to get it                                                                |
+| -------------------------------------- | ----------------------------- | ------------------------------------------------------------- | ------------------------------------------------------------------------------ |
+| `APP_URL`                              | at startup                    | Public base URL: Paytm callbacks, QR codes                    | `http://localhost:3000` locally; the deployed https URL                        |
+| `OWNER_PIN`                            | at startup                    | The owner app's 4-digit PIN                                   | Choose one; share it only with the owner                                       |
+| `SESSION_SECRET`                       | at startup                    | Signs the owner and customer session cookies                  | `openssl rand -hex 32`                                                         |
+| `NEXT_PUBLIC_SUPABASE_URL`             | at startup                    | Database                                                      | Supabase dashboard > Project Settings > Data API                               |
+| `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY` | at startup                    | Browser access (Realtime)                                     | Supabase dashboard > Project Settings > API Keys (`sb_publishable_...`)        |
+| `SUPABASE_SECRET_KEY`                  | at startup                    | Server database access; bypasses RLS, never sent to a browser | Supabase dashboard > Project Settings > API Keys (`sb_secret_...`)             |
+| `GEMINI_API_KEY`                       | at startup                    | Conversational agent, bill reading                            | [Google AI Studio](https://aistudio.google.com/apikey)                         |
+| `GEMINI_USE_VERTEX`                    | at startup                    | `true` sends every model call to Vertex AI (paid quota)       |                                                                                |
+| `GOOGLE_CLOUD_API_KEY`                 | at startup, when Vertex is on | Vertex AI in express mode; replaces `GEMINI_API_KEY`          | [Google Cloud credentials](https://console.cloud.google.com/apis/credentials)  |
+| `GEMINI_MODEL`                         | at startup                    | Model name, e.g. `gemini-3.8-flash`                           | [Gemini models](https://ai.google.dev/gemini-api/docs/models)                  |
+| `SARVAM_API_KEY`                       | at startup                    | Speech to text, text to speech                                | [Sarvam dashboard](https://dashboard.sarvam.ai)                                |
+| `SARVAM_STT_MODEL`                     | at startup                    | Speech to text model, e.g. `saaras:v4`                        | [Sarvam docs](https://docs.sarvam.ai)                                          |
+| `SARVAM_TTS_MODEL`                     | at startup                    | Text to speech model, e.g. `bulbul:v3`                        | [Sarvam docs](https://docs.sarvam.ai)                                          |
+| `PAYTM_BASE_URL`                       | on first Paytm call           | `https://securestage.paytmpayments.com` for staging           | Paytm docs                                                                     |
+| `PAYTM_MID`                            | on first Paytm call           | Merchant ID                                                   | [Paytm dashboard > API Keys](https://dashboard.paytmpayments.com/next/apikeys) |
+| `PAYTM_MERCHANT_KEY`                   | on first Paytm call           | Signs requests (16 characters)                                | [Paytm dashboard > API Keys](https://dashboard.paytmpayments.com/next/apikeys) |
+| `N8N_WEBHOOK_URL`                      | on first n8n call             | Base URL of the n8n webhooks                                  | n8n workflow settings                                                          |
+| `N8N_WEBHOOK_SECRET`                   | on first n8n call             | Signs webhooks between the app and n8n (32+ characters)       | `openssl rand -hex 32`                                                         |
 
 Paytm and n8n keys are checked only when first used, because Paytm keys may arrive late. Model names live only in env, never in code.
 

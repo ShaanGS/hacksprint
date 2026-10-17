@@ -105,6 +105,7 @@ export function LoanTrackerCard() {
 
       <LoanSanctionSheet
         open={sanctioning}
+        loanId={loan.id}
         loanNeededPaise={loan.loan_needed_paise}
         busy={busy}
         onClose={() => setSanctioning(false)}

@@ -41,6 +41,13 @@ const geminiSchema = z.object({
   GEMINI_MODEL: text(),
 });
 
+// Vertex AI in express mode: a Google Cloud API key with the Vertex AI API on, paid quota, and
+// no service account to ship to Vercel.
+const vertexSchema = z.object({
+  GOOGLE_CLOUD_API_KEY: text(),
+  GEMINI_MODEL: text(),
+});
+
 const sarvamSchema = z.object({
   SARVAM_API_KEY: text(),
   SARVAM_STT_MODEL: text(),
@@ -70,7 +77,20 @@ function parse<T extends z.ZodType>(service: string, schema: T): z.infer<T> {
 
 export const appEnv = () => parse("App", appSchema);
 export const supabaseEnv = () => parse("Supabase", supabaseSchema);
-export const geminiEnv = () => parse("Gemini", geminiSchema);
+/** GEMINI_USE_VERTEX=true sends every model call to Vertex AI instead of the Gemini API. */
+export function vertexOn(): boolean {
+  return process.env.GEMINI_USE_VERTEX === "true";
+}
+
+/** The model and its key, from Vertex AI or the Gemini API, whichever the switch picks. */
+export function geminiEnv(): { vertex: boolean; apiKey: string; model: string } {
+  if (vertexOn()) {
+    const env = parse("Vertex AI", vertexSchema);
+    return { vertex: true, apiKey: env.GOOGLE_CLOUD_API_KEY, model: env.GEMINI_MODEL };
+  }
+  const env = parse("Gemini", geminiSchema);
+  return { vertex: false, apiKey: env.GEMINI_API_KEY, model: env.GEMINI_MODEL };
+}
 export const sarvamEnv = () => parse("Sarvam", sarvamSchema);
 // Paytm and n8n are checked on first use: Paytm keys may arrive late (spec 5.4), n8n only for reorders.
 export const paytmEnv = () => parse("Paytm", paytmSchema);
@@ -82,6 +102,7 @@ const serviceKeys = [
   "NEXT_PUBLIC_SUPABASE_URL",
   "SUPABASE_SECRET_KEY",
   "GEMINI_API_KEY",
+  "GOOGLE_CLOUD_API_KEY",
   "SARVAM_API_KEY",
 ];
 

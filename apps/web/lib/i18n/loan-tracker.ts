@@ -20,6 +20,10 @@ export type LoanTrackerWords = {
   months: string;
   monthsOption: (months: number) => string;
   save: string;
+  photoLetter: string;
+  readingLetter: string;
+  letterRead: string;
+  letterUnread: string;
   emisPaid: (paid: number, total: number) => string;
   nextEmi: (amount: Money, date: string) => string;
   overdue: (days: number) => string;
@@ -60,6 +64,10 @@ const en: LoanTrackerWords = {
   months: "For how many months?",
   monthsOption: (months) => `${months} months`,
   save: "Save",
+  photoLetter: "Photo of the sanction letter",
+  readingLetter: "Reading the letter…",
+  letterRead: "Filled from the letter. Check each figure, then tap Save.",
+  letterUnread: "Some figures could not be read. Fill them in from the letter.",
   emisPaid: (paid, total) => `${paid} of ${total} EMIs paid`,
   nextEmi: (amount, date) => `Next EMI ${amount} on ${date}`,
   overdue: (days) => `${days} ${days === 1 ? "day" : "days"} late`,
@@ -100,6 +108,10 @@ const ta: LoanTrackerWords = {
   months: "எத்தனை மாதங்கள்?",
   monthsOption: (months) => `${months} மாதங்கள்`,
   save: "சேமி",
+  photoLetter: "அனுமதிக் கடிதத்தின் புகைப்படம்",
+  readingLetter: "கடிதத்தைப் படிக்கிறோம்…",
+  letterRead: "கடிதத்திலிருந்து நிரப்பப்பட்டது. ஒவ்வொரு எண்ணையும் சரிபார்த்து சேமியைத் தொடுங்கள்.",
+  letterUnread: "சில எண்களைப் படிக்க முடியவில்லை. கடிதத்தைப் பார்த்து நிரப்புங்கள்.",
   emisPaid: (paid, total) => `${total} EMI-களில் ${paid} கட்டியாகிவிட்டது`,
   nextEmi: (amount, date) => `அடுத்த EMI ${amount}, ${date} அன்று`,
   overdue: (days) => `${days} நாள் தாமதம்`,
