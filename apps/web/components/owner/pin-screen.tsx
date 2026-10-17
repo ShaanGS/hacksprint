@@ -3,6 +3,7 @@
 import { Delete } from "lucide-react";
 import { motion, useAnimationControls } from "motion/react";
 import { useEffect, useRef, useState } from "react";
+import { LanguageSwitch } from "@/components/owner/language-switch";
 import { useOwnerLanguage } from "@/components/owner/owner-language";
 import { Art } from "@/components/ui/art";
 import { cn } from "@/lib/cn";
@@ -72,7 +73,10 @@ export function PinScreen({
   const message =
     problem === "wrong" ? text.pinWrong : problem === "locked" ? text.pinLocked : text.failed;
   return (
-    <main className="pb-safe flex h-full flex-col items-center px-4 pt-12">
+    <main className="pb-safe relative flex h-full flex-col items-center px-4 pt-12">
+      <div className="absolute top-3 right-4">
+        <LanguageSwitch />
+      </div>
       <Art name="shop" size={128} eager />
       <p className="mt-4 text-sm font-semibold text-ink-muted">{shopName}</p>
       <h1 className="mt-1 text-center text-title font-extrabold tracking-tight">{text.pinTitle}</h1>
