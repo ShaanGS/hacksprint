@@ -93,10 +93,13 @@ export function Art({
 export function Banner({
   name,
   flush,
+  eager,
   className,
 }: {
   name: BannerName;
   flush?: boolean;
+  /** A screen's hero: load it straight away rather than when it scrolls into view. */
+  eager?: boolean;
   className?: string;
 }) {
   return (
@@ -106,6 +109,7 @@ export function Banner({
       width={1280}
       height={720}
       sizes="(max-width: 430px) 100vw, 390px"
+      loading={eager ? "eager" : "lazy"}
       className={cn("w-full object-cover", flush ? "h-full" : "aspect-video rounded-xl", className)}
     />
   );

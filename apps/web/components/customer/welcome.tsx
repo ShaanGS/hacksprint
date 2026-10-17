@@ -47,7 +47,7 @@ function ChooseLanguage({
   return (
     <main className="flex min-h-full flex-col">
       <div className="h-64 shrink-0 overflow-hidden rounded-b-3xl">
-        <Banner name="voice" flush />
+        <Banner name="voice" flush eager />
       </div>
       <div className="pb-safe flex flex-1 flex-col px-4 pt-6">
         <h1 className="text-display font-extrabold tracking-tight">{shopName}</h1>
