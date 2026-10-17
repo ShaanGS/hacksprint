@@ -32,6 +32,25 @@ export function TodayTab({
   reorder: ReorderLine[];
 }) {
   const [sent, setSent] = useState(false);
+  const [sending, setSending] = useState(false);
+  const [failed, setFailed] = useState(false);
+
+  async function sendReorder() {
+    setSending(true);
+    setFailed(false);
+    const response = await fetch("/api/reorder", {
+      method: "POST",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify({
+        shopName,
+        distributorName,
+        lines: reorder.map((line) => ({ name: line.name, qty: line.qty, unit: line.unit })),
+      }),
+    }).catch(() => null);
+    setSending(false);
+    if (response?.ok) setSent(true);
+    else setFailed(true);
+  }
   const tiles: { art: ArtName; label: string; paise?: number; count?: number; good?: boolean }[] = [
     { art: "bag", label: "Orders", count: summary.orders },
     { art: "savings", label: "Collected", paise: summary.collectedPaise, good: true },
@@ -96,9 +115,16 @@ export function TodayTab({
                 Sent to {distributorName}
               </motion.p>
             ) : (
-              <Button wide onClick={() => setSent(true)}>
-                Send to {distributorName}
-              </Button>
+              <>
+                <Button wide disabled={sending} onClick={sendReorder}>
+                  {sending ? "Sending…" : `Send to ${distributorName}`}
+                </Button>
+                {failed && (
+                  <p className="mt-2 text-sm font-medium text-danger">
+                    Couldn&apos;t reach {distributorName}. Try again.
+                  </p>
+                )}
+              </>
             )}
           </div>
         )}

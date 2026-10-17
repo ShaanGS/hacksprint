@@ -1,0 +1,53 @@
+{
+  "name": "Munim – reorder to distributor (Telegram)",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "munim-reorder",
+        "responseMode": "onReceived",
+        "options": {}
+      },
+      "id": "b1f0c1a2-0001-4a5e-9a10-000000000001",
+      "name": "Reorder from app",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [0, 0],
+      "webhookId": "munim-reorder"
+    },
+    {
+      "parameters": {
+        "jsCode": "// Paste the same value as N8N_WEBHOOK_SECRET in Vercel.\nconst SECRET = 'PASTE_N8N_WEBHOOK_SECRET_HERE';\n\nconst item = $input.first().json;\nif ((item.headers || {})['x-munim-secret'] !== SECRET) {\n  throw new Error('Wrong or missing secret');\n}\nconst b = item.body;\nconst lines = b.lines.map((l) => `• ${l.name} — ${l.qty} ${l.unit}`).join('\\n');\nconst text = `🛒 New order from ${b.shopName}\\nTo: ${b.distributorName}\\n\\n${lines}\\n\\nApproved by the owner in Munim.`;\nreturn [{ json: { text } }];"
+      },
+      "id": "b1f0c1a2-0002-4a5e-9a10-000000000002",
+      "name": "Check secret + write message",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [260, 0]
+    },
+    {
+      "parameters": {
+        "chatId": "PASTE_YOUR_CHAT_ID",
+        "text": "={{ $json.text }}",
+        "additionalFields": {
+          "appendAttribution": false
+        }
+      },
+      "id": "b1f0c1a2-0003-4a5e-9a10-000000000003",
+      "name": "Send to distributor",
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [520, 0]
+    }
+  ],
+  "connections": {
+    "Reorder from app": {
+      "main": [[{ "node": "Check secret + write message", "type": "main", "index": 0 }]]
+    },
+    "Check secret + write message": {
+      "main": [[{ "node": "Send to distributor", "type": "main", "index": 0 }]]
+    }
+  },
+  "settings": {},
+  "pinData": {}
+}
