@@ -39,6 +39,7 @@ export type AnswerWords = {
   collectNobody: string;
   reorderAgent: (count: number, names: string) => string;
   reorderNothing: string;
+  planAgent: (short: boolean, gapPaise: number) => string;
 };
 
 const en: AnswerWords = {
@@ -88,6 +89,8 @@ const en: AnswerWords = {
   reorderAgent: (count, names) =>
     `${count} ${count === 1 ? "item runs" : "items run"} out this week: ${names}. The agent orders them at your last bill's quantity, after you approve.`,
   reorderNothing: "Nothing runs out this week, so there is nothing to order.",
+  planAgent: (short, gap) =>
+    `${short ? `This week you are short by ${m(-gap)}.` : `This week has ${m(gap)} to spare.`} The agent looks at your bills, late payers and stock, and puts the steps in order. You decide each one.`,
 };
 
 const ta: AnswerWords = {
@@ -137,6 +140,8 @@ const ta: AnswerWords = {
   reorderAgent: (count, names) =>
     `இந்த வாரம் ${count} பொருட்கள் தீர்ந்துவிடும்: ${names}. நீங்கள் ஒப்புக்கொண்ட பிறகு, கடைசி பில் அளவில் முகவர் ஆர்டர் செய்யும்.`,
   reorderNothing: "இந்த வாரம் எதுவும் தீராது; ஆர்டர் செய்ய எதுவும் இல்லை.",
+  planAgent: (short, gap) =>
+    `${short ? `இந்த வாரம் ${m(-gap)} பற்றாக்குறை.` : `இந்த வாரம் ${m(gap)} மீதம்.`} பில்கள், தாமதமாகக் கட்டுபவர்கள், சரக்கு எல்லாம் பார்த்து முகவர் வரிசைப்படுத்தும். ஒவ்வொன்றையும் நீங்களே முடிவு செய்யுங்கள்.`,
 };
 
 export function answerWordsFor(lang: "en" | "ta"): AnswerWords {

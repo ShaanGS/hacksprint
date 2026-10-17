@@ -28,6 +28,7 @@ export const questionTopics = [
   "items",
   "collect_agent",
   "reorder",
+  "plan",
 ] as const;
 
 export type QuestionTopic = (typeof questionTopics)[number];

@@ -4,8 +4,8 @@ import { createContext, useContext } from "react";
 
 // What every owner tab may need from the app around it, without passing it down each level.
 
-/** The jobs the owner can hand to an agent. */
-export type AgentKind = "collect" | "reorder";
+/** The jobs the owner can hand to an agent; "plan" puts the others in order. */
+export type AgentKind = "collect" | "reorder" | "pay" | "plan";
 
 export type OwnerScreen = {
   /** The shop runs on seeded demo data: label it and offer the stage fallbacks (rule 12). */

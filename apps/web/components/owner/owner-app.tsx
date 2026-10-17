@@ -12,6 +12,7 @@ import { Listening, type ListeningState } from "@/components/owner/listening";
 import { LiveUpdates } from "@/components/owner/live";
 import { useOwnerLanguage } from "@/components/owner/owner-language";
 import { OwnerScreenContext, type AgentKind } from "@/components/owner/owner-screen";
+import { PlanAgent, type PlanTarget } from "@/components/owner/plan-agent";
 import { ReorderAgent } from "@/components/owner/reorder-agent";
 import { StockTab } from "@/components/owner/stock-tab";
 import { TabBar, type OwnerTab } from "@/components/owner/tab-bar";
@@ -50,7 +51,20 @@ export function OwnerApp({
   const [tools, setTools] = useState(false);
   const [hearing, setHearing] = useState(false);
   const [agent, setAgent] = useState<AgentKind | null>(null);
+  // What the owner asked when he handed the week to the planner by voice; empty from a button.
+  const [planGoal, setPlanGoal] = useState("");
   const closeAgent = useCallback(() => setAgent(null), []);
+  const openAgent = useCallback((kind: AgentKind, goal = "") => {
+    setPlanGoal(goal);
+    setAgent(kind);
+  }, []);
+  /** A plan step opens the agent that does it, or the Bank tab for the loan. */
+  const openFromPlan = useCallback((target: PlanTarget) => {
+    if (target === "bank") {
+      setAgent(null);
+      setTab("bank");
+    } else setAgent(target);
+  }, []);
   const hold = useHoldToTalk({
     askMicrophone: voice.askMicrophone,
     onTooShort: () => notify(text.holdLonger),
@@ -78,11 +92,11 @@ export function OwnerApp({
       demo,
       notify,
       openDemoTools: () => setTools(true),
-      openAgent: setAgent,
+      openAgent,
       shopName,
       ownerName,
     }),
-    [demo, notify, shopName, ownerName],
+    [demo, notify, openAgent, shopName, ownerName],
   );
   const listening: ListeningState | null =
     hold.mic === "listening" ? "listening" : hold.mic === "thinking" || hearing ? "working" : null;
@@ -139,11 +153,17 @@ export function OwnerApp({
             card={card}
             onDone={() => setCard(null)}
             onOpen={setTab}
-            onAgent={setAgent}
+            onAgent={(kind) => openAgent(kind, kind === "plan" ? (card?.transcript ?? "") : "")}
           />
           <Listening state={listening} />
           <CollectAgent open={agent === "collect"} onClose={closeAgent} />
           <ReorderAgent open={agent === "reorder"} onClose={closeAgent} />
+          <PlanAgent
+            open={agent === "plan"}
+            goal={planGoal}
+            onClose={closeAgent}
+            onOpen={openFromPlan}
+          />
           {demo && <DemoTools open={tools} onClose={() => setTools(false)} onRecording={hear} />}
         </div>
       </LiveUpdates>

@@ -30,12 +30,14 @@ const tabFor: Record<QuestionTopic, OwnerTab> = {
   items: "stock",
   collect_agent: "collect",
   reorder: "stock",
+  plan: "home",
 };
 
 // The spoken jobs an agent does, and which agent.
 const agentFor: Partial<Record<QuestionTopic, AgentKind>> = {
   collect_agent: "collect",
   reorder: "reorder",
+  plan: "plan",
 };
 
 export function VoiceSheet({

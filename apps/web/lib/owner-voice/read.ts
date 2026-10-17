@@ -61,7 +61,7 @@ const declarations: FunctionDeclaration[] = [
           type: "string",
           enum: [...questionTopics],
           description:
-            'week: can he pay this week, is he short. collect: who to collect from, who is late (he wants to know). customer: how much one customer owes. stock: his shelf, what is low or stuck. dues: what he owes suppliers, which bill is due. loan: does he need a loan, how much. collect_agent: he wants it done for him, the late payers reminded and the money collected ("collect from the late payers", "கடன் வசூல் பண்ணு", "paisa wasool karo"). reorder: he wants what is running low ordered from his distributor ("order what\'s running low", "சரக்கு ஆர்டர் போடு", "maal mangwao").',
+            'week: can he pay this week, is he short. collect: who to collect from, who is late (he wants to know). customer: how much one customer owes. stock: his shelf, what is low or stuck. dues: what he owes suppliers, which bill is due. loan: does he need a loan, how much. collect_agent: he wants it done for him, the late payers reminded and the money collected ("collect from the late payers", "கடன் வசூல் பண்ணு", "paisa wasool karo"). reorder: he wants what is running low ordered from his distributor ("order what\'s running low", "சரக்கு ஆர்டர் போடு", "maal mangwao"). plan: he wants the whole week planned, what to do first ("what should I do this week", "இந்த வாரம் என்ன செய்யணும்", "is hafte kya karun").',
         },
         customer: {
           type: "string",

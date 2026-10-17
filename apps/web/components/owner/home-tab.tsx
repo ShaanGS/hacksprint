@@ -12,6 +12,7 @@ import {
   RefreshCw,
   ScanLine,
   ShoppingCart,
+  Sparkles,
   Store,
   Truck,
   Users,
@@ -36,6 +37,7 @@ import { IconCircle, type IconTone } from "@/components/ui/icon-circle";
 import { ListRow } from "@/components/ui/list-row";
 import { Ticker } from "@/components/ui/ticker";
 import { agentWordsFor } from "@/lib/i18n/agents";
+import { plannerWordsFor } from "@/lib/i18n/planner";
 import { langInfo } from "@/lib/i18n/languages";
 import { cn } from "@/lib/cn";
 import { formatMoney } from "@/lib/money";
@@ -51,6 +53,7 @@ export function HomeTab({ onTab }: { onTab: (tab: OwnerTab) => void }) {
   const { lang, text } = useOwnerLanguage();
   const { openAgent } = useOwnerScreen();
   const agentWords = agentWordsFor(lang);
+  const plannerWords = plannerWordsFor(lang);
   const dates = useDates();
   const day = useDay(text, langInfo[lang].sarvamCode);
   const rotation = useLive(ownerApi.rotation, ["rotation", "credit", "stock"]);
@@ -105,7 +108,22 @@ export function HomeTab({ onTab }: { onTab: (tab: OwnerTab) => void }) {
         </p>
       </section>
 
-      <div className="mt-5 flex items-center gap-2">
+      <button
+        type="button"
+        onClick={() => openAgent("plan")}
+        className="mt-5 flex w-full items-center gap-3 rounded-3xl bg-night p-4 text-left text-night-ink transition-transform active:scale-98"
+      >
+        <span className="grid size-11 shrink-0 place-items-center rounded-full bg-yellow text-yellow-ink">
+          <Sparkles aria-hidden className="size-5" />
+        </span>
+        <span className="min-w-0 flex-1">
+          <span className="block text-base font-semibold">{plannerWords.letAgentPlan}</span>
+          <span className="mt-0.5 block text-sm text-night-muted">{plannerWords.planHint}</span>
+        </span>
+        <ArrowRight aria-hidden className="size-5 shrink-0" />
+      </button>
+
+      <div className="mt-3 flex items-center gap-2">
         <PillAction icon={HandCoins} onClick={() => openAgent("collect")}>
           {text.shortcuts.collect}
         </PillAction>

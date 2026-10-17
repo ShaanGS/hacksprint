@@ -111,6 +111,8 @@ export function answerText(question: Question, facts: AnswerFacts, lang: "en" | 
       return week.lateCustomers > 0
         ? words.collectAgent(week.lateCustomers, week.latePaise)
         : words.collectNobody;
+    case "plan":
+      return words.planAgent(week.state === "short", week.gapPaise);
     case "reorder":
       return facts.low.length > 0
         ? words.reorderAgent(facts.low.length, facts.low.slice(0, LIST_MAX).join(", "))
