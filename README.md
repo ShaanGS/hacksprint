@@ -1,3 +1,7 @@
+<p align="center">
+  <img alt="Quantum Forge, Hack Sprint 2026, PS21 Fintech: know on Monday if you can pay Friday's bill. A voice-first money planner for kirana owners." src="docs/banner.png">
+</p>
+
 <div align="center">
 
 # AI manager for a kirana shop
