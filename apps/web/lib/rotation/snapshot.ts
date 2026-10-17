@@ -15,7 +15,13 @@ export function snapshotOf(data: ShopData, leaveOut?: ReadonlySet<string>) {
     .map((customer) => positionOf(customer, data.today))
     .filter((position): position is CustomerPosition => position !== null);
   const items = shelf(
-    data.products.map((p) => ({ id: p.id, name: p.name, art: p.art, unit: p.unit })),
+    data.products.map((p) => ({
+      id: p.id,
+      name: p.name,
+      art: p.art,
+      unit: p.unit,
+      packSize: p.packSize,
+    })),
     data.counts,
     data.receipts,
     data.now,

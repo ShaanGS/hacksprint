@@ -8,7 +8,8 @@ import type { Snapshot } from "@/lib/rotation/snapshot";
 import { indiaTime } from "@/lib/rotation/responses";
 
 // Where a number on the money screens came from (spec E3, rule 5): the rows behind it, which add
-// up to it. The owner's own view, so customer names may appear here.
+// up to it. Each row is a kind with its facts, so screens write it in the owner's language. The
+// owner's own view, so customer names may appear here.
 
 export const rotationParts = [
   "due_7d",
@@ -25,95 +26,115 @@ export const rotationParts = [
 export const rotationPart = z.enum(rotationParts);
 export type RotationPart = z.infer<typeof rotationPart>;
 
-type Row = {
-  title: string;
-  detail: string | null;
-  date: string | null;
-  paise: number;
-  label: SourceLabel;
-};
+type Base = { paise: number; label: SourceLabel };
 
-const sum = (rows: Row[]) => rows.reduce((total, row) => total + row.paise, 0);
+export type SourceRow = Base &
+  (
+    | {
+        kind: "bill";
+        distributor: string;
+        bill_number: string | null;
+        due_date: string;
+        overdue_days: number;
+      }
+    | { kind: "cost"; cost: string; period: "week" | "month" }
+    | { kind: "money_in_hand"; at: string }
+    | { kind: "payment"; at: string }
+    | { kind: "day_sales"; date: string }
+    | {
+        kind: "customer";
+        name: string;
+        status: CustomerPosition["status"]["kind"];
+        oldest_unpaid: string;
+      }
+    | { kind: "product"; name: string; art: string; counted_at: string | null }
+  );
 
-function customerRows(positions: CustomerPosition[]): Row[] {
+function customerRows(positions: CustomerPosition[]): SourceRow[] {
   return positions.map((p) => ({
-    title: p.name,
-    detail: p.status.kind,
-    date: p.oldestUnpaid,
+    kind: "customer",
+    name: p.name,
+    status: p.status.kind,
+    oldest_unpaid: p.oldestUnpaid,
     paise: p.balancePaise,
     label: p.label,
   }));
 }
 
-function rowsFor(part: RotationPart, data: ShopData, snapshot: Snapshot): Row[] {
-  const { week } = snapshot;
-  const unpaid = data.payables
-    .filter((p) => !p.paid)
-    .sort((a, b) => a.dueDate.localeCompare(b.dueDate));
-  const bill = (p: ShopData["payables"][number]): Row => ({
-    title: [p.distributor, p.billNumber].filter(Boolean).join(" · "),
-    detail:
-      overdueDays(p.dueDate, data.today) > 0
-        ? `overdue ${overdueDays(p.dueDate, data.today)} days`
-        : null,
-    date: p.dueDate,
-    paise: p.amountPaise,
-    label: p.kind === "loan_emi" ? "owner_said" : "supplier_bill",
-  });
+function billRows(data: ShopData, upTo: string | null): SourceRow[] {
+  return data.payables
+    .filter((p) => !p.paid && (upTo === null || p.dueDate <= upTo))
+    .sort((a, b) => a.dueDate.localeCompare(b.dueDate))
+    .map((p) => ({
+      kind: "bill",
+      distributor: p.distributor,
+      bill_number: p.billNumber,
+      due_date: p.dueDate,
+      overdue_days: overdueDays(p.dueDate, data.today),
+      paise: p.amountPaise,
+      label: p.kind === "loan_emi" ? "owner_said" : "supplier_bill",
+    }));
+}
+
+function moneyNowRows(data: ShopData, snapshot: Snapshot): SourceRow[] {
+  const said = snapshot.week.likely.now.saidAt;
+  if (said === null) return [];
+  const close = data.dayCloses.find((d) => d.recordedAt === said);
+  return [
+    {
+      kind: "money_in_hand",
+      at: indiaTime(said),
+      paise: close?.moneyInHandPaise ?? 0,
+      label: "owner_said",
+    },
+    ...data.payments
+      .filter((p) => p.paidAt > said)
+      .map((p): SourceRow => ({
+        kind: "payment",
+        at: indiaTime(p.paidAt),
+        paise: p.amountPaise,
+        label: "verified_payment",
+      })),
+  ];
+}
+
+/** Each day the usual week was worked out from: the cash he said plus the verified payments. */
+function salesRows(data: ShopData): SourceRow[] {
+  const from = addDays(data.today, -(SALES_WINDOW_DAYS - 1));
+  return data.dayCloses
+    .filter((d) => d.cashSalesPaise !== null && d.businessDate >= from)
+    .sort((a, b) => b.businessDate.localeCompare(a.businessDate))
+    .map((d) => {
+      const digital = data.payments
+        .filter((p) => !p.isCreditRepayment && shopDate(p.paidAt) === d.businessDate)
+        .reduce((total, p) => total + p.amountPaise, 0);
+      return {
+        kind: "day_sales",
+        date: d.businessDate,
+        paise: (d.cashSalesPaise ?? 0) + digital,
+        label: "owner_said",
+      };
+    });
+}
+
+function rowsFor(part: RotationPart, data: ShopData, snapshot: Snapshot): SourceRow[] {
   switch (part) {
     case "due_7d":
-      return unpaid.filter((p) => p.dueDate <= addDays(data.today, FORECAST_DAYS)).map(bill);
+      return billRows(data, addDays(data.today, FORECAST_DAYS));
     case "owed_to_suppliers":
-      return unpaid.map(bill);
+      return billRows(data, null);
     case "weekly_costs":
       return data.costs.map((c) => ({
-        title: c.kind,
-        detail: c.period === "month" ? "a month, spread over its weeks" : "a week",
-        date: null,
+        kind: "cost",
+        cost: c.kind,
+        period: c.period,
         paise: c.period === "week" ? c.amountPaise : Math.round((c.amountPaise * 12) / 52),
         label: "owner_said",
       }));
-    case "money_now": {
-      const said = week.likely.now.saidAt;
-      if (said === null) return [];
-      const close = data.dayCloses.find((d) => d.recordedAt === said);
-      return [
-        {
-          title: "Money in hand, as you said",
-          detail: null,
-          date: indiaTime(said),
-          paise: close?.moneyInHandPaise ?? 0,
-          label: "owner_said",
-        },
-        ...data.payments
-          .filter((p) => p.paidAt > said)
-          .map((p): Row => ({
-            title: "Payment received",
-            detail: null,
-            date: indiaTime(p.paidAt),
-            paise: p.amountPaise,
-            label: "verified_payment",
-          })),
-      ];
-    }
-    case "usual_week_sales": {
-      const from = addDays(data.today, -(SALES_WINDOW_DAYS - 1));
-      return data.dayCloses
-        .filter((d) => d.cashSalesPaise !== null && d.businessDate >= from)
-        .sort((a, b) => b.businessDate.localeCompare(a.businessDate))
-        .map((d) => {
-          const digital = data.payments
-            .filter((p) => !p.isCreditRepayment && shopDate(p.paidAt) === d.businessDate)
-            .reduce((total, p) => total + p.amountPaise, 0);
-          return {
-            title: "Cash said plus verified payments",
-            detail: null,
-            date: d.businessDate,
-            paise: (d.cashSalesPaise ?? 0) + digital,
-            label: "owner_said",
-          };
-        });
-    }
+    case "money_now":
+      return moneyNowRows(data, snapshot);
+    case "usual_week_sales":
+      return salesRows(data);
     case "from_customers":
       return customerRows(snapshot.positions.filter((p) => p.status.kind === "due"));
     case "late":
@@ -125,27 +146,28 @@ function rowsFor(part: RotationPart, data: ShopData, snapshot: Snapshot): Row[] 
         .filter((i) => i.valuePaise !== null && i.valuePaise > 0)
         .sort((a, b) => (b.valuePaise ?? 0) - (a.valuePaise ?? 0))
         .map((i) => ({
-          title: i.product.name,
-          detail: i.countedAt ? `counted ${shopDate(i.countedAt)}` : "not counted",
-          date: null,
+          kind: "product",
+          name: i.product.name,
+          art: i.product.art,
+          counted_at: i.countedAt === null ? null : indiaTime(i.countedAt),
           paise: i.valuePaise ?? 0,
           label: "estimate",
         }));
   }
 }
 
-/** The rows behind one part; the usual week's days add up to 7 times their average, not the sum. */
+/**
+ * The rows behind one part. They add up to it, except the usual week, which is 7 times the
+ * average day of its rows; a month's cost row is its weekly share.
+ */
 export function rotationSource(part: RotationPart, data: ShopData, snapshot: Snapshot) {
   const rows = rowsFor(part, data, snapshot);
   return {
     part,
-    total_paise: part === "usual_week_sales" ? snapshot.week.likely.sales.paise : sum(rows),
-    rows: rows.map((row) => ({
-      title: row.title,
-      detail: row.detail,
-      date: row.date,
-      paise: row.paise,
-      label: row.label,
-    })),
+    total_paise:
+      part === "usual_week_sales"
+        ? snapshot.week.likely.sales.paise
+        : rows.reduce((total, row) => total + row.paise, 0),
+    rows,
   };
 }

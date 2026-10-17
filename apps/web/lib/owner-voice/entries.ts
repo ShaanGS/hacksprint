@@ -44,7 +44,7 @@ async function namesFor(db: SupabaseClient, shopId: string) {
   if (customers.error) throw new Error(`Could not read the customers: ${customers.error.message}`);
   return {
     customers: z.array(customerRow).parse(customers.data) as Named[],
-    products: products.map((p) => ({ id: p.id, name: p.name, code: p.code })),
+    products: products.map((p) => ({ id: p.id, name: p.name, code: p.code, art: p.art })),
   };
 }
 
@@ -80,6 +80,14 @@ function cardOf(parsed: ParsedEntry, customers: Named[], products: Named[]) {
   }
 }
 
+/** Who or what the owner can tap instead, when the card's name is missing or wrong. */
+function choicesOf(parsed: ParsedEntry, customers: Named[], products: (Named & { art: string })[]) {
+  if (parsed.kind === "credit_given" || parsed.kind === "credit_repaid_cash") return customers;
+  if (parsed.kind === "stock_count")
+    return products.map((p) => ({ id: p.id, name: p.name, art: p.art }));
+  return [];
+}
+
 export async function hearEntry(db: SupabaseClient, shop: Shop, audio: Blob) {
   const { customers, products } = await namesFor(db, shop.id);
   const heard = await speechToText(audio, audio.type.includes("mp4") ? "owner.mp4" : "owner.webm", {
@@ -97,7 +105,7 @@ export async function hearEntry(db: SupabaseClient, shop: Shop, audio: Blob) {
     await audit(db, shop.id, [
       { actor: "agent", action: "voice.not_understood", payload: { transcript } },
     ]);
-    return { entry_id: null, transcript, kind: null, card: null, needs: [] };
+    return { entry_id: null, transcript, kind: null, card: null, needs: [], choices: [] };
   }
   const { data, error } = await db
     .from("owner_voice_entries")
@@ -121,6 +129,7 @@ export async function hearEntry(db: SupabaseClient, shop: Shop, audio: Blob) {
     kind: parsed.kind,
     card: cardOf(parsed, customers, products),
     needs: needsOf(parsed),
+    choices: choicesOf(parsed, customers, products),
   };
 }
 

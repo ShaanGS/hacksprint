@@ -13,6 +13,7 @@ const costRow = z.object({
 });
 
 export const costKinds = ["rent", "staff", "home", "cash_purchases", "other"] as const;
+export type CostKind = (typeof costKinds)[number];
 
 export async function loadCosts(db: SupabaseClient, shopId: string): Promise<Cost[]> {
   const { data, error } = await db

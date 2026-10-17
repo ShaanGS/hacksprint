@@ -24,6 +24,7 @@ const reminderRow = z.object({
   id: z.string(),
   customer_id: z.string(),
   amount_paise: z.number().int(),
+  payment_link_id: z.string().nullable(),
   payment_link_url: z.string().nullable(),
   message_text: z.string().nullable(),
   created_at: z.string(),
@@ -31,6 +32,7 @@ const reminderRow = z.object({
 
 export type Reminder = {
   reminderId: string;
+  paymentId: string;
   amountPaise: number;
   messageText: string;
   paymentLinkUrl: string;
@@ -44,7 +46,9 @@ export async function openReminders(
 ): Promise<Map<string, OpenReminder>> {
   const { data, error } = await db
     .from("credit_reminders")
-    .select("id, customer_id, amount_paise, payment_link_url, message_text, created_at")
+    .select(
+      "id, customer_id, amount_paise, payment_link_id, payment_link_url, message_text, created_at",
+    )
     .eq("shop_id", shopId)
     .eq("status", "draft")
     .order("created_at");
@@ -55,7 +59,12 @@ export async function openReminders(
       .parse(data)
       .map((r) => [
         r.customer_id,
-        { id: r.id, paymentLinkUrl: r.payment_link_url, createdAt: r.created_at },
+        {
+          id: r.id,
+          paymentId: r.payment_link_id,
+          paymentLinkUrl: r.payment_link_url,
+          createdAt: r.created_at,
+        },
       ]),
   );
 }
@@ -75,7 +84,9 @@ export async function remindCustomer(
     db.from("credit_ledger").select("amount_paise").eq("customer_id", customerId),
     db
       .from("credit_reminders")
-      .select("id, customer_id, amount_paise, payment_link_url, message_text, created_at")
+      .select(
+        "id, customer_id, amount_paise, payment_link_id, payment_link_url, message_text, created_at",
+      )
       .eq("customer_id", customerId)
       .eq("status", "draft")
       .order("created_at", { ascending: false })
@@ -97,13 +108,20 @@ export async function remindCustomer(
   if (owed <= 0) throw new HttpError(409, "This customer owes nothing.");
 
   const open = openResult.data ? reminderRow.parse(openResult.data) : null;
-  if (open && open.amount_paise === owed && open.payment_link_url && open.message_text) {
+  if (
+    open &&
+    open.amount_paise === owed &&
+    open.payment_link_id &&
+    open.payment_link_url &&
+    open.message_text
+  ) {
     await db
       .from("credit_reminders")
       .update({ opened_at: new Date().toISOString() })
       .eq("id", open.id);
     return {
       reminderId: open.id,
+      paymentId: open.payment_link_id,
       amountPaise: owed,
       messageText: open.message_text,
       paymentLinkUrl: open.payment_link_url,
@@ -157,6 +175,7 @@ export async function remindCustomer(
   ]);
   return {
     reminderId,
+    paymentId: link.id,
     amountPaise: owed,
     messageText,
     paymentLinkUrl: link.url,

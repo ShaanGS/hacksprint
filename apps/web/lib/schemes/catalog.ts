@@ -137,3 +137,82 @@ export const fixedLines = [
   "The bank decides; we do not promise approval.",
   "Applying for Mudra or Udyam costs nothing. Anyone asking you for a fee is not the government.",
 ] as const;
+
+const tamil = {
+  mudraName: "பிரதமர் முத்ரா திட்டம் (PMMY)",
+  bands: {
+    shishu: { name: "ஷிஷு", range: "₹50,000 வரை" },
+    kishore: { name: "கிஷோர்", range: "₹50,000-க்கு மேல், ₹5 லட்சம் வரை" },
+    tarun: { name: "தருண்", range: "₹5 லட்சத்துக்கு மேல், ₹10 லட்சம் வரை" },
+    tarun_plus: {
+      name: "தருண் பிளஸ்",
+      range: "₹10 லட்சம் முதல் ₹20 லட்சம் வரை, தருண் கடனைத் திருப்பிச் செலுத்திய பிறகு",
+    },
+  },
+  noCollateral: "அடமானம் தேவையில்லை.",
+  aboveMudra: "இது முத்ரா வரம்பை (₹20 லட்சம் வரை) விட அதிகம்.",
+  needsTarunRepaid: "தருண் கடனைத் திருப்பிச் செலுத்திய பிறகுதான் தருண் பிளஸ் கிடைக்கும்.",
+  interest: "வட்டியை வங்கி முடிவு செய்யும்.",
+  applyAt:
+    "எந்த வங்கி, மண்டல ஊரக வங்கி, சிறு நிதி வங்கி, NBFC அல்லது MFI-யிலும், அல்லது JanSamarth இணையதளத்திலும் விண்ணப்பிக்கலாம்.",
+  udyam:
+    "இலவசம், udyamregistration.gov.in-ல் மட்டும். ஆதார், PAN தேவை; GSTIN இருந்தால் மட்டும் கொடுங்கள்.",
+  udyamAssist:
+    "PAN அல்லது GST இல்லாத கடைகளுக்கு: உங்கள் வங்கியே சான்றிதழை இணையத்தில் உருவாக்கும்; PAN, GSTIN தேவையில்லை.",
+  loanForms: {
+    stock_rotation: {
+      line: "RuPay MUDRA அட்டையுடன் கேஷ் கிரெடிட் வரம்பாக நடைமுறை மூலதனம் கேளுங்கள்.",
+      why: "வரம்புக்குள் பலமுறை எடுக்கவும் திருப்பிக் கட்டவும் முடியும்; அதனால் திருப்பிச் செலுத்துவது உங்கள் தினசரி வருமானத்தோடு ஒத்துப்போகும்.",
+    },
+    equipment: {
+      line: "நிலையான EMI உள்ள கால கடன் கேளுங்கள்.",
+      why: "அப்போது அந்த EMI ஒரு பில் போல உங்கள் வரும் வாரத்தில் கட்ட வேண்டியதாகத் தெரியும்.",
+    },
+  },
+  fixedLines: [
+    "வங்கியே முடிவு செய்யும்; கடன் கிடைக்கும் என்று நாங்கள் உறுதி தரவில்லை.",
+    "முத்ரா அல்லது உத்யம் விண்ணப்பத்துக்குக் கட்டணம் இல்லை. கட்டணம் கேட்பவர் அரசு அல்ல.",
+  ],
+} as const;
+
+export type SchemeLang = "en" | "ta";
+
+/**
+ * The facts above in the reader's language, for the owner's screens and the printed pages. The
+ * Tamil says what the English says, no more.
+ */
+export function schemeWords(lang: SchemeLang) {
+  if (lang === "ta") {
+    return {
+      mudraName: tamil.mudraName,
+      band: (key: MudraBandKey) => tamil.bands[key],
+      noCollateral: tamil.noCollateral,
+      notCovered: (reason: "needs_tarun_repaid" | "above_mudra") =>
+        reason === "above_mudra" ? tamil.aboveMudra : tamil.needsTarunRepaid,
+      interest: tamil.interest,
+      applyAt: tamil.applyAt,
+      udyam: tamil.udyam,
+      udyamAssist: tamil.udyamAssist,
+      loanForm: (purpose: LoanPurpose) => tamil.loanForms[purpose],
+      fixedLines: tamil.fixedLines,
+    };
+  }
+  return {
+    mudraName: mudra.name,
+    band: (key: MudraBandKey) => {
+      const band = mudraBands.find((b) => b.key === key) ?? mudraBands[0];
+      return { name: band.name, range: band.range };
+    },
+    noCollateral: "No collateral.",
+    notCovered: (reason: "needs_tarun_repaid" | "above_mudra") =>
+      reason === "above_mudra"
+        ? "This is more than Mudra covers (up to ₹20 lakh)."
+        : "Tarun Plus is only for those who repaid a Tarun loan.",
+    interest: mudra.interest,
+    applyAt: mudra.applyAt,
+    udyam: udyam.fact,
+    udyamAssist: udyamAssist.fact,
+    loanForm: (purpose: LoanPurpose) => loanForms[purpose],
+    fixedLines,
+  };
+}

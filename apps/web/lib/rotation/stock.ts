@@ -14,7 +14,13 @@ export const SLOW_DAYS = 30;
 
 export type Count = { productId: string; qty: number; at: string };
 export type Receipt = { productId: string; qty: number; at: string; unitCostPaise: number };
-export type ShelfProduct = { id: string; name: string; art: string; unit: string };
+export type ShelfProduct = {
+  id: string;
+  name: string;
+  art: string;
+  unit: string;
+  packSize: string | null;
+};
 
 export type WeeklySales = { perWeek: number; from: "counts" | "rebuy" };
 export type DaysLeft = number | "not_moving" | null;

@@ -1,3 +1,4 @@
+import type { FestivalOrder } from "@/lib/rotation/festival";
 import type { Snapshot } from "@/lib/rotation/snapshot";
 import type { ShelfItem } from "@/lib/rotation/stock";
 import { indiaTime } from "@/lib/rotation/responses";
@@ -15,6 +16,7 @@ function itemJson(item: ShelfItem) {
     name: item.product.name,
     art: item.product.art,
     unit: item.product.unit,
+    pack_size: item.product.packSize,
     estimate_qty: round(item.estimateQty, 1),
     label: "estimate",
     counted_at: item.countedAt === null ? null : indiaTime(item.countedAt),
@@ -28,7 +30,7 @@ function itemJson(item: ShelfItem) {
   };
 }
 
-export function stockResponse(snapshot: Snapshot) {
+export function stockResponse(snapshot: Snapshot, order: FestivalOrder | null) {
   return {
     on_shelf_paise: snapshot.onShelf.paise,
     label: snapshot.onShelf.label,
@@ -36,6 +38,14 @@ export function stockResponse(snapshot: Snapshot) {
     products: [...snapshot.items]
       .sort((a, b) => (b.valuePaise ?? -1) - (a.valuePaise ?? -1))
       .map(itemJson),
+    festival_order: order && {
+      festival: order.festival,
+      distributor: order.distributor,
+      bill_number: order.billNumber,
+      total_paise: order.totalPaise,
+      label: "supplier_bill",
+      lines: order.lines.length,
+    },
   };
 }
 

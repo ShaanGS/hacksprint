@@ -137,8 +137,8 @@ with its numbers; screens turn it into words. `suggest_reminder` is true only fo
 ```
 
 `reason.kind`: `late`, `unknown` (fewer than 2 settled credits), `due` (expected within 7 days)
-or `later` (expected after 7 days). `open_reminder` is `{ "id", "payment_link_url", "created_at" }`
-while a link is unpaid.
+or `later` (expected after 7 days). `open_reminder` is
+`{ "id", "payment_id", "payment_link_url", "created_at" }` while a link is unpaid.
 
 ### POST /api/credit/{customerId}/remind
 
@@ -186,7 +186,11 @@ the owner confirms. Every number in the card was found in the transcript by code
     "customer": { "id": "00000000-0000-4000-8000-0000000000c9", "name": "Ramesh Kumar" },
     "amount_paise": 20000
   },
-  "needs": []
+  "needs": [],
+  "choices": [
+    { "id": "00000000-0000-4000-8000-0000000000c4", "name": "Arjun Reddy" },
+    { "id": "00000000-0000-4000-8000-0000000000c9", "name": "Ramesh Kumar" }
+  ]
 }
 ```
 
@@ -195,9 +199,11 @@ Card fields by kind:
 - `day_close`: `cash_sales_paise`, `money_in_hand_paise` (either may be null).
 - `stock_count`: `product` `{id, name}`, `qty`.
 
-`needs` lists taps still required: `customer` or `product` (name not matched; the screen shows a
-list to pick from). When the words are not understood: `200 {"entry_id": null, "transcript": "…",
-"kind": null}`.
+`needs` lists what is still missing: `customer` or `product` (name not matched: tap one of
+`choices`), `amount` or `qty` (not heard: say it again). `choices` are the shop's customers for a
+credit card, its products (`{id, name, art}`) for a stock count, and empty for a day close; the
+owner can also tap one to correct a wrong match. When the words are not understood:
+`200 {"entry_id": null, "transcript": "…", "kind": null, "card": null, "needs": [], "choices": []}`.
 
 ### POST /api/voice/owner/{entryId}/confirm
 
@@ -211,16 +217,27 @@ Writes the entry with label `owner_said`, audits it and broadcasts.
 
 ### GET /api/credit
 
+Everyone who owes, most first, in the same row shape as the collect list.
+
 ```json
 {
   "total_paise": 1450000,
+  "label": "owner_said",
   "customers": [
-    { "customer_id": "…c4", "name": "Arjun Reddy", "balance_paise": 420000, "usual_days": 12, "oldest_unpaid": "2026-09-27", "status": "late", "label": "owner_said" }
+    {
+      "customer_id": "…c4",
+      "name": "Arjun Reddy",
+      "lang": "kn",
+      "balance_paise": 420000,
+      "label": "owner_said",
+      "oldest_unpaid": "2026-09-27",
+      "reason": { "kind": "late", "usual_days": 12, "days_late": 9 },
+      "suggest_reminder": true,
+      "open_reminder": null
+    }
   ]
 }
 ```
-
-`status`: `late`, `due`, `later`, `unknown`.
 
 ### GET /api/credit/{customerId}
 
@@ -228,13 +245,19 @@ One customer's entries, newest first; they add up to the balance.
 
 ```json
 {
-  "customer_id": "…c4", "name": "Arjun Reddy", "lang": "kn", "balance_paise": 420000, "usual_days": 12,
+  "customer_id": "…c4",
+  "name": "Arjun Reddy",
+  "lang": "kn",
+  "balance_paise": 420000,
+  "reason": { "kind": "late", "usual_days": 12, "days_late": 9 },
   "entries": [
-    { "at": "2026-09-27T18:10:00+05:30", "kind": "credit_sale", "amount_paise": 420000, "label": "owner_said", "note": "Said at the counter" },
-    { "at": "2026-09-20T11:00:00+05:30", "kind": "repayment", "amount_paise": -310000, "label": "verified_payment", "payment_id": "…" }
+    { "id": "…", "at": "2026-09-27T18:10:00+05:30", "kind": "credit_sale", "amount_paise": 420000, "label": "owner_said", "note": "Said at the counter", "payment_id": null },
+    { "id": "…", "at": "2026-09-20T11:00:00+05:30", "kind": "repayment", "amount_paise": -310000, "label": "verified_payment", "note": null, "payment_id": "…" }
   ]
 }
 ```
+
+`reason` is null when nothing is owed.
 
 ### POST /api/bills
 
@@ -313,19 +336,27 @@ times weeks since the count. `count_asked` marks the top 20 by money, the ones t
 
 ```json
 {
-  "on_shelf_paise": 15200000,
+  "on_shelf_paise": 11000000,
+  "label": "estimate",
+  "cost_unknown": [],
   "products": [
     {
       "product_id": "…", "name": "Gold Winner Sunflower Oil", "art": "oil", "unit": "pack",
-      "estimate_qty": 61, "label": "estimate", "counted_on": "2026-10-11",
-      "weekly_sales": 14, "days_left": 30.5, "unit_cost_paise": 14200, "value_paise": 866200,
+      "pack_size": "1 L", "estimate_qty": 61, "label": "estimate",
+      "counted_at": "2026-10-11T20:00:00+05:30", "weekly_sales": 14, "sales_from": "counts",
+      "days_left": 30.5, "unit_cost_paise": 14200, "value_paise": 866200,
       "tags": [], "count_asked": true
     }
-  ]
+  ],
+  "festival_order": {
+    "festival": "Deepavali", "distributor": "Sri Balaji Agencies", "bill_number": "DV-1",
+    "total_paise": 4850000, "label": "supplier_bill", "lines": 6
+  }
 }
 ```
 
-`counted_on` is null when never counted. `weekly_sales` and `days_left` are null when there is
+`festival_order` is the approved festival order (C3, D4) with its prices from bills, or null.
+`counted_at` is null when never counted. `weekly_sales` and `days_left` are null when there is
 not enough data; `days_left` is `"not_moving"` at zero sales. `tags`: `low` (under 7 days),
 `slow` (over 30 days or not moving). Products with no bill cost have `unit_cost_paise: null` and
 are listed in `cost_unknown`.
@@ -434,7 +465,8 @@ Measurable value (spec 11a).
 
 ### GET /api/sources/{entity}/{id}
 
-The rows behind a number; they add up to it.
+The rows behind a number; they add up to it. The usual week is 7 times the average day of its
+rows, and a monthly cost row shows its weekly share.
 
 - `rotation/{part}`: `part` is `due_7d`, `weekly_costs`, `money_now`, `usual_week_sales`,
   `from_customers`, `late`, `on_shelf`, `with_customers` or `owed_to_suppliers`.
@@ -444,12 +476,24 @@ The rows behind a number; they add up to it.
 {
   "part": "due_7d",
   "total_paise": 8400000,
-  "label": "supplier_bill",
   "rows": [
-    { "title": "Sri Balaji Agencies · DV-1", "date": "2026-10-22", "paise": 4850000, "label": "supplier_bill" }
+    { "kind": "bill", "distributor": "Sri Balaji Agencies", "bill_number": "SB-2070", "due_date": "2026-10-15", "overdue_days": 3, "paise": 2150000, "label": "supplier_bill" },
+    { "kind": "bill", "distributor": "Sri Balaji Agencies", "bill_number": "DV-1", "due_date": "2026-10-22", "overdue_days": 0, "paise": 4850000, "label": "supplier_bill" }
   ]
 }
 ```
+
+Each row is a `kind` with its facts, so a screen writes it in the reader's language:
+
+| `kind` | Facts | Parts |
+| --- | --- | --- |
+| `bill` | `distributor`, `bill_number`, `due_date`, `overdue_days` | `due_7d`, `owed_to_suppliers` |
+| `cost` | `cost` (`rent`, `staff`, `home`, `cash_purchases`, `other`), `period` | `weekly_costs` |
+| `money_in_hand` | `at` | `money_now` |
+| `payment` | `at` | `money_now` |
+| `day_sales` | `date` | `usual_week_sales` |
+| `customer` | `name`, `status`, `oldest_unpaid` | `from_customers`, `late`, `with_customers` |
+| `product` | `name`, `art`, `counted_at` | `on_shelf` |
 
 ## Demo
 

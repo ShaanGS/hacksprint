@@ -80,9 +80,9 @@ describe("days left (9.9) and tags", () => {
 
 describe("the shelf (9.3, 9.10)", () => {
   const products = [
-    { id: "atta", name: "Atta", art: "atta", unit: "pack" },
-    { id: "detergent", name: "Detergent", art: "detergent", unit: "pack" },
-    { id: "mystery", name: "Mystery", art: "bag", unit: "pack" },
+    { id: "atta", name: "Atta", art: "atta", unit: "pack", packSize: "5 kg" },
+    { id: "detergent", name: "Detergent", art: "detergent", unit: "pack", packSize: null },
+    { id: "mystery", name: "Mystery", art: "bag", unit: "pack", packSize: null },
   ];
   const counts = [
     count(14, 30),

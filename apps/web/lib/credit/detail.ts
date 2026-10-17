@@ -4,7 +4,7 @@ import { HttpError } from "@/lib/http";
 import { langs } from "@/lib/i18n/languages";
 import { positionOf } from "@/lib/rotation/credit";
 import { sourceLabels } from "@/lib/rotation/labels";
-import { indiaTime } from "@/lib/rotation/responses";
+import { indiaTime, reasonOf } from "@/lib/rotation/responses";
 import { shopDate } from "@/lib/time";
 
 // One customer's credit (GET /api/credit/{id}): every entry with where it came from, adding up to
@@ -64,7 +64,7 @@ export async function creditDetail(db: SupabaseClient, shopId: string, customerI
     name: who.name,
     lang: who.lang,
     balance_paise: rows.reduce((sum, r) => sum + r.amount_paise, 0),
-    status: position?.status ?? null,
+    reason: position ? reasonOf(position.status) : null,
     entries: rows.map((r) => ({
       id: r.id,
       at: indiaTime(r.created_at),

@@ -15,6 +15,7 @@ export function POST(request: Request, context: { params: Promise<{ customerId: 
     const reminder = await remindCustomer(db, shop, customerId);
     return Response.json({
       reminder_id: reminder.reminderId,
+      payment_id: reminder.paymentId,
       amount_paise: reminder.amountPaise,
       message_text: reminder.messageText,
       payment_link_url: reminder.paymentLinkUrl,

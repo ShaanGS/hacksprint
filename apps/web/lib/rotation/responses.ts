@@ -74,7 +74,8 @@ export function rotationResponse(snapshot: Snapshot, now: Date, demoData: boolea
   };
 }
 
-function reasonOf(status: CustomerStatus) {
+/** A customer's status as the wire shows it: a code with its numbers, words left to screens. */
+export function reasonOf(status: CustomerStatus) {
   switch (status.kind) {
     case "late":
       return {
@@ -99,7 +100,12 @@ function reasonOf(status: CustomerStatus) {
   }
 }
 
-export type OpenReminder = { id: string; paymentLinkUrl: string | null; createdAt: string };
+export type OpenReminder = {
+  id: string;
+  paymentId: string | null;
+  paymentLinkUrl: string | null;
+  createdAt: string;
+};
 
 export function customerRow(position: CustomerPosition, reminder: OpenReminder | null) {
   return {
@@ -114,6 +120,7 @@ export function customerRow(position: CustomerPosition, reminder: OpenReminder |
     open_reminder: reminder
       ? {
           id: reminder.id,
+          payment_id: reminder.paymentId,
           payment_link_url: reminder.paymentLinkUrl,
           created_at: indiaTime(reminder.createdAt),
         }
