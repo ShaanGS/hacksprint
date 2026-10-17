@@ -1,6 +1,7 @@
 {
   "name": "app",
   "private": true,
+  "license": "MIT",
   "packageManager": "pnpm@11.5.3",
   "scripts": {
     "dev": "pnpm --filter web dev",
