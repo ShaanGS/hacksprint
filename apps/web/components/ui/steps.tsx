@@ -13,11 +13,38 @@ export type Step = {
   art?: ArtName;
 };
 
+const tones = {
+  light: {
+    todo: "ring-surface-pressed",
+    current: "ring-accent",
+    dot: "bg-accent",
+    tick: "bg-accent text-accent-ink",
+    rail: "bg-surface-pressed",
+    fill: "bg-accent",
+    title: "",
+    todoTitle: "text-ink-faint",
+    meta: "text-ink-muted",
+  },
+  night: {
+    todo: "ring-night-raised",
+    current: "ring-lime",
+    dot: "bg-lime",
+    tick: "bg-lime text-lime-ink",
+    rail: "bg-night-raised",
+    fill: "bg-indigo",
+    title: "text-night-ink",
+    todoTitle: "text-night-muted",
+    meta: "text-night-muted",
+  },
+} as const;
+
 /**
  * Where something is, step by step. A step ticks with a spring and the rail fills down to the
- * next one; steps that were already done when the screen opened just show as done.
+ * next one; steps that were already done when the screen opened just show as done. The agents
+ * use the night tone: an indigo rail with lime ticks.
  */
-export function Steps({ steps }: { steps: Step[] }) {
+export function Steps({ steps, tone = "light" }: { steps: Step[]; tone?: keyof typeof tones }) {
+  const look = tones[tone];
   return (
     <ol>
       {steps.map((step, index) => {
@@ -29,27 +56,29 @@ export function Steps({ steps }: { steps: Step[] }) {
               <span
                 className={cn(
                   "relative grid size-8 shrink-0 place-items-center rounded-full",
-                  step.state === "todo" && "ring-2 ring-surface-pressed ring-inset",
-                  step.state === "current" && "ring-2 ring-ink ring-inset",
+                  step.state === "todo" && cn("ring-2 ring-inset", look.todo),
+                  step.state === "current" && cn("ring-2 ring-inset", look.current),
                 )}
               >
                 <motion.span
                   initial={false}
                   animate={{ scale: done ? 1 : 0.4, opacity: done ? 1 : 0 }}
                   transition={snappy}
-                  className="absolute inset-0 grid place-items-center rounded-full bg-accent text-accent-ink"
+                  className={cn("absolute inset-0 grid place-items-center rounded-full", look.tick)}
                 >
                   <Check aria-hidden className="size-4" strokeWidth={3} />
                 </motion.span>
-                {step.state === "current" && <span className="size-2.5 rounded-full bg-ink" />}
+                {step.state === "current" && (
+                  <span className={cn("size-2.5 rounded-full", look.dot)} />
+                )}
               </span>
               {!last && (
-                <span aria-hidden className="relative w-0.5 flex-1 bg-surface-pressed">
+                <span aria-hidden className={cn("relative w-0.5 flex-1", look.rail)}>
                   <motion.span
                     initial={false}
                     animate={{ scaleY: done ? 1 : 0 }}
                     transition={{ duration: 0.4 }}
-                    className="absolute inset-0 origin-top bg-ink"
+                    className={cn("absolute inset-0 origin-top", look.fill)}
                   />
                 </span>
               )}
@@ -59,12 +88,13 @@ export function Steps({ steps }: { steps: Step[] }) {
                 <p
                   className={cn(
                     "text-lg leading-6 font-semibold",
-                    step.state === "todo" && "font-medium text-ink-faint",
+                    look.title,
+                    step.state === "todo" && cn("font-medium", look.todoTitle),
                   )}
                 >
                   {step.title}
                 </p>
-                {step.meta && <p className="mt-0.5 text-base text-ink-muted">{step.meta}</p>}
+                {step.meta && <p className={cn("mt-0.5 text-base", look.meta)}>{step.meta}</p>}
               </div>
               {step.art && (
                 <Art

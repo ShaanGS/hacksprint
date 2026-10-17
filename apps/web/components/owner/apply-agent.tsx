@@ -100,9 +100,10 @@ export function ApplyAgent({
       open={loanRequestId !== null}
       onOpenChange={(open) => !open && onClose()}
       title={text.agentTitle}
+      tone="night"
       footer={
         <div className="pb-3">
-          <Button wide variant={done >= STEP_COUNT ? "primary" : "soft"} onClick={onClose}>
+          <Button wide variant={done >= STEP_COUNT ? "lime" : "night"} onClick={onClose}>
             {text.done}
           </Button>
         </div>
@@ -114,9 +115,9 @@ export function ApplyAgent({
         </div>
       ) : (
         <div className="space-y-5">
-          <Steps steps={steps} />
+          <Steps tone="night" steps={steps} />
           {done >= 3 && (
-            <dl className="space-y-2 rounded-2xl bg-surface-muted p-4 text-base">
+            <dl className="space-y-2 rounded-3xl bg-night-raised p-4 text-base">
               <Field label={text.agentFields.shop} value={draft.shop} />
               <Field label={text.agentFields.applicant} value={draft.owner} />
               <Field label={text.agentFields.amount} value={formatMoney(draft.loan_paise)} />
@@ -130,7 +131,7 @@ export function ApplyAgent({
             </dl>
           )}
           {done >= STEP_COUNT && (
-            <p className="rounded-2xl border border-border p-4 text-base font-semibold">
+            <p className="rounded-3xl border border-night-raised p-4 text-base font-semibold">
               {text.agentSimulated}
             </p>
           )}
@@ -143,7 +144,7 @@ export function ApplyAgent({
 function Field({ label, value }: { label: string; value: string }) {
   return (
     <div>
-      <dt className="text-sm text-ink-muted">{label}</dt>
+      <dt className="text-sm text-night-muted">{label}</dt>
       <dd className="font-semibold">{value}</dd>
     </div>
   );

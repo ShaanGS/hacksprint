@@ -35,9 +35,10 @@ export function ReorderAgent({ open, onClose }: { open: boolean; onClose: () => 
       open={open}
       onOpenChange={(next) => !next && onClose()}
       title={agentWordsFor(lang).reorderTitle}
+      tone="night"
       footer={
         <div className="pb-3">
-          <Button wide variant="soft" onClick={onClose}>
+          <Button wide variant="night" onClick={onClose}>
             {text.done}
           </Button>
         </div>
@@ -109,8 +110,8 @@ function Reordering() {
 
   return (
     <div className="space-y-5">
-      <Steps steps={steps} />
-      {plan && lines === 0 && <p className="text-base text-ink-muted">{words.nothingToOrder}</p>}
+      <Steps tone="night" steps={steps} />
+      {plan && lines === 0 && <p className="text-base text-night-muted">{words.nothingToOrder}</p>}
       {plan?.groups.map((group) => (
         <OrderCard
           key={group.distributor_id}
@@ -180,7 +181,7 @@ function OrderCard({
   }, [waitingPayment]);
 
   return (
-    <section className="rounded-2xl bg-surface-muted p-4">
+    <section className="rounded-3xl bg-night-raised p-4">
       <div className="flex items-baseline justify-between gap-3">
         <p className="text-lg font-bold">{group.distributor}</p>
         <Amount paise={group.total_paise} size="md" />
@@ -191,7 +192,7 @@ function OrderCard({
             <Art name={toArtName(line.art)} size={40} />
             <span className="min-w-0 flex-1">
               <span className="block truncate text-base font-semibold">{line.name}</span>
-              <span className="block text-sm text-ink-muted">
+              <span className="block text-sm text-night-muted">
                 {line.qty} {line.unit} · {formatMoney(line.unit_cost_paise)}
               </span>
             </span>
@@ -203,34 +204,34 @@ function OrderCard({
       </ul>
       <div className="mt-4 space-y-2">
         {!sent ? (
-          <Button wide disabled={busy} onClick={send}>
+          <Button wide variant="lime" disabled={busy} onClick={send}>
             <Send aria-hidden className="size-5" />
             {words.sendTo(group.distributor)}
           </Button>
         ) : (
           <>
-            <p className="flex items-start gap-2 text-base font-semibold text-success">
+            <p className="flex items-start gap-2 text-base font-semibold text-lime">
               <Check aria-hidden className="mt-0.5 size-5 shrink-0" strokeWidth={3} />
               {words.sentTo(group.distributor)}
             </p>
             {!payment ? (
               <Button
                 wide
-                variant="soft"
+                variant="night"
                 disabled={busy}
                 onClick={() => pay(sent.purchase_order_id)}
               >
                 {words.payTest(formatMoney(sent.total_paise))}
               </Button>
             ) : payment.paid ? (
-              <p className="flex items-start gap-2 text-base font-semibold text-success">
+              <p className="flex items-start gap-2 text-base font-semibold text-lime">
                 <Check aria-hidden className="mt-0.5 size-5 shrink-0" strokeWidth={3} />
                 {words.paidTest(formatMoney(payment.amount_paise))}
               </p>
             ) : (
               <LinkButton
                 wide
-                variant="soft"
+                variant="night"
                 href={payment.url}
                 target="_blank"
                 rel="noopener noreferrer"
@@ -239,7 +240,7 @@ function OrderCard({
                 {words.openPayment}
               </LinkButton>
             )}
-            {payment && <p className="text-sm text-ink-muted">{words.testNote}</p>}
+            {payment && <p className="text-sm text-night-muted">{words.testNote}</p>}
           </>
         )}
       </div>

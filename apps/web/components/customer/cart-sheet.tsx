@@ -124,8 +124,7 @@ export function CartSheet({
             </ul>
             <div className="mt-5 grid grid-cols-2 gap-3">
               <Tile
-                art="phone-pay"
-                artSize={64}
+                visual={<Art name="phone-pay" size={64} />}
                 selected={mode === "link"}
                 onClick={() => setMode("link")}
                 size="sm"
@@ -133,8 +132,7 @@ export function CartSheet({
                 <p className="text-base leading-snug font-semibold">{t.payByLink}</p>
               </Tile>
               <Tile
-                art="khata"
-                artSize={64}
+                visual={<Art name="khata" size={64} />}
                 selected={mode === "credit"}
                 onClick={() => setMode("credit")}
                 size="sm"

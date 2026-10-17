@@ -35,6 +35,12 @@ export type AgentWords = {
   openPayment: string;
   paidTest: (amount: Money) => string;
   testNote: string;
+  voiceTitle: string;
+  listening: string;
+  working: string;
+  trySaying: string;
+  example: string;
+  letGo: string;
 };
 
 const en: AgentWords = {
@@ -85,6 +91,12 @@ const en: AgentWords = {
   paidTest: (amount) => `${amount} paid in test mode`,
   testNote:
     "Test mode: in a real shop this payment would go to the distributor. Here it goes to a test account, and your numbers do not change.",
+  voiceTitle: "Talk to your shop",
+  listening: "I'm listening…",
+  working: "Working it out…",
+  trySaying: "Try saying",
+  example: "“Ramesh, 200 rupees credit”",
+  letGo: "Let go to send",
 };
 
 const ta: AgentWords = {
@@ -138,6 +150,12 @@ const ta: AgentWords = {
   paidTest: (amount) => `சோதனை முறையில் ${amount} செலுத்தியது`,
   testNote:
     "சோதனை முறை: உண்மையான கடையில் இந்தப் பணம் விநியோகஸ்தருக்குப் போகும். இங்கே சோதனைக் கணக்குக்குப் போகிறது; உங்கள் கணக்கு எண்கள் மாறாது.",
+  voiceTitle: "கடையிடம் பேசுங்கள்",
+  listening: "கேட்கிறேன்…",
+  working: "புரிந்துகொள்கிறேன்…",
+  trySaying: "இப்படிச் சொல்லுங்கள்",
+  example: "“ரமேஷ், இருநூறு ரூபாய் கடன்”",
+  letGo: "அனுப்ப விரலை எடுங்கள்",
 };
 
 /** The agents' words in the owner's language; English where we have no translation yet. */

@@ -8,13 +8,13 @@ export type MicState = "idle" | "listening" | "thinking";
 
 const sizes = {
   lg: { box: "size-24", icon: "size-10" },
-  md: { box: "size-14", icon: "size-6" },
+  md: { box: "size-16", icon: "size-7" },
 };
 
-// Soft sits beside a screen's primary button without competing with it; any mic turns black
-// while it listens, so the owner can see it is on.
+// The mic is lime everywhere: it is how the owner talks to the app. Soft sits beside a screen's
+// primary button without competing with it, and turns lime while it listens.
 const variants = {
-  primary: "bg-accent text-accent-ink shadow-float",
+  primary: "bg-lime text-lime-ink shadow-float",
   soft: "bg-surface-muted text-ink",
 };
 
@@ -45,7 +45,7 @@ export function HoldMic({
       {listening && (
         <motion.span
           aria-hidden
-          className="absolute inset-0 rounded-full bg-accent/15"
+          className="absolute inset-0 rounded-full bg-lime/40"
           animate={{ scale: [1, 1.4], opacity: [0.8, 0] }}
           transition={{ duration: 1.2, repeat: Infinity, ease: "easeOut" }}
         />

@@ -1,14 +1,16 @@
 import type { ReactNode } from "react";
 import { cn } from "@/lib/cn";
 
-type BadgeTone = "neutral" | "best" | "success" | "warning" | "danger";
+type BadgeTone = "neutral" | "best" | "success" | "warning" | "danger" | "lime" | "night";
 
 const tones: Record<BadgeTone, string> = {
-  neutral: "bg-surface-pressed text-ink-muted",
+  neutral: "bg-surface-muted text-ink-muted",
   best: "bg-accent text-accent-ink",
-  success: "bg-success/15 text-success",
-  warning: "bg-warning/15 text-warning",
-  danger: "bg-danger/15 text-danger",
+  success: "bg-success/12 text-success",
+  warning: "bg-warning/12 text-warning",
+  danger: "bg-danger/12 text-danger",
+  lime: "bg-lime text-lime-ink",
+  night: "bg-indigo text-night-ink",
 };
 
 /** A small tag. At most one per row: a status beats a sentence in colour. */
@@ -24,7 +26,7 @@ export function Badge({
   return (
     <span
       className={cn(
-        "inline-flex h-6 items-center gap-1.5 rounded-full px-2.5 text-xs font-semibold whitespace-nowrap",
+        "inline-flex h-7 items-center gap-1.5 rounded-full px-3 text-xs font-semibold whitespace-nowrap",
         tones[tone],
         className,
       )}

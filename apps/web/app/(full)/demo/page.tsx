@@ -56,7 +56,7 @@ export default async function DemoPage() {
 
       <div className="mt-8 grid gap-8 lg:grid-cols-2">
         <div className="space-y-6">
-          <section className="rounded-3xl bg-panel-night p-6 text-accent-ink">
+          <section className="rounded-3xl bg-accent p-6 text-accent-ink">
             <p className="text-xl font-bold">{text.weekState[week.state]}</p>
             <p className="text-display font-extrabold tracking-tight tabular-nums">
               {formatMoney(Math.abs(week.gap_paise))}

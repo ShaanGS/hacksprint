@@ -1,47 +1,58 @@
 "use client";
 
+import { Bot, MessageCircle } from "lucide-react";
 import { useState } from "react";
 import { Amount } from "@/components/ui/amount";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Chip } from "@/components/ui/chip";
 
-const filters = ["Waiting", "Paid", "On credit"] as const;
+const purposes = ["Stock for the shop", "Equipment or repairs"] as const;
 
 export function Controls() {
-  const [filter, setFilter] = useState<(typeof filters)[number]>("Waiting");
+  const [purpose, setPurpose] = useState<(typeof purposes)[number]>(purposes[0]);
   return (
     <div className="space-y-6">
       <div className="space-y-3">
-        <Button wide>Approve ₹121 order</Button>
-        <Button variant="soft" wide>
-          Reject
+        <Button wide>
+          <MessageCircle aria-hidden className="size-5" />
+          Remind Arjun on WhatsApp
+        </Button>
+        <Button variant="lime" wide>
+          <Bot aria-hidden className="size-5" />
+          Let the agent collect
+        </Button>
+        <Button variant="white" wide>
+          Open the statement
         </Button>
         <div className="flex gap-3">
-          <Button variant="ghost">Not now</Button>
-          <Button variant="danger">Remove item</Button>
+          <Button variant="soft">Not now</Button>
+          <Button variant="ghost">Skip</Button>
+          <Button variant="danger">Remove</Button>
         </div>
         <Button wide disabled>
-          Approve ₹121 order
+          Send to Murugan Traders
         </Button>
       </div>
       <div className="flex gap-2 overflow-x-auto">
-        {filters.map((name) => (
-          <Chip key={name} on={name === filter} onClick={() => setFilter(name)}>
+        {purposes.map((name) => (
+          <Chip key={name} on={name === purpose} onClick={() => setPurpose(name)}>
             {name}
           </Chip>
         ))}
       </div>
       <div className="flex flex-wrap gap-2">
-        <Badge tone="best">Instead of sugar</Badge>
-        <Badge tone="success">Paid</Badge>
-        <Badge tone="danger">Out of stock</Badge>
-        <Badge>On credit</Badge>
+        <Badge tone="danger">9 days late</Badge>
+        <Badge tone="warning">Running low</Badge>
+        <Badge tone="success">Verified payment</Badge>
+        <Badge>You said</Badge>
+        <Badge tone="best">Festival order</Badge>
+        <Badge tone="lime">Agent</Badge>
       </div>
       <p className="flex items-baseline gap-2">
-        <Amount paise={16500} />
-        <Amount paise={17000} struck />
-        <span className="text-sm text-ink-muted">a price, and the price it replaces</span>
+        <Amount paise={27400} />
+        <Amount paise={25400} struck />
+        <span className="text-sm text-ink-muted">a new price, and the one it replaces</span>
       </p>
     </div>
   );

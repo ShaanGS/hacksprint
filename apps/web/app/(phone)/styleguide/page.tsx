@@ -1,10 +1,11 @@
 import type { Metadata } from "next";
+import { Cards } from "@/components/styleguide/cards";
 import { Controls } from "@/components/styleguide/controls";
 import { Colours, Type } from "@/components/styleguide/foundations";
-import { ArtGallery, Banners } from "@/components/styleguide/gallery";
+import { ArtGallery } from "@/components/styleguide/gallery";
+import { Night } from "@/components/styleguide/night";
 import { Rows } from "@/components/styleguide/rows";
 import { Section } from "@/components/styleguide/section";
-import { Voice } from "@/components/styleguide/voice";
 
 export const metadata: Metadata = { title: "Styleguide" };
 
@@ -12,32 +13,32 @@ export const metadata: Metadata = { title: "Styleguide" };
 export default function StyleguidePage() {
   return (
     <main className="pb-10">
-      <header className="px-4 pt-8 pb-4">
-        <h1 className="text-title font-bold">Styleguide</h1>
+      <header className="px-4 pt-8 pb-2">
+        <h1 className="text-title font-bold tracking-tight">Styleguide</h1>
         <p className="mt-1 text-base text-ink-muted">
-          Every building block in every state. Screens use only these.
+          Light teal for the shop, indigo and lime for voice and the agents.
         </p>
       </header>
-      <Section title="Colours">
-        <Colours />
-      </Section>
-      <Section title="Type">
-        <Type />
+      <Section title="Cards">
+        <Cards />
       </Section>
       <Section title="Buttons, chips and tags">
         <Controls />
       </Section>
-      <Section title="Rows and totals">
+      <Section title="Rows">
         <Rows />
       </Section>
-      <Section title="Voice">
-        <Voice />
+      <Section title="Voice and agents">
+        <Night />
+      </Section>
+      <Section title="Type">
+        <Type />
+      </Section>
+      <Section title="Colours">
+        <Colours />
       </Section>
       <Section title="Art">
         <ArtGallery />
-      </Section>
-      <Section title="Banners">
-        <Banners />
       </Section>
     </main>
   );

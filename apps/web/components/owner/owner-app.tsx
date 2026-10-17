@@ -8,6 +8,7 @@ import { CollectAgent } from "@/components/owner/collect-agent";
 import { CollectTab } from "@/components/owner/collect-tab";
 import { DemoTools } from "@/components/owner/demo-tools";
 import { HomeTab } from "@/components/owner/home-tab";
+import { Listening, type ListeningState } from "@/components/owner/listening";
 import { LiveUpdates } from "@/components/owner/live";
 import { useOwnerLanguage } from "@/components/owner/owner-language";
 import { OwnerScreenContext, type AgentKind } from "@/components/owner/owner-screen";
@@ -29,11 +30,15 @@ import { ownerApi, type VoiceCard } from "@/lib/owner/api";
 export function OwnerApp({
   shopId,
   demo,
+  shopName,
+  ownerName,
   voice,
   onSignedOut,
 }: {
   shopId: string;
   demo: boolean;
+  shopName: string;
+  ownerName: string;
   voice: OwnerVoice;
   onSignedOut: () => void;
 }) {
@@ -69,15 +74,19 @@ export function OwnerApp({
   }
 
   const screen = useMemo(
-    () => ({ demo, notify, openDemoTools: () => setTools(true), openAgent: setAgent }),
-    [demo, notify],
+    () => ({
+      demo,
+      notify,
+      openDemoTools: () => setTools(true),
+      openAgent: setAgent,
+      shopName,
+      ownerName,
+    }),
+    [demo, notify, shopName, ownerName],
   );
-  const status =
-    hold.mic === "listening"
-      ? text.listening
-      : hold.mic === "thinking" || hearing
-        ? text.working
-        : null;
+  const listening: ListeningState | null =
+    hold.mic === "listening" ? "listening" : hold.mic === "thinking" || hearing ? "working" : null;
+  const status = listening === "listening" ? text.listening : listening ? text.working : null;
   return (
     <OwnerScreenContext value={screen}>
       <LiveUpdates shopId={shopId} onOffline={setOffline} onSignedOut={onSignedOut}>
@@ -85,7 +94,12 @@ export function OwnerApp({
           <TopNotices>
             <AnimatePresence initial={false}>
               {!voice.micOn && (
-                <Pill key="mic" icon={<Mic aria-hidden className="size-4" />} onClick={turnOnMic}>
+                <Pill
+                  key="mic"
+                  tone="lime"
+                  icon={<Mic aria-hidden className="size-4" />}
+                  onClick={turnOnMic}
+                >
                   {text.micTurnOn}
                 </Pill>
               )}
@@ -94,14 +108,13 @@ export function OwnerApp({
                   {text.offline}
                 </Pill>
               )}
-              {status && <Pill key="status">{status}</Pill>}
               {notice && <Pill key="notice">{notice}</Pill>}
             </AnimatePresence>
           </TopNotices>
 
           {/* Keyed on the tab, so each tab opens at its top. */}
           <div key={tab} className="h-full overflow-y-auto">
-            {tab === "home" && <HomeTab onCollect={() => setTab("collect")} />}
+            {tab === "home" && <HomeTab onTab={setTab} />}
             {tab === "collect" && <CollectTab />}
             {tab === "stock" && <StockTab onBank={() => setTab("bank")} />}
             {tab === "bank" && <BankTab onCollect={() => setTab("collect")} />}
@@ -128,6 +141,7 @@ export function OwnerApp({
             onOpen={setTab}
             onAgent={setAgent}
           />
+          <Listening state={listening} />
           <CollectAgent open={agent === "collect"} onClose={closeAgent} />
           <ReorderAgent open={agent === "reorder"} onClose={closeAgent} />
           {demo && <DemoTools open={tools} onClose={() => setTools(false)} onRecording={hear} />}

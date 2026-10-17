@@ -12,8 +12,8 @@ export function Monogram({ name, muted }: { name: string; muted?: boolean }) {
     <span
       aria-hidden
       className={cn(
-        "grid size-11 shrink-0 place-items-center rounded-full text-sm font-bold",
-        muted ? "bg-surface-pressed text-ink-muted" : "bg-accent text-accent-ink",
+        "grid size-12 shrink-0 place-items-center rounded-full text-sm font-bold",
+        muted ? "bg-surface-muted text-ink-muted" : "bg-accent-soft text-accent",
       )}
     >
       {initials}

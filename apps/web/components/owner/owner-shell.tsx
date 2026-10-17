@@ -47,7 +47,14 @@ export function OwnerShell({
       ) : screen === "orders" ? (
         <OrdersApp ownerName={ownerName} voice={voice} onSignedOut={signOut} />
       ) : (
-        <OwnerApp shopId={shopId} demo={demo} voice={voice} onSignedOut={signOut} />
+        <OwnerApp
+          shopId={shopId}
+          demo={demo}
+          shopName={shopName}
+          ownerName={ownerName}
+          voice={voice}
+          onSignedOut={signOut}
+        />
       )}
     </OwnerLanguage>
   );

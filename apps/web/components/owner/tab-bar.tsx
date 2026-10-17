@@ -15,8 +15,8 @@ const icons: Record<OwnerTab, LucideIcon> = {
 };
 
 /**
- * The owner app's places, floating over the page so the content scrolls under it. The mic sits
- * raised in the middle, so it can be held from any tab.
+ * The owner app's places on a floating white bar, so the content scrolls under it. The lime mic
+ * sits raised in the middle, so it can be held from any tab.
  */
 export function TabBar({
   tab,
@@ -39,28 +39,32 @@ export function TabBar({
         onClick={() => onChange(id)}
         className={cn(
           "flex min-h-14 flex-col items-center justify-center gap-1 text-xs",
-          active ? "font-bold text-ink" : "font-medium text-ink-faint",
+          active ? "font-bold text-accent" : "font-medium text-ink-faint",
         )}
       >
         <span
           className={cn(
-            "grid h-8 w-14 place-items-center rounded-full transition-colors",
-            active && "bg-surface-pressed",
+            "grid size-9 place-items-center rounded-full transition-colors",
+            active && "bg-accent text-accent-ink",
           )}
         >
-          <Icon aria-hidden className="size-6" strokeWidth={active ? 2.5 : 2} />
+          <Icon aria-hidden className="size-5" strokeWidth={active ? 2.5 : 2} />
         </span>
         <span className="max-w-full truncate px-1">{text.tabs[id]}</span>
       </button>
     );
   };
   return (
-    <nav className="pb-safe absolute inset-x-0 bottom-0 z-30 grid grid-cols-5 border-t border-border bg-surface/90 pt-2 backdrop-blur">
-      {button("home")}
-      {button("collect")}
-      <div className="flex -translate-y-6 justify-center">{mic}</div>
-      {button("stock")}
-      {button("bank")}
+    <nav className="pb-safe absolute inset-x-0 bottom-0 z-30 px-3">
+      <div className="grid grid-cols-5 items-center rounded-3xl bg-surface px-1 py-1.5 shadow-float">
+        {button("home")}
+        {button("collect")}
+        <div className="flex -translate-y-6 justify-center">
+          <span className="rounded-full ring-4 ring-canvas">{mic}</span>
+        </div>
+        {button("stock")}
+        {button("bank")}
+      </div>
     </nav>
   );
 }

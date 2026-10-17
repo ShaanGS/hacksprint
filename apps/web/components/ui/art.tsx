@@ -61,7 +61,7 @@ export const bannerNames = ["voice", "approve", "bill", "night"] as const;
 
 export type BannerName = (typeof bannerNames)[number];
 
-/** Art sits straight on the surface, with no circle or box behind it. */
+/** A cutout on its own: free on hero and promo cards, or inside an ArtCircle. */
 export function Art({
   name,
   size = 64,
@@ -83,6 +83,35 @@ export function Art({
       loading={eager ? "eager" : "lazy"}
       className={cn("pointer-events-none shrink-0 object-contain select-none", className)}
     />
+  );
+}
+
+const circles = {
+  sm: { box: "size-11", art: 34 },
+  md: { box: "size-13", art: 40 },
+  lg: { box: "size-16", art: 50 },
+} as const;
+
+/** Art in a soft mint circle, for rows and shortcuts. */
+export function ArtCircle({
+  name,
+  size = "md",
+  className,
+}: {
+  name: ArtName;
+  size?: keyof typeof circles;
+  className?: string;
+}) {
+  return (
+    <span
+      className={cn(
+        "grid shrink-0 place-items-center rounded-full bg-surface-muted",
+        circles[size].box,
+        className,
+      )}
+    >
+      <Art name={name} size={circles[size].art} />
+    </span>
   );
 }
 

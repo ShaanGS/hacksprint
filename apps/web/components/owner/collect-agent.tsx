@@ -38,9 +38,10 @@ export function CollectAgent({ open, onClose }: { open: boolean; onClose: () => 
       open={open}
       onOpenChange={(next) => !next && onClose()}
       title={agentWordsFor(lang).collectTitle}
+      tone="night"
       footer={
         <div className="pb-3">
-          <Button wide variant="soft" onClick={onClose}>
+          <Button wide variant="night" onClick={onClose}>
             {text.done}
           </Button>
         </div>
@@ -147,9 +148,9 @@ function Collecting() {
 
   return (
     <div className="space-y-5">
-      <Steps steps={late && late.length === 0 ? steps.slice(0, 1) : steps} />
+      <Steps tone="night" steps={late && late.length === 0 ? steps.slice(0, 1) : steps} />
       {jobs.length > 0 && (
-        <ul className="divide-y divide-border">
+        <ul className="divide-y divide-night-raised rounded-3xl bg-night-raised/40 px-3">
           {jobs.map((job) => {
             const id = job.customer.customer_id;
             const paid = paidOf(job);
@@ -158,14 +159,14 @@ function Collecting() {
                 <Monogram name={job.customer.name} />
                 <div className="min-w-0 flex-1">
                   <p className="truncate text-lg font-bold">{job.customer.name}</p>
-                  <p className="text-sm text-ink-muted">
+                  <p className="text-sm text-night-muted">
                     {formatMoney(job.reminder.amount_paise)} ·{" "}
                     {langInfo[job.customer.lang ?? "ta"].name}
                   </p>
                   {demo && paid === 0 && (
                     <button
                       type="button"
-                      className="mt-1 text-sm font-semibold text-ink-muted underline"
+                      className="mt-1 text-sm font-semibold text-night-muted underline"
                       onClick={() =>
                         ownerApi
                           .markPaid(job.reminder.payment_id)
@@ -177,10 +178,10 @@ function Collecting() {
                   )}
                 </div>
                 {paid > 0 ? (
-                  <Badge tone="success">{words.paid(formatMoney(paid))}</Badge>
+                  <Badge tone="lime">{words.paid(formatMoney(paid))}</Badge>
                 ) : (
                   <LinkButton
-                    variant={sent.has(id) ? "soft" : "primary"}
+                    variant={sent.has(id) ? "night" : "lime"}
                     href={job.reminder.whatsapp_url}
                     target="_blank"
                     rel="noopener noreferrer"

@@ -6,10 +6,10 @@ import { cn } from "@/lib/cn";
 
 // Each banner sits on a panel of its own darkest colour, so picture and panel read as one piece.
 const panels: Record<BannerName, string> = {
-  voice: "bg-panel-voice",
-  approve: "bg-panel-approve",
-  bill: "bg-panel-bill",
-  night: "bg-panel-night",
+  voice: "bg-accent",
+  approve: "bg-accent",
+  bill: "bg-accent",
+  night: "bg-accent",
 };
 
 /** A screen's hero: a banner flush on a coloured panel, with white words under it. */

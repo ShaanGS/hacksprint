@@ -14,6 +14,8 @@ export type OwnerScreen = {
   notify: (message: string) => void;
   openDemoTools: () => void;
   openAgent: (agent: AgentKind) => void;
+  shopName: string;
+  ownerName: string;
 };
 
 export const OwnerScreenContext = createContext<OwnerScreen>({
@@ -21,6 +23,8 @@ export const OwnerScreenContext = createContext<OwnerScreen>({
   notify: () => undefined,
   openDemoTools: () => undefined,
   openAgent: () => undefined,
+  shopName: "",
+  ownerName: "",
 });
 
 export function useOwnerScreen(): OwnerScreen {

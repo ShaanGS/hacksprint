@@ -55,6 +55,10 @@ export type MoneyText = {
   neededLikely: (needed: Money, likely: Money) => string;
   collectLate: (count: number, amount: Money) => string;
   seeWho: string;
+  shortcuts: { collect: string; reorder: string; bill: string; loan: string };
+  youSaid: string;
+  weekDetails: string;
+  hideDetails: string;
   whereMoney: string;
   parts: Record<RotationPart, string>;
   costUnknown: (count: number) => string;
@@ -234,6 +238,10 @@ const en: MoneyText = {
   collectLate: (count, amount) =>
     `Collect from ${count} late ${plural(count, "payer", "payers")}: +${amount}`,
   seeWho: "See who",
+  shortcuts: { collect: "Collect", reorder: "Reorder", bill: "Snap bill", loan: "Loan" },
+  youSaid: "You said",
+  weekDetails: "This week in detail",
+  hideDetails: "Hide the detail",
   whereMoney: "Where your money is",
   parts: {
     due_7d: "Bills due this week",
@@ -470,6 +478,10 @@ const ta: MoneyText = {
   neededLikely: (needed, likely) => `தேவை ${needed} · வர வாய்ப்பு ${likely}`,
   collectLate: (count, amount) => `தாமதமான ${count} பேரிடம் வசூலித்தால்: +${amount}`,
   seeWho: "யார் என்று பாருங்கள்",
+  shortcuts: { collect: "வசூல்", reorder: "ஆர்டர்", bill: "பில் படம்", loan: "கடன்" },
+  youSaid: "நீங்கள் சொன்னது",
+  weekDetails: "இந்த வாரம் விவரமாக",
+  hideDetails: "விவரத்தை மறை",
   whereMoney: "உங்கள் பணம் எங்கே",
   parts: {
     due_7d: "இந்த வாரம் கட்ட வேண்டிய பில்கள்",
