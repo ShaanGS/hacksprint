@@ -1,15 +1,14 @@
 "use client";
 
-import { Camera, ImageIcon, LoaderCircle } from "lucide-react";
+import { Camera, ImageIcon, LoaderCircle, ReceiptText, ScanLine } from "lucide-react";
 import Image from "next/image";
 import { useRef, useState, type ChangeEvent } from "react";
 import { BillCheck, canConfirm, checkedTotal, type CheckLine } from "@/components/owner/bill-check";
 import { BillResult } from "@/components/owner/bill-result";
 import { useOwnerLanguage } from "@/components/owner/owner-language";
 import { ProductPicker, type Pickable } from "@/components/owner/product-picker";
-import { Art } from "@/components/ui/art";
 import { Button } from "@/components/ui/button";
-import { FeatureCard } from "@/components/ui/feature-card";
+import { IconCircle } from "@/components/ui/icon-circle";
 import { Sheet } from "@/components/ui/sheet";
 import { shrinkPhoto } from "@/lib/bills/photo";
 import type { BillOutcome, ScannedBill } from "@/lib/bills/types";
@@ -96,24 +95,25 @@ export function BillScan({ products, onAdded }: { products: Pickable[]; onAdded:
 
   return (
     <>
-      <FeatureCard banner="bill" title={text.scanTitle} text={text.scanText}>
-        <button
-          type="button"
-          onClick={() => camera.current?.click()}
-          className="mt-4 flex min-h-14 w-full items-center justify-center gap-2 rounded-xl bg-surface text-base font-semibold text-ink transition-transform active:scale-98"
-        >
+      <section className="relative overflow-hidden rounded-3xl bg-surface-muted p-5">
+        <span className="absolute top-5 right-5 grid size-16 place-items-center rounded-full bg-surface">
+          <ScanLine aria-hidden className="size-7" />
+        </span>
+        <p className="pr-20 text-xl leading-tight font-bold">{text.scanTitle}</p>
+        <p className="mt-1.5 pr-20 text-sm text-ink-muted">{text.scanText}</p>
+        <Button wide className="mt-4" onClick={() => camera.current?.click()}>
           <Camera aria-hidden className="size-5" />
           {text.takePhoto}
-        </button>
+        </Button>
         <button
           type="button"
           onClick={() => gallery.current?.click()}
-          className="mt-2 flex min-h-11 w-full items-center justify-center gap-2 rounded-xl text-sm font-semibold text-accent-ink"
+          className="mt-2 flex min-h-11 w-full items-center justify-center gap-2 rounded-full text-sm font-semibold text-accent"
         >
           <ImageIcon aria-hidden className="size-4" />
           {text.choosePhoto}
         </button>
-      </FeatureCard>
+      </section>
       {/* The camera opens straight away; the second input picks a photo already taken. */}
       <input
         ref={camera}
@@ -175,7 +175,12 @@ export function BillScan({ products, onAdded }: { products: Pickable[]; onAdded:
     if (step.name === "unreadable") {
       return (
         <div className="flex flex-col items-center gap-3 py-4 text-center">
-          <Art name="bill" size={112} />
+          <IconCircle
+            icon={ReceiptText}
+            tone="sand"
+            size="lg"
+            className="animate-pulse motion-reduce:animate-none"
+          />
           <p className="text-base">{text.billUnreadable}</p>
         </div>
       );

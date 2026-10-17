@@ -1,15 +1,15 @@
 # Design rules
 
-Two moods, one app. The owner's everyday screens are light and calm: a soft mint canvas, white rounded cards, deep teal pill buttons and toy-style art in mint circles, after `references/10-teal-grocery.jpg`. When he speaks, or hands a job to an agent, the app switches to a dark indigo layer with a neon lime mic and a listening orb, after `references/11-indigo-voice.jpg`. Copy the references' visual language, never their wording or flows. Spec section 9 decides the screens; this file decides the look.
+Two moods, one app. The owner's everyday screens are clean and calm, like the app in the owner's landing reference: a plain white page, black type and black pill buttons, lime pills for the things an agent does, violet promo cards, and real product photos. When he speaks, or hands a job to an agent, the app switches to a dark layer with a lime mic and a listening orb, after `references/11-indigo-voice.jpg`; the card and row shapes come from `references/10-teal-grocery.jpg`. Copy the references' visual language, never their wording or flows. Spec section 9 decides the screens; this file decides the look.
 
 Build from the primitives in `apps/web/components/ui/` and check them at `/styleguide`. Values live in `tokens.ts`.
 
 ## Screens
 
-- A light screen sits on the mint `canvas`. Content lives in white cards (`Card`, radius 24, `shadow-card`); the canvas shows between them.
-- Every screen has one hero: a deep teal card with the screen's big number, or a pastel `PromoCard` with a cutout. Never a page of same-weight rows.
-- One job per screen and one primary button: a full-width pill, teal on light screens, lime for anything an agent does. Its label names the choice ("Send to Murugan Traders").
-- The header: a round language button, the shop's name with a small label above it, the demo badge while on demo data, a teal pill with the owner's initial; the page headline under it (28px, bold).
+- A light screen is plain white (`canvas`), no gradients. Lists live in white cards with a soft shadow (`shadow-card`, radius 24); quieter panels are `surfaceMuted`.
+- Every screen opens with its big number, bold on white with a status chip above it, then one primary action. Never a page of same-weight rows.
+- One job per screen and one primary button: a full-width pill, black for the screen's own action, lime for anything an agent does. Its label names the choice ("Send to Murugan Traders"). A violet card carries the one thing worth doing next.
+- The header: the owner's initial in a black circle, the shop's name with a small date above it, the round language button; the page headline under it with the demo badge.
 - Mobile first at 390px. Tap targets at least 44px. Bottom bars respect the safe area. On a laptop or projector the app sits in a phone frame (`AppFrame`).
 - Messages (saved, paid, offline) rise as toasts just above the tab bar. Nothing ever covers a title.
 
@@ -21,8 +21,8 @@ Build from the primitives in `apps/web/components/ui/` and check them at `/style
 
 ## Look
 
-- **Colours:** teal (`accent`) for actions and the active tab; `accentSoft` for selected chips and art circles. Green (`success`) only for paid and collected, amber (`warning`) only for running low, red (`danger`) only for overdue and failures. Status is a `Badge`, never a tinted card.
-- **Art:** the toy-style cutouts. In rows and shortcuts they sit in a mint circle (`surfaceMuted`); on hero and promo cards they sit free on the right, 96 to 140px.
+- **Colours:** black (`accent`) for actions and the active tab; lime for agent actions and the mic; violet (`indigo`) for the promo card; `accentSoft` greys for chips and icon circles. Green (`success`) only for paid and collected, amber (`warning`) only for running low, red (`danger`) only for overdue, failures and a short week. Status is a `Badge`, never a tinted card.
+- **Pictures:** every product shows its own photo (`ProductImage`, from `public/products`), like a quick-commerce listing. Ideas (money, bills, customers) are plain icons in soft circles (`IconCircle`). No toy art.
 - **Radius:** 24px cards and sheet tops, 16px inner tiles, full for buttons, inputs, chips, badges and avatars.
 - **Spacing:** a 4px grid, 16px side gutters, 12px between cards in a grid, 16px inside cards.
 - **Type:** Plus Jakarta Sans for English and every number, Noto Sans for Tamil, Devanagari and Kannada. Body 14 to 17px. Headlines 22 to 32px bold. Hero numbers 44px extra-bold with `tabular-nums`. Tamil labels may take 2 lines; nothing is cut mid-word.

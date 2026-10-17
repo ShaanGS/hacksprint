@@ -8,6 +8,7 @@ type Money = string;
 export type AgentWords = {
   letAgent: string;
   letAgentCollect: string;
+  collectHint: string;
   collectTitle: string;
   collectSteps: { found: string; wrote: string; send: string; watch: string };
   found: (count: number, amount: Money) => string;
@@ -46,6 +47,7 @@ export type AgentWords = {
 const en: AgentWords = {
   letAgent: "Let the agent do it",
   letAgentCollect: "Let the agent collect",
+  collectHint: "The agent writes each reminder with a payment link. You send it.",
   collectTitle: "Collecting for you",
   collectSteps: {
     found: "Found who is late",
@@ -102,6 +104,8 @@ const en: AgentWords = {
 const ta: AgentWords = {
   letAgent: "முகவர் செய்யட்டும்",
   letAgentCollect: "முகவர் வசூலிக்கட்டும்",
+  collectHint:
+    "ஒவ்வொரு நினைவூட்டலையும் பணம் செலுத்தும் லிங்க் உடன் முகவர் எழுதும். நீங்கள் அனுப்புங்கள்.",
   collectTitle: "உங்களுக்காக வசூலிக்கிறது",
   collectSteps: {
     found: "தாமதமானவர்களைக் கண்டது",

@@ -1,6 +1,6 @@
 "use client";
 
-import { FileText } from "lucide-react";
+import { FileText, ReceiptText, Wallet } from "lucide-react";
 import { useState } from "react";
 import { useLive } from "@/components/owner/live";
 import { LoanCheck } from "@/components/owner/loan-check";
@@ -10,7 +10,7 @@ import { Section } from "@/components/owner/section";
 import { TabHeader } from "@/components/owner/tab-header";
 import { useDates } from "@/components/owner/use-dates";
 import { Amount } from "@/components/ui/amount";
-import { Art } from "@/components/ui/art";
+import { IconCircle } from "@/components/ui/icon-circle";
 import { Badge } from "@/components/ui/badge";
 import { Button, LinkButton } from "@/components/ui/button";
 import { ListRow } from "@/components/ui/list-row";
@@ -62,9 +62,9 @@ export function BankTab({ onCollect }: { onCollect: () => void }) {
       <TabHeader title={text.bankTitle} />
       <LoanCheck onCollect={onCollect} />
 
-      <section className="mt-4 rounded-2xl bg-surface-muted p-4">
+      <section className="mt-4 rounded-3xl bg-surface p-4 shadow-card">
         <div className="flex items-start gap-3">
-          <Art name="bill" size={56} />
+          <IconCircle icon={FileText} tone="sky" size="lg" />
           <div className="min-w-0 flex-1">
             <p className="text-lg font-bold">{text.statementTitle}</p>
             <p className="text-sm text-ink-muted">{text.statementText}</p>
@@ -82,13 +82,7 @@ export function BankTab({ onCollect }: { onCollect: () => void }) {
               {text.openStatement}
             </LinkButton>
           ) : (
-            <Button
-              wide
-              variant="soft"
-              disabled={busy}
-              onClick={makeStatement}
-              className="bg-surface"
-            >
+            <Button wide variant="soft" disabled={busy} onClick={makeStatement}>
               <FileText aria-hidden className="size-5" />
               {text.makeStatement}
             </Button>
@@ -104,7 +98,7 @@ export function BankTab({ onCollect }: { onCollect: () => void }) {
             payables.data.payables.map((payable) => (
               <li key={payable.id}>
                 <ListRow
-                  art={<Art name="bill" size={44} />}
+                  art={<IconCircle icon={ReceiptText} tone="sand" />}
                   tag={
                     payable.overdue_days > 0 ? (
                       <Badge tone="danger">{text.overdueBy(payable.overdue_days)}</Badge>
@@ -131,7 +125,7 @@ export function BankTab({ onCollect }: { onCollect: () => void }) {
           {costs.data.costs.map((cost) => (
             <li key={cost.kind}>
               <ListRow
-                art={<Art name="coins" size={44} />}
+                art={<IconCircle icon={Wallet} />}
                 title={text.costs[cost.kind]}
                 meta={text.costAmount(formatMoney(cost.amount_paise), cost.period)}
               />

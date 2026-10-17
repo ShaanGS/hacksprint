@@ -8,6 +8,8 @@ const sizes = {
   md: { box: "size-16", px: 56 },
   lg: { box: "size-24", px: 88 },
   xl: { box: "size-32", px: 120 },
+  /** Fills its card's width, square: the Stock grid. */
+  fill: { box: "aspect-square w-full", px: 200 },
 } as const;
 
 /**

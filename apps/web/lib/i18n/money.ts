@@ -236,7 +236,7 @@ const en: MoneyText = {
   },
   neededLikely: (needed, likely) => `Needed ${needed} · Likely ${likely}`,
   collectLate: (count, amount) =>
-    `Collect from ${count} late ${plural(count, "payer", "payers")}: +${amount}`,
+    `Collect from ${count} late ${plural(count, "payer", "payers")}: +\u2060${amount}`,
   seeWho: "See who",
   shortcuts: { collect: "Collect", reorder: "Reorder", bill: "Snap bill", loan: "Loan" },
   youSaid: "You said",
@@ -476,7 +476,7 @@ const ta: MoneyText = {
     ok: "இந்த வாரம் மீதம்",
   },
   neededLikely: (needed, likely) => `தேவை ${needed} · வர வாய்ப்பு ${likely}`,
-  collectLate: (count, amount) => `தாமதமான ${count} பேரிடம் வசூலித்தால்: +${amount}`,
+  collectLate: (count, amount) => `தாமதமான ${count} பேரிடம் வசூலித்தால்: +\u2060${amount}`,
   seeWho: "யார் என்று பாருங்கள்",
   shortcuts: { collect: "வசூல்", reorder: "ஆர்டர்", bill: "பில் படம்", loan: "கடன்" },
   youSaid: "நீங்கள் சொன்னது",

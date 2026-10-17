@@ -1,6 +1,6 @@
 "use client";
 
-import { Bot, ChevronRight } from "lucide-react";
+import { Bot, ChevronRight, ShoppingBag } from "lucide-react";
 import { useCallback, useState } from "react";
 import { BillScan } from "@/components/owner/bill-scan";
 import { useLive } from "@/components/owner/live";
@@ -14,7 +14,8 @@ import { SourceBadge } from "@/components/owner/source-badge";
 import { TabHeader } from "@/components/owner/tab-header";
 import { useDates } from "@/components/owner/use-dates";
 import { Amount } from "@/components/ui/amount";
-import { Art, toArtName } from "@/components/ui/art";
+import { IconCircle } from "@/components/ui/icon-circle";
+import { ProductImage } from "@/components/ui/product-image";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { ListRow } from "@/components/ui/list-row";
@@ -37,7 +38,7 @@ export function StockTab({ onBank }: { onBank: () => void }) {
   const close = useCallback(() => setPriced(null), []);
 
   if (!stock.data) {
-    return stock.failed ? <Failed art="crate" onRetry={stock.reload} /> : <Loading art="crate" />;
+    return stock.failed ? <Failed onRetry={stock.reload} /> : <Loading />;
   }
   const { products, festival_order: order } = stock.data;
   const left = (row: ShelfRow) =>
@@ -52,31 +53,35 @@ export function StockTab({ onBank }: { onBank: () => void }) {
     row.counted_at ? text.countedOn(dates.day(row.counted_at)) : text.notCounted;
   const toCount = products.filter((row) => row.count_asked);
 
+  const badge = (row: ShelfRow) =>
+    row.tags.includes("low") ? (
+      <Badge tone="warning">{text.lowBadge}</Badge>
+    ) : row.tags.includes("slow") ? (
+      <Badge>{text.slowBadge}</Badge>
+    ) : null;
+
   return (
     <main className="px-4 pt-2 pb-44">
       <TabHeader title={text.stockTitle} />
 
-      <section className="relative mt-4 overflow-hidden rounded-3xl bg-tint-sand p-5">
-        <Art name="crate" size={120} eager className="absolute -top-1 -right-3" />
-        <p className="text-sm font-semibold text-ink-muted">{text.shelfHero}</p>
+      <section className="mt-5">
+        <SourceBadge label="estimate" />
         <Ticker
           paise={stock.data.on_shelf_paise}
-          className="mt-1 block text-hero font-extrabold tracking-tight"
+          className="mt-2 block text-hero font-extrabold tracking-tight"
         />
-        <div className="mt-2">
-          <SourceBadge label="estimate" />
-        </div>
-        <p className="mt-2 max-w-60 text-sm text-ink-muted">{text.estimateNote}</p>
+        <p className="mt-1 text-sm text-ink-muted">{text.shelfHero}</p>
         {stock.data.cost_unknown.length > 0 && (
           <p className="mt-1 text-sm font-medium">
             {text.costUnknown(stock.data.cost_unknown.length)}
           </p>
         )}
-        <Button className="mt-4" onClick={() => openAgent("reorder")}>
-          <Bot aria-hidden className="size-5" />
-          {agentWordsFor(lang).letAgentReorder}
-        </Button>
       </section>
+
+      <Button variant="lime" wide className="mt-5" onClick={() => openAgent("reorder")}>
+        <Bot aria-hidden className="size-5" />
+        {agentWordsFor(lang).letAgentReorder}
+      </Button>
 
       <div className="mt-4">
         <BillScan
@@ -91,11 +96,11 @@ export function StockTab({ onBank }: { onBank: () => void }) {
       </div>
 
       {order && (
-        <section className="mt-4 rounded-2xl bg-surface-muted p-4">
+        <section className="mt-4 rounded-3xl bg-surface p-4 shadow-card">
           <div className="flex items-start gap-3">
-            <Art name="bag" size={56} />
+            <IconCircle icon={ShoppingBag} tone="sand" size="lg" />
             <div className="min-w-0 flex-1">
-              <p className="text-lg font-bold">{text.festivalTitle(order.festival)}</p>
+              <p className="text-lg leading-snug font-bold">{text.festivalTitle(order.festival)}</p>
               <p className="text-sm text-ink-muted">
                 {text.festivalLine(order.distributor, order.lines)}
               </p>
@@ -105,11 +110,30 @@ export function StockTab({ onBank }: { onBank: () => void }) {
           <button
             type="button"
             onClick={onBank}
-            className="mt-3 flex min-h-11 w-full items-center justify-between rounded-xl bg-surface px-4 text-base font-semibold"
+            className="mt-3 flex min-h-12 w-full items-center justify-between rounded-full bg-surface-muted px-5 text-base font-semibold transition-transform active:scale-98"
           >
             {text.festivalLoan}
             <ChevronRight aria-hidden className="size-5" />
           </button>
+        </section>
+      )}
+
+      {toCount.length > 0 && (
+        <section className="mt-7">
+          <h2 className="px-1 text-lg leading-snug font-bold">{text.countTitle}</h2>
+          <p className="mt-1 px-1 text-sm text-ink-muted">{text.countHint}</p>
+          <ul className="-mx-4 mt-3 flex gap-3 overflow-x-auto px-4 pb-2">
+            {toCount.map((row) => (
+              <li
+                key={row.product_id}
+                className="w-32 shrink-0 rounded-3xl bg-surface p-3 shadow-card"
+              >
+                <ProductImage name={row.name} size="fill" />
+                <p className="mt-2 line-clamp-2 text-sm leading-snug font-semibold">{row.name}</p>
+                <p className="mt-0.5 text-xs text-ink-muted">{counted(row)}</p>
+              </li>
+            ))}
+          </ul>
         </section>
       )}
 
@@ -118,7 +142,7 @@ export function StockTab({ onBank }: { onBank: () => void }) {
           {stuck.data.products.map((row) => (
             <li key={row.product_id}>
               <ListRow
-                art={<Art name={toArtName(row.art)} size={56} />}
+                art={<ProductImage name={row.name} size="sm" />}
                 title={row.name}
                 meta={`${left(row)} · ${lasts(row)}`}
                 trailing={row.value_paise !== null && <Amount paise={row.value_paise} size="md" />}
@@ -129,41 +153,35 @@ export function StockTab({ onBank }: { onBank: () => void }) {
         </Section>
       )}
 
-      {toCount.length > 0 && (
-        <Section title={text.countTitle} note={text.countHint}>
-          {toCount.map((row) => (
+      <section className="mt-7">
+        <h2 className="px-1 text-lg leading-snug font-bold">{text.everyItem}</h2>
+        <ul className="mt-3 grid grid-cols-2 gap-3">
+          {products.map((row) => (
             <li key={row.product_id}>
-              <ListRow
-                art={<Art name={toArtName(row.art)} size={44} />}
-                title={row.name}
-                meta={counted(row)}
-              />
+              <button
+                type="button"
+                onClick={() => setPriced(row.product_id)}
+                className="flex h-full w-full flex-col rounded-3xl bg-surface p-3 text-left shadow-card transition-transform active:scale-98"
+              >
+                <span className="relative block">
+                  <ProductImage name={row.name} size="fill" />
+                  {badge(row) && <span className="absolute top-2 left-2">{badge(row)}</span>}
+                </span>
+                <span className="mt-2 line-clamp-2 text-sm leading-snug font-semibold">
+                  {row.name}
+                </span>
+                <span className="mt-0.5 block text-xs text-ink-muted">{left(row)}</span>
+                <span className="block text-xs text-ink-muted">{lasts(row)}</span>
+                {row.value_paise !== null && (
+                  <span className="mt-auto pt-2">
+                    <Amount paise={row.value_paise} size="md" />
+                  </span>
+                )}
+              </button>
             </li>
           ))}
-        </Section>
-      )}
-
-      <Section title={text.everyItem}>
-        {products.map((row) => (
-          <li key={row.product_id}>
-            <ListRow
-              art={<Art name={toArtName(row.art)} size={56} />}
-              tag={
-                row.tags.includes("low") ? (
-                  <Badge tone="warning">{text.lowBadge}</Badge>
-                ) : row.tags.includes("slow") ? (
-                  <Badge>{text.slowBadge}</Badge>
-                ) : undefined
-              }
-              title={row.name}
-              meta={`${left(row)} · ${lasts(row)}`}
-              note={counted(row)}
-              trailing={row.value_paise !== null && <Amount paise={row.value_paise} size="md" />}
-              onClick={() => setPriced(row.product_id)}
-            />
-          </li>
-        ))}
-      </Section>
+        </ul>
+      </section>
 
       <div className="mt-6">
         <Margins />

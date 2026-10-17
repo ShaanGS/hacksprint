@@ -6,7 +6,6 @@ import {
   HandCoins,
   House,
   IndianRupee,
-  Landmark,
   Mic,
   Package,
   ReceiptText,
@@ -32,11 +31,11 @@ import { TabHeader } from "@/components/owner/tab-header";
 import { useDates } from "@/components/owner/use-dates";
 import { useDay } from "@/components/owner/use-day";
 import { Amount } from "@/components/ui/amount";
+import { Badge } from "@/components/ui/badge";
 import { IconCircle, type IconTone } from "@/components/ui/icon-circle";
 import { ListRow } from "@/components/ui/list-row";
-import { HeroCard } from "@/components/ui/promo-card";
 import { Ticker } from "@/components/ui/ticker";
-import { Tile } from "@/components/ui/tile";
+import { agentWordsFor } from "@/lib/i18n/agents";
 import { langInfo } from "@/lib/i18n/languages";
 import { cn } from "@/lib/cn";
 import { formatMoney } from "@/lib/money";
@@ -51,6 +50,7 @@ import type { RotationPart } from "@/lib/rotation/sources";
 export function HomeTab({ onTab }: { onTab: (tab: OwnerTab) => void }) {
   const { lang, text } = useOwnerLanguage();
   const { openAgent } = useOwnerScreen();
+  const agentWords = agentWordsFor(lang);
   const dates = useDates();
   const day = useDay(text, langInfo[lang].sarvamCode);
   const rotation = useLive(ownerApi.rotation, ["rotation", "credit", "stock"]);
@@ -60,11 +60,7 @@ export function HomeTab({ onTab }: { onTab: (tab: OwnerTab) => void }) {
   const close = useCallback(() => setPart(null), []);
 
   if (!rotation.data) {
-    return rotation.failed ? (
-      <Failed art="savings" onRetry={rotation.reload} />
-    ) : (
-      <Loading art="savings" />
-    );
+    return rotation.failed ? <Failed onRetry={rotation.reload} /> : <Loading />;
   }
   const { now, week } = rotation.data;
   const [due, costs] = week.needed.parts;
@@ -88,58 +84,56 @@ export function HomeTab({ onTab }: { onTab: (tab: OwnerTab) => void }) {
       />
     </li>
   );
-  const shortcuts: { icon: LucideIcon; tone: IconTone; label: string; open: () => void }[] = [
-    {
-      icon: HandCoins,
-      tone: "lime",
-      label: text.shortcuts.collect,
-      open: () => openAgent("collect"),
-    },
-    {
-      icon: ShoppingCart,
-      tone: "lime",
-      label: text.shortcuts.reorder,
-      open: () => openAgent("reorder"),
-    },
-    { icon: ScanLine, tone: "mint", label: text.shortcuts.bill, open: () => onTab("stock") },
-    { icon: Landmark, tone: "sky", label: text.shortcuts.loan, open: () => onTab("bank") },
-  ];
-
   return (
     <main className="px-4 pt-2 pb-44">
       <TabHeader title={text.homeTitle} line={day?.date} />
 
-      <HeroCard className="mt-4">
-        <p className="text-sm font-semibold text-accent-ink/80">{text.weekState[week.state]}</p>
+      <section className="mt-5">
+        <Badge
+          tone={week.state === "short" ? "danger" : week.state === "close" ? "warning" : "success"}
+        >
+          {text.weekState[week.state]}
+        </Badge>
         <Ticker
           paise={Math.abs(week.gap_paise)}
-          className="mt-1 block text-hero font-extrabold tracking-tight"
+          className="mt-2 block text-hero font-extrabold tracking-tight"
         />
-        <p className="mt-2 text-sm text-accent-ink/85">
+        <p className="mt-1 text-sm text-ink-muted">
           {text.neededLikely(formatMoney(week.needed.paise), formatMoney(week.likely.paise))}
-        </p>
-        <p className="text-xs text-accent-ink/70">
+          {" · "}
           {text.weekRange(dates.day(week.from), dates.day(week.to))}
         </p>
-      </HeroCard>
+      </section>
+
+      <div className="mt-5 flex items-center gap-2">
+        <PillAction icon={HandCoins} onClick={() => openAgent("collect")}>
+          {text.shortcuts.collect}
+        </PillAction>
+        <PillAction icon={ShoppingCart} onClick={() => openAgent("reorder")}>
+          {text.shortcuts.reorder}
+        </PillAction>
+        <RoundAction icon={ScanLine} label={text.shortcuts.bill} onClick={() => onTab("stock")} />
+      </div>
 
       {week.late.customers > 0 && (
-        <button
-          type="button"
-          onClick={() => onTab("collect")}
-          className="mt-3 flex w-full items-center gap-3 rounded-3xl bg-surface p-3 pr-4 text-left shadow-card transition-transform active:scale-98"
-        >
-          <IconCircle icon={HandCoins} tone="lilac" size="lg" />
-          <span className="min-w-0 flex-1">
-            <span className="block text-base leading-snug font-bold">
-              {text.collectLate(week.late.customers, formatMoney(week.late.paise))}
-            </span>
-            <span className="block text-sm text-ink-muted">{text.seeWho}</span>
-          </span>
-          <span className="grid size-10 shrink-0 place-items-center rounded-full bg-accent text-accent-ink">
+        <section className="relative mt-5 overflow-hidden rounded-3xl bg-indigo p-5 text-night-ink">
+          <span
+            aria-hidden
+            className="absolute -top-16 -right-12 size-44 rounded-full bg-night-ink/10"
+          />
+          <p className="relative text-xl leading-snug font-bold">
+            {text.collectLate(week.late.customers, formatMoney(week.late.paise))}
+          </p>
+          <p className="relative mt-1 text-sm text-night-ink/80">{agentWords.collectHint}</p>
+          <button
+            type="button"
+            onClick={() => openAgent("collect")}
+            className="relative mt-4 inline-flex min-h-12 items-center gap-2 rounded-full bg-lime px-5 text-base font-semibold text-lime-ink transition-transform active:scale-98"
+          >
+            {agentWords.letAgentCollect}
             <ArrowRight aria-hidden className="size-5" />
-          </span>
-        </button>
+          </button>
+        </section>
       )}
 
       {week.asks.length > 0 && (
@@ -158,86 +152,49 @@ export function HomeTab({ onTab }: { onTab: (tab: OwnerTab) => void }) {
         </section>
       )}
 
-      <ul className="mt-6 grid grid-cols-4 gap-2">
-        {shortcuts.map((shortcut) => (
-          <li key={shortcut.label}>
-            <button
-              type="button"
-              onClick={shortcut.open}
-              className="flex w-full flex-col items-center gap-2 text-center transition-transform active:scale-95"
-            >
-              <span className="rounded-full bg-surface p-1 shadow-card">
-                <IconCircle icon={shortcut.icon} tone={shortcut.tone} size="lg" />
-              </span>
-              <span className="text-xs leading-tight font-semibold">{shortcut.label}</span>
-            </button>
-          </li>
-        ))}
-      </ul>
-
-      <h2 className="mt-7 px-1 text-lg leading-snug font-bold">{text.whereMoney}</h2>
-      <div className="mt-3 grid grid-cols-2 gap-3">
-        <Tile
-          visual={<IconCircle icon={Package} />}
-          size="sm"
-          className="col-span-2"
-          onClick={() => setPart("on_shelf")}
-        >
-          <p className="pr-16 text-sm text-ink-muted">{text.parts.on_shelf}</p>
-          <p className="text-2xl font-bold tracking-tight tabular-nums">
-            {formatMoney(now.on_shelf.paise)}
-          </p>
-          <span className="mt-1 flex flex-wrap items-center gap-2">
-            <SourceBadge label={now.on_shelf.label} />
-            {now.on_shelf.cost_unknown.length > 0 && (
-              <span className="text-xs text-ink-muted">
-                {text.costUnknown(now.on_shelf.cost_unknown.length)}
-              </span>
-            )}
-          </span>
-        </Tile>
-        <Tile
-          visual={<IconCircle icon={Users} tone="lilac" size="sm" />}
-          size="md"
-          onClick={() => setPart("with_customers")}
-        >
-          <p className="line-clamp-2 pr-12 text-sm text-ink-muted">{text.parts.with_customers}</p>
-          <p className="text-xl font-bold tracking-tight tabular-nums">
-            {formatMoney(now.with_customers.paise)}
-          </p>
-          <span className="mt-1 block">
-            <SourceBadge label={now.with_customers.label} />
-          </span>
-        </Tile>
-        <Tile
-          visual={<IconCircle icon={Truck} tone="sand" size="sm" />}
-          size="md"
-          onClick={() => setPart("owed_to_suppliers")}
-        >
-          <p className="line-clamp-2 pr-12 text-sm text-ink-muted">
-            {text.parts.owed_to_suppliers}
-          </p>
-          <p className="text-xl font-bold tracking-tight tabular-nums">
-            {formatMoney(now.owed_to_suppliers.paise)}
-          </p>
-          <span className="mt-1 block">
-            <SourceBadge label={now.owed_to_suppliers.label} />
-          </span>
-        </Tile>
-      </div>
-
-      <button
-        type="button"
-        aria-expanded={detail}
-        onClick={() => setDetail((open) => !open)}
-        className="mt-6 flex min-h-14 w-full items-center justify-between gap-3 rounded-full bg-surface px-5 text-base font-semibold shadow-card transition-transform active:scale-98"
-      >
-        {detail ? text.hideDetails : text.weekDetails}
-        <ChevronDown
-          aria-hidden
-          className={cn("size-5 shrink-0 transition-transform", detail && "rotate-180")}
-        />
-      </button>
+      <section className="mt-7">
+        <div className="flex items-baseline justify-between gap-3 px-1">
+          <h2 className="text-lg leading-snug font-bold">{text.whereMoney}</h2>
+          <button
+            type="button"
+            aria-expanded={detail}
+            onClick={() => setDetail((open) => !open)}
+            className="flex min-h-11 items-center gap-1 text-sm font-semibold text-accent"
+          >
+            {detail ? text.hideDetails : text.weekDetails}
+            <ChevronDown
+              aria-hidden
+              className={cn("size-4 transition-transform", detail && "rotate-180")}
+            />
+          </button>
+        </div>
+        <ul className="mt-2 divide-y divide-border rounded-3xl bg-surface p-1 shadow-card">
+          {row(
+            "on_shelf",
+            Package,
+            "mint",
+            now.on_shelf.paise,
+            now.on_shelf.label,
+            now.on_shelf.cost_unknown.length > 0
+              ? text.costUnknown(now.on_shelf.cost_unknown.length)
+              : undefined,
+          )}
+          {row(
+            "with_customers",
+            Users,
+            "lilac",
+            now.with_customers.paise,
+            now.with_customers.label,
+          )}
+          {row(
+            "owed_to_suppliers",
+            Truck,
+            "sand",
+            now.owed_to_suppliers.paise,
+            now.owed_to_suppliers.label,
+          )}
+        </ul>
+      </section>
 
       {detail && (
         <>
@@ -321,5 +278,47 @@ export function HomeTab({ onTab }: { onTab: (tab: OwnerTab) => void }) {
 
       <RotationSourceSheet part={part} onClose={close} />
     </main>
+  );
+}
+
+function PillAction({
+  icon: Icon,
+  onClick,
+  children,
+}: {
+  icon: LucideIcon;
+  onClick: () => void;
+  children: ReactNode;
+}) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      className="inline-flex min-h-12 min-w-0 flex-1 items-center justify-center gap-2 rounded-full bg-lime px-4 text-base font-semibold text-lime-ink transition-transform active:scale-98"
+    >
+      <Icon aria-hidden className="size-5 shrink-0" />
+      <span className="truncate">{children}</span>
+    </button>
+  );
+}
+
+function RoundAction({
+  icon: Icon,
+  label,
+  onClick,
+}: {
+  icon: LucideIcon;
+  label: string;
+  onClick: () => void;
+}) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      aria-label={label}
+      className="grid size-12 shrink-0 place-items-center rounded-full bg-lime text-lime-ink transition-transform active:scale-95"
+    >
+      <Icon aria-hidden className="size-5" />
+    </button>
   );
 }

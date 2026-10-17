@@ -1,6 +1,6 @@
 "use client";
 
-import { Bot, Check, ExternalLink, FileText } from "lucide-react";
+import { Bot, Check, ExternalLink, FileText, Landmark } from "lucide-react";
 import { useCallback, useState, type ReactNode } from "react";
 import { ApplyAgent } from "@/components/owner/apply-agent";
 import { useOwnerLanguage } from "@/components/owner/owner-language";
@@ -8,7 +8,7 @@ import { useOwnerScreen } from "@/components/owner/owner-screen";
 import { useDates } from "@/components/owner/use-dates";
 import { Amount } from "@/components/ui/amount";
 import { Button, LinkButton } from "@/components/ui/button";
-import { FeatureCard } from "@/components/ui/feature-card";
+import { IconCircle } from "@/components/ui/icon-circle";
 import { Sheet } from "@/components/ui/sheet";
 import { cn } from "@/lib/cn";
 import { formatMoney } from "@/lib/money";
@@ -44,8 +44,15 @@ export function LoanCheck({ onCollect }: { onCollect: () => void }) {
   const pageLang = lang === "ta" ? "ta" : "en";
   return (
     <>
-      <FeatureCard banner="approve" title={text.loanTitle} text={text.loanText} className="mt-4">
-        <div className="mt-4 flex flex-wrap gap-2">
+      <section className="relative mt-5 overflow-hidden rounded-3xl bg-indigo p-5 text-night-ink">
+        <span
+          aria-hidden
+          className="absolute -top-16 -right-12 size-44 rounded-full bg-night-ink/10"
+        />
+        <IconCircle icon={Landmark} tone="lime" size="lg" className="relative" />
+        <p className="relative mt-4 text-xl leading-snug font-bold">{text.loanTitle}</p>
+        <p className="relative mt-1 text-sm text-night-ink/80">{text.loanText}</p>
+        <div className="relative mt-4 flex flex-wrap gap-2">
           {(["stock_rotation", "equipment"] as const).map((key) => (
             <button
               key={key}
@@ -55,8 +62,8 @@ export function LoanCheck({ onCollect }: { onCollect: () => void }) {
               className={cn(
                 "flex min-h-11 items-center gap-1.5 rounded-full px-4 text-sm font-semibold",
                 purpose === key
-                  ? "bg-surface text-ink"
-                  : "border border-accent-ink/40 text-accent-ink",
+                  ? "bg-night-ink text-night"
+                  : "border border-night-ink/40 text-night-ink",
               )}
             >
               {purpose === key && <Check aria-hidden className="size-4" strokeWidth={3} />}
@@ -76,11 +83,11 @@ export function LoanCheck({ onCollect }: { onCollect: () => void }) {
               },
             )
           }
-          className="mt-4 flex min-h-14 w-full items-center justify-center rounded-xl bg-surface text-base font-semibold text-ink transition-transform active:scale-98 disabled:opacity-60"
+          className="relative mt-4 flex min-h-14 w-full items-center justify-center rounded-full bg-lime text-base font-semibold text-lime-ink transition-transform active:scale-98 disabled:opacity-60"
         >
           {busy && !answer ? text.working : text.check}
         </button>
-      </FeatureCard>
+      </section>
 
       <Sheet
         open={answer !== null}

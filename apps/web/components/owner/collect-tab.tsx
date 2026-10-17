@@ -1,6 +1,6 @@
 "use client";
 
-import { Bot } from "lucide-react";
+import { Bot, HandCoins } from "lucide-react";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { CustomerSheet } from "@/components/owner/customer-sheet";
 import { useLive } from "@/components/owner/live";
@@ -9,7 +9,7 @@ import { useOwnerScreen } from "@/components/owner/owner-screen";
 import { Failed, Loading } from "@/components/owner/screen-state";
 import { TabHeader } from "@/components/owner/tab-header";
 import { Amount } from "@/components/ui/amount";
-import { Art } from "@/components/ui/art";
+import { IconCircle } from "@/components/ui/icon-circle";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { ListRow } from "@/components/ui/list-row";
@@ -51,11 +51,7 @@ export function CollectTab() {
   const close = useCallback(() => setOpenId(null), []);
 
   if (!collect.data) {
-    return collect.failed ? (
-      <Failed art="khata" onRetry={collect.reload} />
-    ) : (
-      <Loading art="khata" />
-    );
+    return collect.failed ? <Failed onRetry={collect.reload} /> : <Loading />;
   }
   const { customers, late_paise } = collect.data;
   const late = customers.filter((c) => c.reason.kind === "late").length;
@@ -64,28 +60,28 @@ export function CollectTab() {
     <main className="px-4 pt-2 pb-44">
       <TabHeader title={text.collectTitle} />
 
-      <section className="relative mt-4 overflow-hidden rounded-3xl bg-tint-lilac p-5">
-        <Art name="khata" size={120} eager className="absolute -top-1 -right-3" />
-        <p className="text-sm font-semibold text-ink-muted">{text.parts.late}</p>
-        <Ticker paise={late_paise} className="mt-1 block text-hero font-extrabold tracking-tight" />
-        <p className="mt-1 max-w-56 text-base text-ink-muted">{text.lateLine(late)}</p>
-        {late > 0 && (
-          <Button className="mt-4" onClick={() => openAgent("collect")}>
-            <Bot aria-hidden className="size-5" />
-            {agentWordsFor(lang).letAgentCollect}
-          </Button>
-        )}
+      <section className="mt-5">
+        <Badge tone={late > 0 ? "danger" : "success"}>{text.parts.late}</Badge>
+        <Ticker paise={late_paise} className="mt-2 block text-hero font-extrabold tracking-tight" />
+        <p className="mt-1 text-sm text-ink-muted">{text.lateLine(late)}</p>
       </section>
 
+      {late > 0 && (
+        <Button variant="lime" wide className="mt-5" onClick={() => openAgent("collect")}>
+          <Bot aria-hidden className="size-5" />
+          {agentWordsFor(lang).letAgentCollect}
+        </Button>
+      )}
+
       {customers.length === 0 ? (
-        <div className="mt-8 flex flex-col items-center text-center">
-          <Art name="savings" size={120} />
+        <div className="mt-10 flex flex-col items-center text-center">
+          <IconCircle icon={HandCoins} size="lg" />
           <p className="mt-3 text-lg text-ink-muted">{text.nobodyOwes}</p>
         </div>
       ) : (
-        <>
-          <p className="mt-6 text-sm font-semibold text-ink-muted">{text.collectOrder}</p>
-          <ul className="-mx-3 mt-1">
+        <section className="mt-7">
+          <h2 className="px-1 text-lg leading-snug font-bold">{text.collectOrder}</h2>
+          <ul className="mt-2 divide-y divide-border rounded-3xl bg-surface p-1 shadow-card">
             {customers.map((customer) => (
               <li key={customer.customer_id}>
                 <ListRow
@@ -105,7 +101,7 @@ export function CollectTab() {
               </li>
             ))}
           </ul>
-        </>
+        </section>
       )}
 
       <CustomerSheet customer={open} onClose={close} />
