@@ -16,15 +16,24 @@ const firstLetter: Record<Lang, string> = { ta: "அ", hi: "अ", kn: "ಅ", en:
 /** C0: two calm steps. Pick a language with one tap, then give a name and phone once. */
 export function Welcome({
   shopName,
+  known,
   onStart,
 }: {
   shopName: string;
-  onStart: (details: Details) => void;
+  /** A returning customer: their language is chosen and their details are filled in. */
+  known: Details | null;
+  onStart: (details: Details) => Promise<void>;
 }) {
-  const [lang, setLang] = useState<Lang | null>(null);
+  const [lang, setLang] = useState<Lang | null>(known?.lang ?? null);
   if (!lang) return <ChooseLanguage shopName={shopName} onChoose={setLang} />;
   return (
-    <YourDetails shopName={shopName} lang={lang} onBack={() => setLang(null)} onStart={onStart} />
+    <YourDetails
+      shopName={shopName}
+      lang={lang}
+      known={known}
+      onBack={() => setLang(null)}
+      onStart={onStart}
+    />
   );
 }
 
@@ -73,26 +82,37 @@ const fieldClass =
 function YourDetails({
   shopName,
   lang,
+  known,
   onBack,
   onStart,
 }: {
   shopName: string;
   lang: Lang;
+  known: Details | null;
   onBack: () => void;
-  onStart: (details: Details) => void;
+  onStart: (details: Details) => Promise<void>;
 }) {
   const t = textFor(lang);
-  const [name, setName] = useState("");
-  const [phone, setPhone] = useState("");
+  const [name, setName] = useState(known?.name ?? "");
+  const [phone, setPhone] = useState(known?.phone.replace(/^\+91/, "") ?? "");
   const [phoneWrong, setPhoneWrong] = useState(false);
+  const [starting, setStarting] = useState(false);
+  const [failed, setFailed] = useState(false);
 
-  function start() {
+  async function start() {
     const normalized = normalizePhone(phone);
     if (!normalized) {
       setPhoneWrong(true);
       return;
     }
-    onStart({ lang, name: name.trim(), phone: normalized });
+    setStarting(true);
+    setFailed(false);
+    try {
+      await onStart({ lang, name: name.trim(), phone: normalized });
+    } catch {
+      setFailed(true);
+      setStarting(false);
+    }
   }
 
   return (
@@ -145,8 +165,13 @@ function YourDetails({
       )}
 
       <div className="mt-auto pt-8">
-        <Button wide disabled={!name.trim() || !phone.trim()} onClick={start}>
-          {t.start}
+        {failed && (
+          <p role="alert" className="mb-3 text-center text-sm font-medium text-danger">
+            {t.tryAgain}
+          </p>
+        )}
+        <Button wide disabled={!name.trim() || !phone.trim() || starting} onClick={start}>
+          {starting ? t.sending : t.start}
         </Button>
       </div>
     </main>

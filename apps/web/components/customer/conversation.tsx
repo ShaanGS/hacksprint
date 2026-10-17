@@ -1,6 +1,6 @@
 "use client";
 
-import { Plus } from "lucide-react";
+import { Plus, Volume2 } from "lucide-react";
 import { motion } from "motion/react";
 import { Amount } from "@/components/ui/amount";
 import { Art, toArtName } from "@/components/ui/art";
@@ -21,17 +21,23 @@ import type { Choice, TurnItem, VoiceTurn } from "@/lib/voice/turns";
 export function Conversation({
   turns,
   lang,
+  heard,
   thinking,
   choicesOpen,
   onChoose,
   onDismissChoices,
+  onReplay,
 }: {
   turns: VoiceTurn[];
   lang: Lang;
+  /** What the customer just said, shown before the shop has answered. */
+  heard: string | null;
   thinking: boolean;
   choicesOpen: boolean;
   onChoose: (turnId: number, index: number) => void;
   onDismissChoices: () => void;
+  /** Plays a shop reply again. */
+  onReplay: (turnId: number) => void;
 }) {
   const t = textFor(lang);
   const last = turns.at(-1);
@@ -40,11 +46,9 @@ export function Conversation({
       {turns.map((turn) => (
         <motion.li key={turn.id} {...rise} className="flex flex-col gap-2">
           {turn.role === "customer" ? (
-            <p className="ml-12 self-end rounded-2xl rounded-br-lg bg-accent px-4 py-3 text-lg text-accent-ink">
-              {turn.text}
-            </p>
+            <CustomerLine text={turn.text} />
           ) : (
-            <ShopLine text={turn.text} />
+            <ShopLine text={turn.text} onReplay={() => onReplay(turn.id)} />
           )}
           {turn.items.length > 0 && (
             <div className="ml-10 flex flex-col gap-2">
@@ -74,6 +78,11 @@ export function Conversation({
           )}
         </motion.li>
       ))}
+      {heard && (
+        <motion.li {...rise} className="flex flex-col">
+          <CustomerLine text={heard} />
+        </motion.li>
+      )}
       {thinking && (
         <motion.li {...rise} className="flex items-end gap-2">
           <Art name="shop" size={32} />
@@ -86,11 +95,27 @@ export function Conversation({
   );
 }
 
-function ShopLine({ text }: { text: string }) {
+function CustomerLine({ text }: { text: string }) {
+  return (
+    <p className="ml-12 self-end rounded-2xl rounded-br-lg bg-accent px-4 py-3 text-lg text-accent-ink">
+      {text}
+    </p>
+  );
+}
+
+/** A shop reply; tapping it plays it again, for a customer who missed what was said. */
+function ShopLine({ text, onReplay }: { text: string; onReplay: () => void }) {
   return (
     <div className="mr-8 flex items-end gap-2">
       <Art name="shop" size={32} />
-      <p className="rounded-2xl rounded-bl-lg bg-surface-muted px-4 py-3 text-lg">{text}</p>
+      <button
+        type="button"
+        onClick={onReplay}
+        className="flex items-start gap-2 rounded-2xl rounded-bl-lg bg-surface-muted px-4 py-3 text-left text-lg active:scale-98"
+      >
+        <span>{text}</span>
+        <Volume2 aria-hidden className="mt-1 size-4 shrink-0 text-ink-faint" />
+      </button>
     </div>
   );
 }

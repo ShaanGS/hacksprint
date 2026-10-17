@@ -6,128 +6,38 @@ import { CartDock } from "@/components/customer/cart-dock";
 import { CartSheet } from "@/components/customer/cart-sheet";
 import { Conversation } from "@/components/customer/conversation";
 import { TalkHero } from "@/components/customer/talk-hero";
+import { useConversation, type Voice } from "@/components/customer/use-conversation";
 import { Art } from "@/components/ui/art";
-import { MicButton, type MicState } from "@/components/ui/mic-button";
-import type { CustomerBackend, TurnResult } from "@/lib/customer/backend";
+import { MicButton } from "@/components/ui/mic-button";
+import type { CustomerBackend } from "@/lib/customer/backend";
 import { langInfo, type Lang } from "@/lib/i18n/languages";
 import { textFor } from "@/lib/i18n/text";
-import type { Cart } from "@/lib/orders/cart";
-import type { PaymentMode } from "@/lib/orders/submit";
-import type { VoiceTurn } from "@/lib/voice/turns";
-
-// A press shorter than this is a tap, not speech: the customer is told to hold while speaking.
-const MIN_HOLD_MS = 300;
 
 /** C1: the voice order. Hold to talk, or type; the cart dock opens the cart and review. */
 export function Talk({
   lang,
   shopName,
   backend,
+  voice,
   onSent,
 }: {
   lang: Lang;
   shopName: string;
   backend: CustomerBackend;
+  voice: Voice;
   onSent: (number: number) => void;
 }) {
   const t = textFor(lang);
-  const [turns, setTurns] = useState<VoiceTurn[]>([]);
-  const [cart, setCart] = useState<Cart>({ lines: [], totalPaise: 0 });
-  const [mic, setMic] = useState<MicState>("idle");
-  const [hint, setHint] = useState<string | null>(null);
-  const [typing, setTyping] = useState(false);
+  const convo = useConversation({ lang, backend, voice, onSent });
+  const { turns, cart, mic, hint, heard } = convo;
+  // Without a microphone (refused, or none) the order is typed.
+  const [typing, setTyping] = useState(voice.recorder === null && voice.player !== null);
   const [draft, setDraft] = useState("");
-  const [choicesOpen, setChoicesOpen] = useState(true);
-  const [sheetOpen, setSheetOpen] = useState(false);
-  const [readBack, setReadBack] = useState<string | null>(null);
-  const holdStart = useRef(0);
-  // A ref, not state: two release events can arrive before React re-renders.
-  const holding = useRef(false);
   const bottom = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    // Development renders effects twice; only the latest answer counts.
-    let current = true;
-    backend.start().then(
-      (result) => {
-        if (!current) return;
-        setTurns(result.turns);
-        setCart(result.cart);
-      },
-      () => {
-        if (current) setHint(textFor(lang).fallback);
-      },
-    );
-    return () => {
-      current = false;
-    };
-  }, [backend, lang]);
-
-  useEffect(() => {
     bottom.current?.scrollIntoView({ behavior: "smooth", block: "end" });
-  }, [turns, mic]);
-
-  function apply(result: TurnResult) {
-    setTurns((current) => [...current, ...result.turns]);
-    setCart(result.cart);
-    setChoicesOpen(true);
-    if (result.review) {
-      setReadBack(result.turns.at(-1)?.text ?? null);
-      setSheetOpen(true);
-    }
-  }
-
-  async function run(work: () => Promise<TurnResult>) {
-    setMic("thinking");
-    setHint(null);
-    try {
-      apply(await work());
-    } catch {
-      setHint(t.fallback);
-    } finally {
-      setMic("idle");
-    }
-  }
-
-  function holdStarted() {
-    holding.current = true;
-    holdStart.current = Date.now();
-    setHint(null);
-    setMic("listening");
-  }
-
-  function holdEnded() {
-    if (!holding.current) return;
-    holding.current = false;
-    if (Date.now() - holdStart.current < MIN_HOLD_MS) {
-      setMic("idle");
-      setHint(t.holdLonger);
-      return;
-    }
-    run(async () => {
-      const heard = await backend.transcribe(null);
-      if (!heard) return { turns: [], cart, review: false };
-      return backend.say(heard, "voice");
-    });
-  }
-
-  function say(text: string) {
-    const clean = text.trim();
-    if (!clean || mic === "thinking") return;
-    setDraft("");
-    run(() => backend.say(clean, "typed"));
-  }
-
-  async function changeQuantity(code: string, qty: number) {
-    setReadBack(null);
-    setCart(await backend.setQuantity(code, qty));
-  }
-
-  async function send(mode: PaymentMode) {
-    const { number } = await backend.send(mode);
-    setSheetOpen(false);
-    onSent(number);
-  }
+  }, [turns, mic, heard]);
 
   const started = turns.some((turn) => turn.role === "customer");
   const greeting = turns.find((turn) => turn.role === "shop")?.text ?? "";
@@ -144,34 +54,34 @@ export function Talk({
       </header>
 
       <div className="min-h-0 flex-1 overflow-y-auto px-4 pt-1 pb-4">
-        {started || !greeting ? (
+        {started || heard !== null || !greeting ? (
           <Conversation
             turns={turns}
             lang={lang}
+            heard={heard}
             thinking={mic === "thinking"}
-            choicesOpen={choicesOpen}
-            onChoose={(turnId, index) => {
-              setChoicesOpen(false);
-              run(() => backend.choose(turnId, index));
-            }}
-            onDismissChoices={() => setChoicesOpen(false)}
+            choicesOpen={convo.choicesOpen}
+            onChoose={convo.choose}
+            onDismissChoices={convo.dismissChoices}
+            onReplay={convo.replay}
           />
         ) : (
-          <TalkHero lang={lang} greeting={greeting} onTry={say} />
+          <TalkHero lang={lang} greeting={greeting} onTry={convo.say} />
         )}
         <div ref={bottom} />
       </div>
 
       <footer className="pb-safe shrink-0 px-4 pt-2">
         {cart.lines.length > 0 && (
-          <CartDock cart={cart} lang={lang} onOpen={() => setSheetOpen(true)} />
+          <CartDock cart={cart} lang={lang} onOpen={() => convo.setSheetOpen(true)} />
         )}
         {typing ? (
           <form
             className="mt-3 flex items-center gap-2"
             onSubmit={(event) => {
               event.preventDefault();
-              say(draft);
+              convo.say(draft);
+              setDraft("");
             }}
           >
             <input
@@ -194,8 +104,8 @@ export function Talk({
           <div className="mt-3">
             <MicButton
               state={mic}
-              onHoldStart={holdStarted}
-              onHoldEnd={holdEnded}
+              onHoldStart={convo.holdStarted}
+              onHoldEnd={convo.holdEnded}
               labels={{ idle: t.holdToTalk, listening: t.listening, thinking: t.thinking }}
             />
           </div>
@@ -220,14 +130,14 @@ export function Talk({
       </footer>
 
       <CartSheet
-        open={sheetOpen}
-        onOpenChange={setSheetOpen}
+        open={convo.sheetOpen}
+        onOpenChange={convo.setSheetOpen}
         lang={lang}
         shopName={shopName}
         cart={cart}
-        readBack={readBack}
-        onQuantity={changeQuantity}
-        onSend={send}
+        readBack={convo.readBack}
+        onQuantity={convo.changeQuantity}
+        onSend={convo.send}
       />
     </main>
   );

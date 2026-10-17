@@ -96,6 +96,27 @@ export function previewCustomer(lang: Lang, customerName: string): CustomerBacke
     else if (qty <= 0) quantities.delete(code);
   }
 
+  async function answer(text: string, source: "voice" | "typed"): Promise<TurnResult> {
+    await wait(900);
+    const customer = turn("customer", text, source);
+    if (step === "order") {
+      step = "done";
+      setQty("maggi", 2);
+      setQty("butter", 1);
+      const items = [
+        itemFor(previewProduct("maggi"), 2, "added"),
+        itemFor(previewProduct("butter"), 1, "added"),
+        itemFor(previewProduct("sugar"), 0.5, "out_of_stock"),
+      ];
+      const choices = [choiceFor(previewProduct("jaggery"), 0.5)];
+      return result([customer, turn("shop", offerJaggery[lang], "agent", { items, choices })]);
+    }
+    const current = cart();
+    if (current.lines.length === 0) return result([customer, turn("shop", t.noted, "template")]);
+    const reply = readBack(current.lines, current.totalPaise, lang);
+    return result([customer, turn("shop", reply, "template")], true);
+  }
+
   return {
     async start() {
       // A copy: handing out the list itself would let later turns appear on screen twice.
@@ -104,30 +125,15 @@ export function previewCustomer(lang: Lang, customerName: string): CustomerBacke
       return result([turn("shop", t.greeting(first), "template")]);
     },
 
-    async transcribe() {
+    async speak(_audio, onHeard) {
       await wait(500);
-      return step === "order" ? t.exampleOrder : done[lang];
+      const heard = step === "order" ? t.exampleOrder : done[lang];
+      onHeard(heard);
+      return answer(heard, "voice");
     },
 
-    async say(text, source) {
-      await wait(900);
-      const customer = turn("customer", text, source);
-      if (step === "order") {
-        step = "done";
-        setQty("maggi", 2);
-        setQty("butter", 1);
-        const items = [
-          itemFor(previewProduct("maggi"), 2, "added"),
-          itemFor(previewProduct("butter"), 1, "added"),
-          itemFor(previewProduct("sugar"), 0.5, "out_of_stock"),
-        ];
-        const choices = [choiceFor(previewProduct("jaggery"), 0.5)];
-        return result([customer, turn("shop", offerJaggery[lang], "agent", { items, choices })]);
-      }
-      const current = cart();
-      if (current.lines.length === 0) return result([customer, turn("shop", t.noted, "template")]);
-      const reply = readBack(current.lines, current.totalPaise, lang);
-      return result([customer, turn("shop", reply, "template")], true);
+    say(text) {
+      return answer(text, "typed");
     },
 
     async choose(turnId, index) {
@@ -180,7 +186,8 @@ export function previewCustomer(lang: Lang, customerName: string): CustomerBacke
         rejectReason: null,
         balancePaise: null,
         confirming: paidAt !== null && !paid,
-        payUrl: null,
+        // The preview pays in place (see pay below); any link here just shows the Pay button.
+        payUrl: "#pay",
       };
       if (!approved) return view;
       if (sent.mode === "credit") {

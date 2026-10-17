@@ -35,9 +35,13 @@ export type OrderView = {
 export type CustomerBackend = {
   /** The shop's greeting, or the conversation so far. */
   start(): Promise<TurnResult>;
-  /** Speech to text; empty when nothing was heard. */
-  transcribe(audio: Blob | null): Promise<string>;
-  say(text: string, source: "voice" | "typed"): Promise<TurnResult>;
+  /**
+   * A spoken turn. `onHeard` gets the customer's words the moment they are heard, before the
+   * shop answers; the result is null when nothing was heard.
+   */
+  speak(audio: Blob | null, onHeard: (text: string) => void): Promise<TurnResult | null>;
+  /** A typed turn. */
+  say(text: string): Promise<TurnResult>;
   /** A tapped answer to the shop's question. */
   choose(turnId: number, index: number): Promise<TurnResult>;
   setQuantity(code: string, qty: number): Promise<TurnResult["cart"]>;

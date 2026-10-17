@@ -114,7 +114,8 @@ export function OrderStatus({
   }
 
   const stage = stageOf(view, t, shopName);
-  const canPay = view.status === "awaiting_payment" && !view.confirming;
+  // No button until the shop's payment link exists, so a tap always leads somewhere.
+  const canPay = view.status === "awaiting_payment" && !view.confirming && view.payUrl !== null;
   const finished = ["paid", "on_credit", "delivered", "rejected"].includes(view.status);
   return (
     <main lang={lang} className="pb-safe flex min-h-full flex-col px-4 pt-4">
