@@ -1,6 +1,6 @@
 import { readFileSync } from "node:fs";
 import { describe, expect, it } from "vitest";
-import { colors, textSizes } from "@design/tokens";
+import { colors, shadows, textSizes } from "@design/tokens";
 
 // design/tokens.ts is the source of truth; globals.css must carry the same values for Tailwind.
 const css = readFileSync(new URL("../../apps/web/app/globals.css", import.meta.url), "utf8");
@@ -14,5 +14,9 @@ describe("design tokens", () => {
 
   it.each(Object.entries(textSizes))("globals.css has the text size %s", (name, value) => {
     expect(css).toContain(`--text-${name}: ${value};`);
+  });
+
+  it.each(Object.entries(shadows))("globals.css has the shadow %s", (name, value) => {
+    expect(css).toContain(`--shadow-${name}: ${value};`);
   });
 });

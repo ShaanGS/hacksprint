@@ -1,17 +1,22 @@
 {
   "name": "app",
   "private": true,
+  "license": "MIT",
   "packageManager": "pnpm@11.5.3",
   "scripts": {
     "dev": "pnpm --filter web dev",
     "build": "pnpm --filter web build",
-    "lint": "eslint . --max-warnings 0 && prettier --check .",
-    "format": "prettier --write .",
+    "lint": "eslint . --max-warnings 0 && prettier --check . --ignore-path .gitignore --ignore-path .prettierignore --ignore-path .git/info/exclude",
+    "format": "prettier --write . --ignore-path .gitignore --ignore-path .prettierignore --ignore-path .git/info/exclude",
     "typecheck": "pnpm --filter web typecheck && tsc --noEmit",
     "test": "vitest run",
     "test:e2e": "playwright test",
     "db:reset": "supabase db reset --linked",
-    "smoke": "tsx scripts/smoke/run.ts"
+    "smoke": "tsx scripts/smoke/run.ts",
+    "dev:order": "tsx scripts/dev/create-order.ts",
+    "demo:reset": "tsx scripts/dev/demo-reset.ts",
+    "demo:check": "tsx scripts/dev/demo-check.ts",
+    "eval:planner": "tsx scripts/eval/planner.ts"
   },
   "devDependencies": {
     "@google/genai": "^2.27.0",

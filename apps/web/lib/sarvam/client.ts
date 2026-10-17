@@ -2,8 +2,10 @@ import { z } from "zod";
 import { sarvamEnv } from "@/lib/env";
 
 const SARVAM_URL = "https://api.sarvam.ai";
-// A voice turn has a 4 s budget (spec section 8); a hung request must not stall the demo.
-const TIMEOUT_MS = 15_000;
+// A voice turn has a 4 s budget; a hung request must not stall the demo.
+const TIMEOUT_MS = 8_000;
+// Saaras v4 takes up to 50 key terms of up to 64 characters each.
+const MAX_KEYTERMS = 50;
 
 const transcriptionSchema = z.object({
   transcript: z.string(),
@@ -21,19 +23,27 @@ export type Transcription = {
 
 /**
  * Speech to text with Saaras. `codemix` keeps English product names in Latin script inside
- * Tamil or Hindi speech ("ரெண்டு Maggi"). The default language "unknown" lets Sarvam detect it.
+ * Tamil or Hindi speech ("ரெண்டு Maggi"). Key terms bias it toward our product names. Sarvam
+ * reads the browser's WebM (Chrome, Android, new Safari) and MP4 (iPhone), but refuses a type
+ * with its codec named ("audio/webm; codecs=opus"), so only the bare type goes up.
  */
 export async function speechToText(
   audio: Blob,
   fileName: string,
-  languageCode = "unknown",
+  options: { languageCode?: string; keyterms?: string[] } = {},
 ): Promise<Transcription> {
   const env = sarvamEnv();
   const form = new FormData();
-  form.append("file", audio, fileName);
+  const type = audio.type.split(";")[0].trim();
+  form.append("file", new Blob([audio], { type }), fileName);
   form.append("model", env.SARVAM_STT_MODEL);
   form.append("mode", "codemix");
-  form.append("language_code", languageCode);
+  form.append("language_code", options.languageCode ?? "unknown");
+  const keyterms = (options.keyterms ?? []).map((term) => term.slice(0, 64)).slice(0, MAX_KEYTERMS);
+  // Only Saaras v4 understands key terms; v3 rejects the request if they are sent.
+  if (keyterms.length > 0 && env.SARVAM_STT_MODEL.endsWith("v4")) {
+    form.append("keyterms", JSON.stringify(keyterms));
+  }
 
   const response = await fetch(`${SARVAM_URL}/speech-to-text`, {
     method: "POST",
@@ -51,8 +61,8 @@ export async function speechToText(
 }
 
 /**
- * Text to speech with Bulbul; returns WAV audio. Write Indic text in its own script:
- * Sarvam warns that romanized input sounds worse.
+ * Text to speech with Bulbul; returns MP3, which every phone plays and is a tenth of WAV's
+ * size. Write Indic text in its own script: Sarvam warns that romanized input sounds worse.
  */
 export async function textToSpeech(
   text: string,
@@ -68,6 +78,7 @@ export async function textToSpeech(
       language_code: languageCode,
       model: env.SARVAM_TTS_MODEL,
       speaker,
+      output_audio_codec: "mp3",
     }),
     signal: AbortSignal.timeout(TIMEOUT_MS),
   });

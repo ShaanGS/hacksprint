@@ -1,0 +1,69 @@
+{
+  "name": "Reorder to distributor (Gmail)",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "munim-reorder",
+        "responseMode": "onReceived",
+        "options": {}
+      },
+      "id": "c2a0d1b3-0001-4b6f-8b20-000000000001",
+      "name": "Reorder from app",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [0, 0]
+    },
+    {
+      "parameters": {
+        "jsCode": "// Paste the same value as N8N_WEBHOOK_SECRET in Vercel.\nconst SECRET = 'PASTE_N8N_WEBHOOK_SECRET_HERE';\n\nconst item = $input.first().json;\nif ((item.headers || {})['x-munim-secret'] !== SECRET) {\n  throw new Error('Wrong or missing secret');\n}\nconst b = item.body;\nconst lines = b.lines.map((l) => `• ${l.name} — ${l.qty} ${l.unit}`).join('\\n');\nconst subject = `New order from ${b.shopName}`;\nconst text = `Hello ${b.distributorName},\\n\\nPlease send the following to ${b.shopName}:\\n\\n${lines}\\n\\nApproved by the owner in the app.\\nThank you.`;\nreturn [{ json: { subject, text } }];"
+      },
+      "id": "c2a0d1b3-0002-4b6f-8b20-000000000002",
+      "name": "Check secret + write message",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [260, 0]
+    },
+    {
+      "parameters": {
+        "sendTo": "PASTE_EMAIL_THAT_PLAYS_THE_DISTRIBUTOR",
+        "subject": "={{ $json.subject }}",
+        "emailType": "text",
+        "message": "={{ $json.text }}",
+        "options": {
+          "appendAttribution": false
+        }
+      },
+      "id": "c2a0d1b3-0003-4b6f-8b20-000000000003",
+      "name": "Send to distributor",
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.1,
+      "position": [520, 0]
+    }
+  ],
+  "connections": {
+    "Reorder from app": {
+      "main": [
+        [
+          {
+            "node": "Check secret + write message",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Check secret + write message": {
+      "main": [
+        [
+          {
+            "node": "Send to distributor",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {}
+}

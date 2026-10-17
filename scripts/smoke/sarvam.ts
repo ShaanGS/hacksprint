@@ -3,7 +3,7 @@ import { speechToText, textToSpeech } from "@/lib/sarvam/client";
 import { elapsed, fail, pass, type SmokeResult } from "./report";
 
 const CLIP = "scripts/smoke/fixtures/order-ta.webm";
-const SPEECH_OUTPUT = ".smoke/tts-ta.wav";
+const SPEECH_OUTPUT = ".smoke/tts-ta.mp3";
 // The spec's out-of-stock moment: "Sugar is finished. Do you want jaggery instead?"
 const TAMIL_LINE = "சர்க்கரை தீர்ந்துவிட்டது. அதற்கு பதிலாக வெல்லம் வேண்டுமா?";
 // A bulbul:v3 voice that Sarvam lists for Tamil.
@@ -13,7 +13,7 @@ export async function smokeSarvam(): Promise<SmokeResult> {
   const clip = new Blob([new Uint8Array(await readFile(CLIP))], { type: "audio/webm" });
 
   const sttStart = performance.now();
-  const heard = await speechToText(clip, "order-ta.webm");
+  const heard = await speechToText(clip, "order-ta.webm", { languageCode: "ta-IN" });
   const sttLine = `heard "${heard.transcript}" (${heard.languageCode ?? "language not detected"}, ${elapsed(sttStart)})`;
 
   const ttsStart = performance.now();

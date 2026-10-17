@@ -1,9 +1,10 @@
 import type { NextConfig } from "next";
-import { assertStartupEnv } from "./lib/env";
+import { assertStartupEnv, isPreview } from "./lib/env";
 
-// Fail fast: `next dev` and `next build` stop here with a message naming each missing key.
+// Fail fast: once any service key is set, `next dev` and `next build` stop here with a message
+// naming each missing one. With no keys at all the app builds as a preview on sample data.
 // `next typegen` (part of `pnpm typecheck`) loads this file too but needs no keys.
-if (!process.argv.includes("typegen")) {
+if (!process.argv.includes("typegen") && !isPreview()) {
   assertStartupEnv();
 }
 
