@@ -4,6 +4,8 @@ import { ChevronRight, Mic } from "lucide-react";
 import { useCallback, useState, type ReactNode } from "react";
 import { useLive } from "@/components/owner/live";
 import { useOwnerLanguage } from "@/components/owner/owner-language";
+import { RepaymentPlanner } from "@/components/owner/repayment-planner";
+import { SchemesSection } from "@/components/owner/schemes-section";
 import { Failed, Loading } from "@/components/owner/screen-state";
 import { Section } from "@/components/owner/section";
 import { RotationSourceSheet } from "@/components/owner/source-sheet";
@@ -19,6 +21,7 @@ import { Ticker } from "@/components/ui/ticker";
 import { langInfo } from "@/lib/i18n/languages";
 import { formatMoney } from "@/lib/money";
 import { ownerApi } from "@/lib/owner/api";
+import type { DaySummary } from "@/lib/owner/types";
 import type { SourceLabel } from "@/lib/rotation/labels";
 import type { RotationPart } from "@/lib/rotation/sources";
 
@@ -26,7 +29,13 @@ import type { RotationPart } from "@/lib/rotation/sources";
  * A1, A2 and the measured value (11a): this week's verdict first, then where the money sits and
  * every part of the week. Each number opens the rows it came from (E3).
  */
-export function HomeTab({ onCollect }: { onCollect: () => void }) {
+export function HomeTab({
+  onCollect,
+  shopName = "Lakshmi Stores",
+}: {
+  onCollect: () => void;
+  shopName?: string;
+}) {
   const { lang, text } = useOwnerLanguage();
   const dates = useDates();
   const day = useDay(text, langInfo[lang].sarvamCode);
@@ -188,6 +197,21 @@ export function HomeTab({ onCollect }: { onCollect: () => void }) {
           </li>
         </Section>
       )}
+
+      {(() => {
+        const summary: DaySummary = {
+          orders: 14,
+          collectedPaise: sales.paise ? Math.round(sales.paise / 7) : 1840000,
+          creditPaise: 240000,
+          owedPaise: now.with_customers.paise,
+        };
+        return (
+          <>
+            <RepaymentPlanner summary={summary} />
+            <SchemesSection shopName={shopName} summary={summary} />
+          </>
+        );
+      })()}
 
       <RotationSourceSheet part={part} onClose={close} />
     </main>

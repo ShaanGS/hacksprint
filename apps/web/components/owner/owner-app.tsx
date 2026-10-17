@@ -29,11 +29,13 @@ export function OwnerApp({
   demo,
   voice,
   onSignedOut,
+  shopName = "Lakshmi Stores",
 }: {
   shopId: string;
   demo: boolean;
   voice: OwnerVoice;
   onSignedOut: () => void;
+  shopName?: string;
 }) {
   const { text } = useOwnerLanguage();
   const [tab, setTab] = useState<OwnerTab>("home");
@@ -87,10 +89,10 @@ export function OwnerApp({
 
           {/* Keyed on the tab, so each tab opens at its top. */}
           <div key={tab} className="h-full overflow-y-auto">
-            {tab === "home" && <HomeTab onCollect={() => setTab("collect")} />}
+            {tab === "home" && <HomeTab onCollect={() => setTab("collect")} shopName={shopName} />}
             {tab === "collect" && <CollectTab />}
-            {tab === "stock" && <StockTab onBank={() => setTab("bank")} />}
-            {tab === "bank" && <BankTab onCollect={() => setTab("collect")} />}
+            {tab === "stock" && <StockTab onBank={() => setTab("bank")} shopName={shopName} />}
+            {tab === "bank" && <BankTab onCollect={() => setTab("collect")} shopName={shopName} />}
           </div>
 
           <TabBar

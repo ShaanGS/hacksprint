@@ -6,6 +6,8 @@ import { useLive } from "@/components/owner/live";
 import { LoanCheck } from "@/components/owner/loan-check";
 import { useOwnerLanguage } from "@/components/owner/owner-language";
 import { useOwnerScreen } from "@/components/owner/owner-screen";
+import { RepaymentPlanner } from "@/components/owner/repayment-planner";
+import { SchemesSection } from "@/components/owner/schemes-section";
 import { Section } from "@/components/owner/section";
 import { TabHeader } from "@/components/owner/tab-header";
 import { useDates } from "@/components/owner/use-dates";
@@ -17,12 +19,19 @@ import { ListRow } from "@/components/ui/list-row";
 import { Sheet } from "@/components/ui/sheet";
 import { formatMoney } from "@/lib/money";
 import { ownerApi, type Payable } from "@/lib/owner/api";
+import type { DaySummary } from "@/lib/owner/types";
 
 /**
  * D1 to D4 and the setup behind the week (B7): the loan check, the statement for the bank,
  * what is owed to suppliers, and the weekly costs he said.
  */
-export function BankTab({ onCollect }: { onCollect: () => void }) {
+export function BankTab({
+  onCollect,
+  shopName = "Lakshmi Stores",
+}: {
+  onCollect: () => void;
+  shopName?: string;
+}) {
   const { lang, text } = useOwnerLanguage();
   const { notify } = useOwnerScreen();
   const dates = useDates();
@@ -174,6 +183,21 @@ export function BankTab({ onCollect }: { onCollect: () => void }) {
           </div>
         )}
       </Sheet>
+
+      {(() => {
+        const summary: DaySummary = {
+          orders: 14,
+          collectedPaise: 1840000,
+          creditPaise: 240000,
+          owedPaise: payables.data ? payables.data.total_paise : 2840000,
+        };
+        return (
+          <>
+            <RepaymentPlanner summary={summary} />
+            <SchemesSection shopName={shopName} summary={summary} />
+          </>
+        );
+      })()}
     </main>
   );
 }
