@@ -23,8 +23,9 @@ export type Transcription = {
 
 /**
  * Speech to text with Saaras. `codemix` keeps English product names in Latin script inside
- * Tamil or Hindi speech ("ரெண்டு Maggi"). Key terms bias it toward our product names. The
- * browser's recording goes up as it is: Sarvam reads WebM (Chrome, Android) and MP4 (iPhone).
+ * Tamil or Hindi speech ("ரெண்டு Maggi"). Key terms bias it toward our product names. Sarvam
+ * reads the browser's WebM (Chrome, Android, new Safari) and MP4 (iPhone), but refuses a type
+ * with its codec named ("audio/webm; codecs=opus"), so only the bare type goes up.
  */
 export async function speechToText(
   audio: Blob,
@@ -33,7 +34,8 @@ export async function speechToText(
 ): Promise<Transcription> {
   const env = sarvamEnv();
   const form = new FormData();
-  form.append("file", audio, fileName);
+  const type = audio.type.split(";")[0].trim();
+  form.append("file", new Blob([audio], { type }), fileName);
   form.append("model", env.SARVAM_STT_MODEL);
   form.append("mode", "codemix");
   form.append("language_code", options.languageCode ?? "unknown");
