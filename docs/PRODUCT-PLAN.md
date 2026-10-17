@@ -1,3 +1,5 @@
+> Written for spec v1. Spec v2 (`docs/spec.md`) now decides the features and the build order; the screens and flows here still describe the voice order.
+
 # Product plan: screens, flows and logic
 
 What we are building for the Hack Sprint demo, screen by screen. The spec (`docs/spec.md`) says what and why; this file says how each screen behaves and what the code does underneath. The look is in `design/DESIGN.md`, and `/styleguide` shows every building block.

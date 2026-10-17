@@ -122,7 +122,8 @@ sequenceDiagram
 3. Money and outgoing messages need the owner's approval.
 4. Order status changes only through one state machine: draft, pending approval, rejected, awaiting payment, paid, on credit, delivered.
 5. Payment callbacks are signature-checked and idempotent, enforced by unique indexes as well as code.
-6. Every agent action is written to an audit log.
+6. Every agent action is written to an audit log, and every number on screen can be traced to the row it came from.
+7. Zero data entry: the owner never types. Records come from orders, bills, payments and short voice commands.
 
 ## Repository layout
 

@@ -1,172 +1,198 @@
-# Product spec: AI manager for a kirana shop
+# Product spec v2: the kirana manager
 
-This file is the single source of truth for what we are building, why, and how. It consolidates every decision the team made. The product has no name yet.
+Single source of truth for what we build and why. This version replaces v1. The product has no name yet; do not invent one.
 
 ---
 
-## 1. Context
+## 1. One line
 
-- **Event:** Hack Sprint, SDG Club, MIT Bengaluru. Fintech track, problem statement **PS21**.
-- **PS21 in short:** identify a real problem faced by small merchants in India and build a technology solution that creates measurable value (efficiency, new opportunities, better financial outcomes, ability to compete). It explicitly asks teams to think beyond existing financial and commerce solutions.
-- **Format:** idea round (PPT + GitHub repo) first, then a 24-hour in-person build on Oct 17-18, 2026, judged on stage. Pre-built code is allowed.
-- **Sponsors:** Paytm, Sarvam AI, n8n, Google. We use each for a real job, never as decoration. Sponsor judges may be in the room.
-- **Judging reality:** judges look at the repo and ask the team to explain code and decisions. Every file must be explainable by a teammate. The live demo decides the result.
+Kirana owners told surveys their hardest jobs are buying stock, serving customers and seeing their profit. We do all three from one phone, with no typing and no cost, and the records this creates become the verified history that gets the shop a loan.
 
-## 2. Problem
+## 2. Context
 
-The kirana owner is one person running the counter, the phone, the stock and the credit book at the same time. Orders get missed, credit gets forgotten, and stock runs out unnoticed, while quick commerce apps take customers on convenience.
+- Hack Sprint (SDG Club, MIT Bengaluru), Fintech track, PS21: measurable value for small merchants; think beyond existing solutions.
+- 24-hour in-person build, judged on a live demo. Sponsors Paytm, Sarvam, n8n and Google each do a real job.
+- Judges ask the team to explain code. Clarity beats cleverness. Demo reliability beats extra features.
 
-**Evidence (published, used in the deck):**
-- AICPDF reported about 2 lakh kirana closures in a year, blamed on quick commerce (Business Standard, Oct 2024; TechCrunch, Nov 2024).
-- 74% of surveyed shop owners said they had difficulty attending to customers (Flourish Ventures / 60 Decibels).
-- CPM India Kirana 2025, 4,593 retailers: 86% name customer behaviour shifts as the top challenge; 45% want credit support.
-- ICC survey: all respondents said loyal customers rely on store credit, which quick commerce does not offer.
-- IAMAI-Kantar: 98% of Indian internet users access content in Indian languages; 57% of urban users prefer them.
+## 3. Customer
 
-**Not yet proven (team is running a field survey of kirana owners):** how many orders arrive by phone, how often calls are missed at peak, how credit and stock are tracked today, and whether owners and customers would accept an AI voice.
+The 1 to 3 person neighbourhood kirana in a city or town that takes phone orders, gives credit to regulars, and buys stock from local distributors. Not franchise kiranas, paan shops or wholesalers.
 
-**Positioning:** we do not try to beat Zepto at speed or range. We keep the kirana's real advantages (trust, credit, proximity, knowing regulars) and remove the owner as the bottleneck.
+Verified pains we design against:
 
-## 3. The product
+| Pain | Share | Source |
+| --- | --- | --- |
+| Want better trade margins | 89% of 4,593 retailers | CPM India, Kirana 2025 |
+| Customer shift to modern trade / online / quick commerce | 86% | CPM India, Kirana 2025 |
+| Ordering, checking and receiving stock | 74% | 60 Decibels survey (Flourish, 2022) |
+| Attending to customers | 74% | 60 Decibels survey |
+| Managing inventory | 60% | 60 Decibels survey |
+| No visibility into profit and margin | 54% | 60 Decibels survey |
+| Want credit support | 45% | CPM India, Kirana 2025 |
+| Plan any tech investment this year | only 22% | CPM India, Kirana 2025 |
 
-An AI manager for one kirana shop that does the jobs the owner has no time for.
+Consequence: the product must be free, need no typing, run on the owner's existing phone, and pitch outcomes (margin, stock, money), never "automation".
 
-**A normal day:**
-1. **Morning, stock arrives.** The owner photographs the distributor's bill. The app reads it and updates stock and prices after the owner confirms. Nobody types a product list.
-2. **Daytime, customers call.** A regular customer talks to the shop's voice agent in Tamil, Hindi, Kannada, English or mixed speech. Example: "Two Maggi, one butter, half kilo sugar." Agent: "Sugar is finished. Do you want jaggery instead?" It reads back the order and the total.
-3. **Owner approves.** The order appears on the owner's phone as one card. One tap on Approve.
-4. **Customer pays.** A Paytm payment link goes to the customer. When paid, stock goes down automatically. If the customer says "put it on my account", the order is recorded as credit instead.
-5. **Night, the report.** The owner hears, in their language: "14 orders today, ₹3,200 collected, two people still owe you, oil and sugar are running low. Shall I reorder?" On yes, the reorder goes to the distributor.
+## 4. Moat
 
-**Delivery:** the shop's own helper delivers, as kiranas already do for regulars. Shared riders across nearby shops is roadmap.
+The AI is not the moat. The moat is data nobody else captures, gathered with zero data entry:
 
-**Core rule:** the AI only talks, listens and reads. Plain code decides what is in stock and what things cost. The owner approves anything involving money or outgoing messages.
+1. **Records as a by-product.** Orders, credit and stock are recorded because we took the order or read the bill. Credit-ledger apps need the owner to type; past kirana storefronts failed because they added work.
+2. **Richer than payments.** Paytm sees amounts. We see baskets, regular customers, credit given and repaid, and supplier costs.
+3. **Both sides of the shop's money.** What customers owe the shop and what the shop owes distributors.
+4. **Learns each shop.** Usual orders, customer languages, payment habits, supplier prices. Switching loses that memory.
+5. **Existing distribution.** Paytm agents and distributor salesmen already visit these shops weekly.
 
-**Sponsor roles:**
-- **Sarvam:** speech to text and text to speech in Indian languages (the voice conversation).
-- **Gemini:** the conversational agent via function calling, and reading bill photos.
-- **n8n:** runs the side effects outside the order path: the nightly report and distributor reorders.
-- **Paytm:** payment links (created by the app when the owner approves) and payment status.
+## 5. The three surfaces
 
-## 4. Decisions and why (read before changing direction)
+| Surface | Who | Built with | Owner of build |
+| --- | --- | --- | --- |
+| Customer voice page (QR) | Customer | Next.js (this repo) | Shaan |
+| Owner app | Shop owner | Next.js (this repo, same API) | Shaan |
+| API, agent, workflows, data | System | Next.js API routes, Supabase, n8n | Thilak, Josiah |
+| Demo screen | Judges | Next.js page showing each order step | Shaan |
+
+The owner app talks only to the API in section 9. Agree the API contract before anyone builds screens.
+
+## 6. Features (final, locked)
+
+Priority: **P0** must work live in the demo. **P1** must exist with seeded data. **P2** roadmap slide only.
+
+### A. Never miss a customer
+| ID | Feature | Priority |
+| --- | --- | --- |
+| A1 | Voice order from the QR page: Tamil, Hindi, Kannada, English, mixed speech | P0 |
+| A2 | Language bridge: customer hears their language; owner sees the order in the owner's language | P0 |
+| A3 | "The usual": returns a regular's most frequent basket | P0 |
+| A4 | Stock check from the database with substitutes in the same category | P0 |
+| A5 | Read back items and total before submitting | P0 |
+| A6 | Owner approves by voice ("seri", "ok", "haan") or one tap; Reject; Put on account | P0 |
+| A7 | Paytm payment link on approval; paid callback updates order and stock | P0 |
+| A8 | Itemised bill to the customer in their language | P1 |
+| A9 | Shop keeps its existing number via call forwarding | P2 (say, don't demo) |
+
+### B. Restock helper (biggest verified gap)
+| ID | Feature | Priority |
+| --- | --- | --- |
+| B1 | Bill photo to stock: items, quantities, unit costs, owner confirms | P0 |
+| B2 | Low-stock list and a drafted reorder per distributor | P1 |
+| B3 | Send reorder to the distributor on WhatsApp via n8n after owner says yes | P1 (mock send OK) |
+| B4 | Delivery check: compare the received bill with the reorder; flag missing items, wrong quantities, higher price than last time | P0 |
+| B5 | Empty-shelf guard: sales speed from bills plus weekly shelf count; remind before stock runs out | P1 |
+
+### C. Margin finder
+| ID | Feature | Priority |
+| --- | --- | --- |
+| C1 | Distributor price-rise alert on bill confirm ("Aashirvaad atta up 8% since last bill") | P0 |
+| C2 | Profit per item: selling price minus latest unit cost | P1 |
+| C3 | Same item across distributors: cheapest recent cost and saving per unit | P1 |
+
+### D. Money in both directions
+| ID | Feature | Priority |
+| --- | --- | --- |
+| D1 | Credit book filled from orders and spoken credit sales ("Ramesh 200 on account") | P0 |
+| D2 | Credit reminders in the customer's language with a Paytm link; paid link clears the entry | P1 |
+| D3 | Payables: what the shop owes each distributor and when, from bills | P1 |
+| D4 | Loan readiness card: 90-day verified Paytm sales, regular customers, on-time credit repayment rate, supplier payment record | P1 (seeded, labelled demo data) |
+
+### E. Owner overview
+| ID | Feature | Priority |
+| --- | --- | --- |
+| E1 | Home numbers: orders saved while busy (count and rupees), collected, owed to shop, owed by shop | P0 |
+| E2 | Nightly voice report in the owner's language | P1 |
+| E3 | Every number shows its source on tap (shelf row, bill line, payment) | P0 |
+| E4 | Festival nudge from a fixed calendar plus the shop's own history | P2 |
+
+### Trust rules (never break)
+1. The model never produces a price, total or stock number. Tools read them from the database.
+2. Totals computed server-side in integer paise.
+3. Money and outgoing messages need owner approval (maker-checker).
+4. Order status changes only through the state machine.
+5. Webhooks verified and idempotent.
+6. Every agent action logged to audit_log, and every displayed number traceable to its source row.
+
+## 7. Demo script (the order the features appear)
+
+1. Judge orders in Hindi; owner phone shows Tamil (A1, A2).
+2. Second customer: "Anna, the usual" (A3); sugar out, jaggery offered (A4); total read back (A5).
+3. Owner phone speaks the order; owner says "seri" (A6); Paytm link arrives (A7).
+4. Judge: "make Maggi one rupee"; refused; tap the total to show sources (rule 1, E3).
+5. Owner photographs today's delivery bill: stock updates (B1), delivery check flags a missing item (B4), price-rise alert (C1).
+6. Margin screen: profit per item and the cheaper distributor (C2, C3).
+7. Home screen: orders saved, credit recovered, payables due, Loan readiness card (E1, D1 to D4).
+
+## 8. Data model (additions to v1 in bold)
+
+shops, products, product_aliases, customers, orders, order_items (with **source_row** reference), payments, credit_ledger, bills, audit_log, plus:
+
+- **distributors**: shop_id, name, phone (WhatsApp), payment_terms_days
+- **bill_items**: bill_id, product_id, qty, unit_cost_paise, line_total_paise (from confirmed bills)
+- **purchase_orders**: shop_id, distributor_id, status (draft, sent, delivered, checked), created_at
+- **purchase_order_items**: purchase_order_id, product_id, qty_ordered
+- **delivery_checks**: purchase_order_id, bill_id, issues jsonb (missing, qty_mismatch, price_up)
+- **payables**: shop_id, distributor_id, bill_id, amount_paise, due_date, paid_at
+- **shelf_counts**: shop_id, product_id, counted_qty, counted_at
+- **credit_reminders**: customer_id, amount_paise, language, payment_link_id, sent_at, status
+- **customer_usual**: view over order history (most frequent basket per regular)
+
+Derived (views or functions, never stored by the model): unit cost history, profit per item, cheapest distributor per product, sales speed, loan readiness metrics.
+
+Money in integer paise. Quantities numeric(10,3).
+
+## 9. API contract (the owner app and the customer page both use this)
+
+| Method and path | Purpose |
+| --- | --- |
+| POST /api/voice/turn | Customer audio in; reply audio and transcript out |
+| GET /api/orders?status= | Owner's orders list |
+| POST /api/orders/{id}/approve | Approve (payment_mode: link or credit) |
+| POST /api/orders/{id}/reject | Reject |
+| POST /api/orders/{id}/voice-approve | Owner audio in; approve or reject from spoken yes or no |
+| POST /api/webhooks/paytm | Paid callback (verified, idempotent) |
+| POST /api/bills | Bill photo upload; returns parsed lines |
+| POST /api/bills/{id}/confirm | Confirm lines; updates stock, bill_items, payables; runs delivery check and price alerts |
+| GET /api/restock/suggestions | Low-stock items grouped by distributor with drafted quantities |
+| POST /api/purchase-orders | Create draft reorder |
+| POST /api/purchase-orders/{id}/send | Owner-approved send via n8n |
+| GET /api/margins | Profit per item and cheapest distributor per item |
+| GET /api/credit | Credit book per customer |
+| POST /api/credit/spoken | Owner audio: "Ramesh 200 on account" |
+| POST /api/credit/{customerId}/remind | Owner-approved reminder with Paytm link |
+| GET /api/payables | Owed to distributors with due dates |
+| GET /api/home | Home numbers and loan readiness |
+| GET /api/sources/{entity}/{id} | Where a displayed number came from |
+
+The owner app refreshes its orders every 2 seconds (see section 13).
+
+## 10. Agent tools (the only way the model touches data)
+
+search_products, check_stock, get_usual_order, add_item, remove_item, get_order_summary, submit_order. Owner-side voice parsing uses separate narrow tools: parse_approval (yes, no, credit), parse_credit_entry (customer, amount).
+
+## 11. Build order
+
+1. Schema v2 migration and seed: one shop, 40 products with aliases (en, ta, hi, kn), 2 distributors with last month's bills, 1 regular customer with 3 weeks of orders, credit entries, 90 days of payments for the loan card.
+2. Voice order loop end to end (A1 to A7).
+3. Bill confirm with delivery check and price alert (B1, B4, C1).
+4. Home numbers and sources (E1, E3).
+5. Margins, credit, payables, loan readiness (C2, C3, D1 to D4).
+6. Restock suggestions and send (B2, B3), nightly report (E2).
+7. Demo hardening: reset script, 10 scripted runs per language, backup video.
+
+## 12. Out of scope
+
+Real phone number integration, counter camera, comparing prices with quick commerce apps, expiry tracking, shared riders, festival forecasting beyond a fixed calendar, lending itself (we are a channel to regulated lenders).
+
+## 13. Decisions log (read before changing direction)
 
 | Decision | Why | Rejected alternative |
 | --- | --- | --- |
-| PS21 over other tracks | Only PS where Paytm, Sarvam, n8n and Gemini each do a real job | PS41 or PS22 lock us to one sponsor; PS42 is a heavy, vague GCP build |
-| Read distributor bills, not shelf photos | Bills have exact products, quantities and prices | Shelf photos: clutter, loose items, variants, no prices |
-| Customer talks to a voice agent | Customers already call kiranas; the pain is the owner can't pick up during rush | Asking customers to install an app or use a bot they don't know |
-| Single shop for v1 | Buildable and demoable in time | Neighbourhood network of shops: kept as roadmap |
-| Owner approves every order | Keeps the owner in control; catches any misheard item before money moves | Fully autonomous ordering |
-| Credit (udhaar) built in | Credit is the kirana's edge quick commerce cannot copy | Pay-first only, which fights how regulars actually pay |
-| Push-to-talk voice, one turn at a time | Reliable on venue Wi-Fi, simpler to build and explain | Streaming interruptible voice: v2 |
-| QR code opens a browser voice page for the demo | No telephony setup risk | Real phone number in v1 |
-| No "10 minute delivery" claim | Not believable for a kirana; invites holes in Q&A | Competing on speed |
-| The app creates the Paytm link when the owner approves (15 Oct) | The demo never waits on a third service, and n8n must not hold logic the app needs | n8n creating the link |
-| The AI never sees a price, total or stock number (15 Oct) | It cannot say a wrong amount; every amount on screen or in audio comes from code templates | Checking the model's sentences after the fact |
-| Every voice step has a tap fallback: choice chips, quantity buttons, typing (15 Oct) | Venue noise or an accent cannot block an order | Voice only |
-| Owner signs in with a 4-digit PIN (15 Oct) | Fast on stage, and judges cannot approve from their own phones | A secret owner link; full accounts |
-| Customer gives name and phone once, at the start (15 Oct) | The agent greets them by name, and credit knows whose account it is | Asking only when sending |
-| Screens refresh every 2 seconds instead of Supabase Realtime (15 Oct) | One mechanism that survives venue Wi-Fi and meets the 2-second target | Realtime websockets plus a polling fallback |
-
-## 5. Known weaknesses and how we handle them
-
-1. **Counter sales are not tracked, so stock drifts.** Treat stock as estimated, let the owner correct it by voice ("sugar 5 packets left"), and pitch counter sale logging as roadmap.
-2. **The model could mishear an item.** Read-back to the customer plus owner approval catch it before money moves.
-3. **Ambiguous items** ("one milk"): the agent asks a short clarifying question using catalogue options (brand and size).
-4. **Paytm keys may be delayed.** A mock payment client sits behind the same interface until real staging keys arrive.
-5. **Single-shop framing looks narrow.** Roadmap slide: shared riders and pooled stock across nearby kiranas.
-
-## 6. Scope
-
-| Area | v1 (hackathon) | Roadmap | Never |
-| --- | --- | --- | --- |
-| Ordering | Browser voice page via QR; Tamil, Hindi, Kannada, English, mixed | Real phone number, WhatsApp voice notes | Orders with no owner approval |
-| Stock | Bill photo to stock list; owner voice corrections | Counter sale logging, barcode | AI deciding stock or prices |
-| Payments | Paytm link; paid status by callback | Reminders, UPI collect | Holding customer money |
-| Credit | Record credit per customer, balances | Automated reminders, limits | Lending or interest |
-| Reports | Nightly voice report, one-tap reorder | Weekly trends, festival demand | Selling shop data |
-| Delivery | Shop helper; owner sets status | Shared riders across shops | Running a fleet |
-| Scale | One shop, seeded data | Many shops, neighbourhood network | |
-
-**Definition of done for v1:** a judge scans a QR code, orders by voice in an Indian language, the owner approves on a second phone, the judge receives a Paytm link, paying it drops stock, and the nightly report reflects the order.
-
-## 7. Requirements
-
-**User stories**
-1. Customer orders by voice in their language, hears availability and the total.
-2. Owner approves or rejects each order with one tap.
-3. Owner photographs a distributor bill; stock and prices update after confirmation.
-4. Owner records an order as credit and sees who owes what.
-5. Owner hears a nightly report and reorders low stock with one tap.
-
-| ID | Requirement | Priority |
-| --- | --- | --- |
-| F1 | Understand orders in Tamil, Hindi, Kannada, English and mixed speech | P0 |
-| F2 | Stock checked from the database only; substitutes offered when out | P0 |
-| F3 | Read back items and total before submitting | P0 |
-| F4 | Owner order card with Approve and Reject, appears in real time | P0 |
-| F5 | On approval, customer gets a Paytm link | P0 |
-| F6 | Paid callback marks order paid and decrements stock | P0 |
-| F7 | "Put it on my account" records credit instead of a link | P0 |
-| F8 | Bill photo parsed into items, quantities, prices for confirmation | P0 |
-| F9 | Nightly voice report in the owner's language | P1 |
-| F10 | One-tap reorder message to distributor | P1 |
-| F11 | Owner corrects stock by voice | P2 |
-
-**Success metrics:** voice order to payment link under 30 seconds; items and total correct on 9 of 10 scripted calls per language; zero model-produced prices or stock values in logs.
-
-## 8. Technical design
-
-**Stack:** Next.js 16 App Router, React 19, TypeScript strict, Tailwind, Supabase (Postgres, Realtime, Storage), Gemini via `@google/genai`, Sarvam, n8n, Paytm, Zod, Vitest, Playwright, pnpm. Hosting: Vercel for the app, n8n cloud or Railway for n8n.
-
-**Architecture:** one Next.js app serves the customer voice page, the owner app and the API. It is the only component that talks to the model and the database. The app creates Paytm links when the owner approves; n8n runs the nightly report and reorders. Paytm confirms payment back to the app.
-
-**Voice loop (v1):** browser records a push-to-talk clip; the server sends it to Sarvam speech to text and returns the transcript at once; Gemini decides the reply and tool calls; the server runs the tools; the reply text shows, then Sarvam speaks it. Typed text and tapped choices skip speech to text.
-
-**Agent tools (the only way the model touches data).** The prompt lists the 40 products as short codes with name, pack and unit, never prices or stock.
-- `add_item(code, qty)` returns added, out of stock with substitutes, or a choice to ask (brand or size)
-- `set_quantity(code, qty)`, `remove_item(code)`
-- `find_products(query)` for anything not in the list
-- `open_review()` opens the review sheet: the read-back and total are built by code templates, and the customer sends the order with a button
-
-**Data model:** shops, products (with multilingual aliases, stock, low-stock threshold), customers, orders (with a short order number), order_items (unit price copied at order time), payments, credit_ledger, bills (image path, parsed items, status), reorders, voice_turns (each turn's text and timings), audit_log.
-
-**Order states:** draft, pending_approval, rejected, awaiting_payment, paid, on_credit, delivered. Stock decrements on paid or on_credit, in one database transaction with the status change.
-
-**API surface:** `POST /api/voice/transcribe`, `POST /api/voice/turn`, `GET /api/voice/audio/{turnId}`, cart and send endpoints for the review sheet, `POST /api/orders/{id}/approve`, `POST /api/orders/{id}/reject`, `POST /api/orders/{id}/deliver`, `POST /api/webhooks/paytm`, `POST /api/bills`, `POST /api/bills/{id}/confirm`, `GET /api/reports/daily`. n8n webhook: reorder-confirmed; n8n cron for the nightly report.
-
-**Access:** the owner signs in with a PIN (signed cookie); the customer's session is a signed cookie, and every order call checks the customer owns the order. A PIN-protected presenter page runs health checks, resets the demo data and switches between Paytm and the test payment page.
-
-**Guardrails:** prices, totals and stock only from the database, and never shown to the model; any model reply that mentions money is replaced by a template; schema validation on all model output (retry once, then ask the customer to repeat); owner approval for money and messages; verified, idempotent payment callbacks; everything logged to audit_log.
-
-**Targets:** voice turn under 4 seconds; owner card within 2 seconds of submission; no secrets in the repo.
-
-## 9. Design
-
-UI quality and consistency are a top priority. The team supplies Dribbble and Pinterest references in `design/references/`; follow `design/DESIGN.md`. Tokens and a `/styleguide` page come before any screen.
-
-**Screens:**
-1. Customer voice page (QR): hold to talk, live transcript, cart with substitutes, total read back. The hero screen.
-2. Owner order card: customer, items, total, payment mode, Approve and Reject.
-3. Bill scan: photo beside parsed rows, editable, Confirm.
-4. Credit book: customer, amount owed, last order date.
-5. Nightly report: voice playback, orders, collected, owed, low stock, Reorder.
-
-**Principles:** one primary action per screen; voice first with text always shown; light, high contrast, projector-readable; real Indian data (rupees, real product names, local customer names); no number shown that the database did not compute or the owner did not confirm.
-
-## 10. Build plan
-
-1. **Setup:** tooling, env validation, Supabase schema and seed, smoke tests for Sarvam, Gemini, Paytm, README skeleton.
-2. **Data:** seed one shop with 40 real products and aliases in English, Tamil, Hindi.
-3. **Voice slice:** QR page, push-to-talk, agent tools, order reaches pending_approval. Deployed to Vercel early: the mic needs https and real phones.
-4. **Money slice:** owner card, the app creates the Paytm link on approval, callback marks paid and drops stock; credit path.
-5. **Report and bill:** nightly report and reorder in n8n first (they are in the definition of done), then bill photo to confirmed stock.
-6. **Demo hardening:** 10 scripted calls per language pass, fallbacks, README with demo GIF and architecture image.
-
-**Risks:** Paytm keys delayed (mock client); latency on venue Wi-Fi (hotspot, short replies); misheard items (read-back plus approval); bill parse errors (owner edits rows).
-
-## 11. Open questions
-
-- Demo languages: Tamil and Hindi (matches the Chennai field survey) or Kannada (matches Bengaluru judges)? Default: support all three, demo in Tamil and Hindi.
-- Who on the team owns which slice.
-- Product name: none for now.
+| The owner app is a web app in this repo, not Flutter (17 Oct) | One codebase, one API, already built and tested on phones | A separate Flutter app |
+| The app creates the Paytm link when the owner approves | The demo never waits on a third service, and n8n holds no logic the app needs | n8n creating the link |
+| The AI never sees a price, total or stock number | It cannot say a wrong amount; every amount on screen or in audio comes from code templates | Checking the model's sentences after the fact |
+| Every voice step has a tap fallback: choice cards, quantity buttons, typing for customers | Venue noise or an accent cannot block an order | Voice only |
+| Owner signs in with a 4-digit PIN | Fast on stage, and judges cannot approve from their own phones | A secret owner link; full accounts |
+| Customer gives name and phone once, at the start | The agent greets them by name, and credit knows whose account it is | Asking only when sending |
+| Screens refresh every 2 seconds instead of Supabase Realtime | One mechanism that survives venue Wi-Fi and meets the 2-second target | Realtime websockets plus a polling fallback |
+| n8n sends the reorder and nightly report on Telegram (16 Oct) | Free, instant and visible on stage; spec B3 allows a mock send | WhatsApp Business API, which needs approval in advance |
+| Our own test payment page until Paytm staging keys arrive | Flow 1 works end to end on day one; the same "mark paid" path serves both | Blocking the demo on keys |
+| Push-to-talk voice, one turn at a time | Reliable on venue Wi-Fi, simpler to build and explain | Streaming interruptible voice |

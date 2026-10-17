@@ -11,7 +11,8 @@ The same list as the README, numbered the same way, because code comments cite t
 3. Money and outgoing messages need the owner's approval.
 4. Order status changes only through `lib/orders/state.ts`.
 5. Webhooks verify signatures and are idempotent.
-6. Every agent action goes to `audit_log`.
+6. Every agent action goes to `audit_log`, and every number shown to a user is traceable to its source row (bill line, shelf row or payment).
+7. Zero data entry: no feature may need the owner to type. Data comes from orders, bills, payments and short voice commands.
 
 ## Code rules
 
