@@ -3,6 +3,7 @@ import type { CustomerText } from "@/lib/i18n/text/en";
 // Hindi. Checked by a native speaker before the demo (docs/PRODUCT-PLAN.md, hardening).
 export const hi: CustomerText = {
   chooseLanguage: "अपनी भाषा चुनें",
+  scanToOrder: "आवाज़ से ऑर्डर करने के लिए स्कैन करें",
   yourName: "आपका नाम",
   phone: "मोबाइल नंबर",
   start: "ऑर्डर शुरू करें",

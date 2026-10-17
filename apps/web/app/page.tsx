@@ -4,7 +4,7 @@ import { previewShop } from "@/lib/preview/data";
 
 const howItWorks: { art: ArtName; title: string; text: string }[] = [
   { art: "mic", title: "Say it", text: "In Tamil, Hindi, Kannada or English, the way you talk." },
-  { art: "shop", title: "The shop approves", text: "One tap on the owner's phone." },
+  { art: "shop", title: "The shop approves", text: "A word or a tap on the owner's phone." },
   {
     art: "phone-pay",
     title: "Pay or put it on account",

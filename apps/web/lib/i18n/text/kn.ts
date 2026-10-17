@@ -3,6 +3,7 @@ import type { CustomerText } from "@/lib/i18n/text/en";
 // Kannada. Checked by a native speaker before the demo (docs/PRODUCT-PLAN.md, hardening).
 export const kn: CustomerText = {
   chooseLanguage: "ನಿಮ್ಮ ಭಾಷೆಯನ್ನು ಆಯ್ಕೆಮಾಡಿ",
+  scanToOrder: "ಧ್ವನಿಯಲ್ಲಿ ಆರ್ಡರ್ ಮಾಡಲು ಸ್ಕ್ಯಾನ್ ಮಾಡಿ",
   yourName: "ನಿಮ್ಮ ಹೆಸರು",
   phone: "ಮೊಬೈಲ್ ಸಂಖ್ಯೆ",
   start: "ಆರ್ಡರ್ ಪ್ರಾರಂಭಿಸಿ",

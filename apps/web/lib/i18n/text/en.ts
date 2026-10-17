@@ -1,6 +1,7 @@
 // Every customer-facing line in English. The other languages must have exactly these keys.
 export const en = {
   chooseLanguage: "Choose your language",
+  scanToOrder: "Scan to order by voice",
   yourName: "Your name",
   phone: "Mobile number",
   start: "Start ordering",

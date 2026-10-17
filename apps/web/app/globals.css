@@ -116,3 +116,25 @@ body {
 .scroll::-webkit-scrollbar {
   display: none;
 }
+
+/* Printed (the QR for the counter), a page is a plain sheet without the phone frame. */
+@media print {
+  .frame {
+    display: block;
+    height: auto;
+  }
+
+  .screen {
+    width: auto;
+    max-width: none;
+    height: auto;
+    overflow: visible;
+    border-radius: 0;
+    box-shadow: none;
+  }
+
+  .scroll {
+    height: auto;
+    overflow: visible;
+  }
+}

@@ -3,6 +3,7 @@ import type { CustomerText } from "@/lib/i18n/text/en";
 // Tamil. Checked by a native speaker before the demo (docs/PRODUCT-PLAN.md, hardening).
 export const ta: CustomerText = {
   chooseLanguage: "உங்கள் மொழியைத் தேர்ந்தெடுங்கள்",
+  scanToOrder: "குரலில் ஆர்டர் செய்ய ஸ்கேன் செய்யுங்கள்",
   yourName: "உங்கள் பெயர்",
   phone: "மொபைல் எண்",
   start: "ஆர்டர் செய்யத் தொடங்குங்கள்",
