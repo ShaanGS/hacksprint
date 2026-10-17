@@ -1,27 +1,45 @@
 # API (spec v4.1, section 13)
 
-Every route the owner app, the pages and scripts use. JSON in and out, money in integer paise,
-dates as `YYYY-MM-DD` in Asia/Kolkata, times as ISO 8601. Examples are the seeded demo shop at
-3 pm on demo day, before any live act (`pnpm demo:reset`).
+Every route under `apps/web/app/api`: first the ones the owner app, the pages and scripts use,
+then, at the end, the frozen customer ordering's. JSON in and out unless a route says otherwise,
+money in integer paise, dates as `YYYY-MM-DD` in Asia/Kolkata, times as ISO 8601. Examples are
+the seeded demo shop at 3 pm on demo day, before any live act (`pnpm demo:reset`).
 
 ## Conventions
 
-**Auth.** Every `/api` route needs one of:
+**Auth.** Most routes need one of:
 
 - the owner's session cookie, set by `POST /api/owner/session` with the shop PIN (the web app);
 - `Authorization: Bearer <SHOP_TOKEN>` (scripts, n8n).
 
-Without either: `401 {"error": "Enter the shop PIN."}`. Pages under `/statement/{token}` and
-`/loan-pack/{token}` are public by their share token and never show customer names.
+Without either: `401 {"error": "Enter the shop PIN."}`. The exceptions:
+
+- `GET /api/margins` and the frozen `/api/orders` routes take the owner's cookie only, not the
+  token.
+- `POST /api/owner/session` is the sign-in itself.
+- `POST /api/webhooks/paytm` is Paytm's: it is trusted only when its checksum verifies with our
+  merchant key and the merchant id is ours (rule 4).
+- `POST /api/pay/{id}` is the test payment page's: whoever has the link can pay it, as with a
+  Paytm link, and only while `DEMO_MODE` is on.
+- The frozen customer routes use the customer's session cookie, set by
+  `POST /api/customer/session`; without it,
+  `401 {"error": "Please start again from the shop's QR code."}`.
+
+Pages under `/statement/{token}` and `/loan-pack/{token}` are public by their share token and
+never show customer names.
 
 **Errors.** `{"error": "<sentence>"}` with 400 (bad request), 401, 404, 409 (already done, such as
-a second confirm), 502 (a provider failed: Sarvam, Gemini, Paytm), 500.
+a second confirm), 413 (a photo or recording too large), 429 (the PIN is locked), 502 (Gemini could
+not read the bill, n8n could not be reached, or a frozen order's payment link could not be made)
+and 500 (anything else, such as a Sarvam or Paytm failure elsewhere).
 
-**Source labels.** Every number carries one: `verified_payment` (a payment a provider confirmed),
-`supplier_bill` (a confirmed bill), `owner_said` (the owner's own words, confirmed by him), or
-`estimate` (worked out by code). A total takes the label of its weakest input, in that order.
+**Source labels.** Every number carries one, strongest first: `verified_payment` (a payment a
+provider confirmed), `supplier_bill` (a confirmed bill), `estimate` (worked out by code) or
+`owner_said` (the owner's own words, confirmed by him). A total takes the label of its weakest
+input.
 
-**Demo data.** While `DEMO_MODE` is on, responses carry `"demo_data": true` and screens label it.
+**Demo data.** While `DEMO_MODE` is on, `GET /api/rotation` and `GET /api/statement` carry
+`"demo_data": true`, and screens label the data as demo data.
 
 **Realtime.** After any write that changes numbers the server broadcasts on channel
 `shop:{shopId}`, event `changed`, payload `{"area": "rotation" | "credit" | "stock"}`. No data is
@@ -152,7 +170,7 @@ or `later` (expected after 7 days). `open_reminder` is
 Makes (or reuses) a payment link for what the customer owes and returns the WhatsApp message in
 the customer's language, from fixed templates. The owner sends it from his own WhatsApp.
 
-Request: `{}` (amount is the customer's balance).
+Request: `{}` (amount is the customer's balance). `409` when the customer owes nothing.
 
 ```json
 {
@@ -171,7 +189,9 @@ Paytm's paid callback. Verified by checksum and merchant id; idempotent (a secon
 the same payment changes nothing). A paid reminder link writes a `verified_payment` repayment,
 clears the reminder and broadcasts `credit` and `rotation`. Not for the app. The link is found by
 `linkId`, or by `MERC_UNQ_REF`, where Paytm's link webhook puts it (at times as `LI_<id>`). Each
-link names this URL as its `statusCallbackUrl`.
+link names this URL as its `statusCallbackUrl`. Every callback is kept in `audit_log`.
+`200 {"ok": true, "paid": true, "alreadyPaid": false}`, or `{"ok": true, "paid": false}` when
+the status is not a success; `401` for a bad checksum or another merchant id.
 
 ### POST /api/payments/{paymentId}/check
 
@@ -186,7 +206,16 @@ so the app checks every 5 to 6 seconds while a reminder or an agent is open.
 Stage fallback for A5, only while `DEMO_MODE` is on (404 otherwise). The same path as the
 webhook. `200 {"paid": true, "already_paid": false}`.
 
-## Talk and snap (B1 to B3, B7)
+### POST /api/pay/{id}
+
+The button on our own test payment page, `/pay/{id}`. Without Paytm keys the shop is in test
+mode, and every payment link points at that page instead of Paytm. Only while `DEMO_MODE` is on
+(404 otherwise), and only for a test payment: a Paytm link gives `404` and is paid on Paytm. No
+sign-in, as with a Paytm link: whoever has the link can pay it. The same idempotent path as the
+webhook, so a paid reminder link settles the credit and broadcasts. No body.
+`200 {"paid": true, "alreadyPaid": false}`.
+
+## Talk and snap (B1 to B4, B7)
 
 ### POST /api/voice/owner
 
@@ -251,11 +280,13 @@ understood:
 
 Request: `{ "customer_id"?: uuid, "product_id"?: uuid }` (only what `needs` asked for).
 Writes the entry with label `owner_said`, audits it and broadcasts.
-`200 {"ok": true, "kind": "credit_given"}`; `409` if already decided.
+`200 {"ok": true, "kind": "credit_given"}`; `400` while something is still missing or the tapped
+customer or product is not the shop's; `409` if already decided.
 
 ### POST /api/voice/owner/{entryId}/reject
 
-`200 {"ok": true}`.
+Nothing is written; the no is audited. `200 {"ok": true, "kind": "credit_given"}`; `409` if
+already decided.
 
 ### GET /api/credit
 
@@ -325,7 +356,8 @@ for the owner to check, with the distributor, the bill number and the due date i
 ```
 
 Adds stock, sets prices from the MRP, records the payable (`supplier_bill`, due on `due_date`,
-else the distributor's terms) and flags price rises against the same distributor's last bill.
+else the distributor's terms), checks the delivery against the latest order sent to that
+distributor (B4) and flags price rises against the same distributor's last bill (B3).
 
 ```json
 {
@@ -335,6 +367,10 @@ else the distributor's terms) and flags price rises against the same distributor
   "issues": [{ "type": "price_up", "productId": "…", "name": "Aashirvaad Shudh Chakki Atta", "oldCostPaise": 25400, "newCostPaise": 27400, "percent": 8 }]
 }
 ```
+
+Each `stock` row also has `art`, `unit` and `nowQty`. `issues` can also hold the delivery check's
+`missing` (`ordered`) and `qty_mismatch` (`ordered`, `received`). `409` if the bill was already
+confirmed or added.
 
 ### GET /api/payables
 
@@ -372,7 +408,7 @@ Request: `{ "paid_via": "cash" | "bank" | "upi" }`. The owner says he paid it; t
 
 PUT takes `{"costs": [...]}` in the same shape and replaces them.
 
-## Stock (C1, C2)
+## Stock (C1, C2, C4)
 
 ### GET /api/stock
 
@@ -417,6 +453,20 @@ are listed in `cost_unknown`.
 ```
 
 These are the products not to reorder now.
+
+### GET /api/margins
+
+Profit per item (C4), worked out by code from confirmed bill lines: the selling price minus the
+latest bill cost. The owner's cookie only, not the token. A JSON array, in camelCase like the bill
+routes, one entry per product that has a confirmed bill line:
+
+`{ "productId", "name", "art", "pricePaise", "costPaise", "distributor", "profitPaise", "percent",
+"cheaper" }`
+
+`costPaise` and `distributor` are from the latest bill; `percent` is profit as a whole percent of
+the selling price. `cheaper` is `{ "distributor", "costPaise", "savingPaise" }` when another
+distributor's own latest cost is lower, else null. Entries a cheaper distributor would improve
+come first, the biggest saving first; the rest follow, lowest margin first.
 
 ## Agents (decision of Oct 17)
 
@@ -474,7 +524,8 @@ with the header `x-munim-secret: N8N_WEBHOOK_SECRET`; the n8n workflow emails th
 ### POST /api/reorder/{orderId}/pay
 
 Test mode only: a payment link for a sent order at its last bill prices (a Paytm test link with
-Paytm keys in, else our `/pay` page). Asking again gives the same link. In test mode the money
+Paytm keys in, else our `/pay` page, which pays only while `DEMO_MODE` is on). Asking again gives
+the same link; `409` if the order was not sent or has no bill prices. In test mode the money
 lands in a test account, not the distributor's; the payment is kept apart
 (`payments.purchase_order_id`) and never counted as sales or cash, so no number changes.
 
@@ -524,6 +575,7 @@ and an amount, never a customer's name.
 
 Request: `{ "purpose": "stock_rotation" | "equipment", "amount_paise"?: number }`. Without an
 amount, the need is the approved Deepavali order (`supplier_bill`); with one, it is `owner_said`.
+`409` when there is no amount and no approved festival order.
 
 ```json
 {
@@ -596,7 +648,7 @@ Measurable value (spec 11a).
 }
 ```
 
-## Where a number came from (E3)
+## Where a number came from (rule 5)
 
 ### GET /api/sources/{entity}/{id}
 
@@ -606,6 +658,7 @@ rows, and a monthly cost row shows its weekly share.
 - `rotation/{part}`: `part` is `due_7d`, `weekly_costs`, `money_now`, `usual_week_sales`,
   `from_customers`, `late`, `on_shelf`, `with_customers` or `owed_to_suppliers`.
 - `price/{productId}`: the bill line behind a price.
+- `order/{orderId}` and `cart/current` serve the frozen customer ordering (see the end).
 
 ```json
 {
@@ -634,9 +687,54 @@ Each row is a `kind` with its facts, so a screen writes it in the reader's langu
 
 ### POST /api/demo/reset
 
-Only while `DEMO_MODE` is on. Reseeds the demo shop with dates relative to now and broadcasts
-every area. `200 {"ok": true}`. Same as `pnpm demo:reset`.
+Only while `DEMO_MODE` is on (404 otherwise). Reseeds the demo shop with dates relative to now
+and broadcasts every area. `200 {"ok": true}`. Same as `pnpm demo:reset`.
 
 ## Not built yet (P1)
 
 `GET /api/stock/salesman-list`, `POST /api/stock/salesman-list`, `GET /api/summary/today`.
+
+## Frozen: customer ordering
+
+Customer voice ordering (`/order`, `/qr` and order approval) came first and is frozen: its code
+and tests stay, it is out of the navigation, and these routes are not extended. The customer
+routes use the customer's session cookie; the `/api/orders` routes take the owner's cookie only.
+
+- `POST /api/customer/session`: `{ "name", "phone", "lang" }` signs the customer in on this phone
+  and opens the conversation: `{ "turns", "cart", "review": false }`. `400` for a phone that is
+  not 10 digits.
+- `GET /api/customer/session`: who is signed in on this phone and the order they are waiting on:
+  `{ "customer": { "name", "phone", "lang" } | null, "activeOrder" }`. Needs no session.
+- `POST /api/voice/turn`: one turn of the conversation. Multipart `audio` and `lang` answer as two
+  lines of JSON, `{"type": "heard", "text"}` then `{"type": "result", …}` (or
+  `{"type": "error"}`); JSON `{ "lang", "text" }` (typed) or
+  `{ "lang", "choice": { "turnId", "index" } }` (a tapped choice) answers with the result.
+  `413` for a recording over 2 MB.
+- `GET /api/voice/audio/{turnId}`: the shop's reply as speech (`audio/mpeg`, from Sarvam), only
+  for the customer whose conversation it is.
+- `POST /api/cart/items`: `{ "code", "qty" }`, a −/+ tap on the review sheet, straight to the
+  cart: `{ "cart" }`. `409` when there is no open order.
+- `POST /api/cart/send`: `{ "paymentMode": "link" | "credit" }` sends the open order to the owner
+  for approval: `{ "number" }`. `409` when it is empty or already sent.
+- `GET /api/customer/orders/{number}`: where this customer's order is now; the status page polls
+  it every 2 seconds.
+- `GET /api/sources/cart/current`: the bill behind each price in the customer's open order: MRPs
+  and bills, never the shop's costs.
+- `GET /api/orders?status=`: the owner's orders, today's and any still open, optionally of one
+  status: `{ "orders" }`. Polled every 2 seconds.
+- `GET /api/orders/{id}/announce`: the new order, spoken in the owner's language (`audio/mpeg`,
+  from Sarvam).
+- `POST /api/orders/{id}/approve`: `{ "payment_mode"?: "link" | "credit" }`, the owner's approval
+  (guardrail 3): `{ "status": "awaiting_payment" | "on_credit", "payUrl" }`. `payUrl` is null on
+  account, or when the link could not be made yet. `409` if already decided.
+- `POST /api/orders/{id}/voice-approve`: multipart `audio`, the owner's spoken decision ("seri",
+  "venda", "kanakku"): `{ "heard", "decision": "approve" | "reject" | "credit" | null, "payUrl" }`.
+  Nothing happens unless one of those words was heard.
+- `POST /api/orders/{id}/reject`:
+  `{ "reason": "out_of_stock" | "shop_closed" | "cannot_deliver" | "other" }`, then
+  `{ "ok": true }`.
+- `POST /api/orders/{id}/payment-link`: makes the payment link again when it failed at approval:
+  `{ "payUrl" }`; `502` if it still cannot be made.
+- `POST /api/orders/{id}/deliver`: marks a paid or on-account order delivered: `{ "ok": true }`;
+  `409` otherwise.
+- `GET /api/sources/order/{orderId}`: the bill behind each price in an order, for the owner.
