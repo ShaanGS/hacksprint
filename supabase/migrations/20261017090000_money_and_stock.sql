@@ -19,6 +19,9 @@ alter table public.bills add column distributor_id uuid references public.distri
 alter table public.bills add column bill_number text;
 alter table public.bills add column billed_on date;
 create index bills_distributor_idx on public.bills (distributor_id, billed_on desc);
+-- A paper bill adds stock once: scanning it again cannot be confirmed a second time.
+create unique index bills_number_once_idx on public.bills (distributor_id, bill_number)
+  where status = 'confirmed' and bill_number is not null;
 
 create table public.bill_items (
   id uuid primary key default gen_random_uuid(),

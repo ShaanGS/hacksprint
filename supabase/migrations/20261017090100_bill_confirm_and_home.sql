@@ -1,9 +1,10 @@
 -- Confirming a delivery bill, in one transaction (spec B1, B4, C1). The owner-checked lines go in
 -- as bill lines; stock goes up; each product's price follows the printed MRP and remembers which
 -- bill line set it (spec rule 6); the shop now owes the distributor; and the delivery is checked
--- against the open purchase order. A price rise compares each line's cost with the last bill
--- before this one. Returns the issues for the owner: missing, qty_mismatch and price_up.
-create function public.confirm_bill(p_bill_id uuid, p_lines jsonb)
+-- against the open purchase order. A price rise compares each line's cost with the same
+-- distributor's last bill: it is that distributor who raised it. Returns the issues for the
+-- owner: missing, qty_mismatch and price_up.
+create function public.confirm_bill(p_bill_id uuid, p_distributor_id uuid, p_lines jsonb)
 returns jsonb
 language plpgsql
 set search_path = ''
@@ -26,8 +27,9 @@ declare
   v_ordered record;
   v_received numeric;
 begin
-  -- Only a parsed bill can be confirmed, so a double tap does nothing the second time.
-  update public.bills set status = 'confirmed'
+  -- Only a parsed bill can be confirmed, so a double tap does nothing the second time. The owner
+  -- may have picked the distributor when the photo did not name one we know.
+  update public.bills set status = 'confirmed', distributor_id = p_distributor_id
   where id = p_bill_id and status = 'parsed'
   returning * into v_bill;
   if not found then
@@ -45,6 +47,7 @@ begin
     from public.bill_items bi
     join public.bills b on b.id = bi.bill_id
     where bi.product_id = v_product_id and b.id <> p_bill_id
+      and b.distributor_id = p_distributor_id and b.status = 'confirmed'
     order by bi.created_at desc
     limit 1;
 
@@ -153,7 +156,7 @@ as $$
       where p.shop_id = p_shop_id and p.paid_at is null);
 $$;
 
-revoke execute on function public.confirm_bill(uuid, jsonb) from public, anon, authenticated;
-grant execute on function public.confirm_bill(uuid, jsonb) to service_role;
+revoke execute on function public.confirm_bill(uuid, uuid, jsonb) from public, anon, authenticated;
+grant execute on function public.confirm_bill(uuid, uuid, jsonb) to service_role;
 revoke execute on function public.home_numbers(uuid, timestamptz) from public, anon, authenticated;
 grant execute on function public.home_numbers(uuid, timestamptz) to service_role;

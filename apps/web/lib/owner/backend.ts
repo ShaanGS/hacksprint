@@ -1,3 +1,5 @@
+import type { BillOutcome, ConfirmLine, ScannedBill } from "@/lib/bills/types";
+import type { Product } from "@/lib/catalog";
 import type { PaymentMode } from "@/lib/orders/submit";
 import type { RejectReason } from "@/lib/orders/state";
 import type { Decision } from "@/lib/owner/approval";
@@ -17,6 +19,17 @@ export class SignedOutError extends Error {
   }
 }
 
+/** A request the shop refused, with its HTTP status, so a screen can say why in the owner's words. */
+export class RequestError extends Error {
+  readonly status: number;
+
+  constructor(url: string, status: number) {
+    super(`${url} failed: HTTP ${status}`);
+    this.name = "RequestError";
+    this.status = status;
+  }
+}
+
 export interface OwnerBackend {
   /** Today's orders and any still open, as the shop has them now. */
   orders(): Promise<OwnerOrder[]>;
@@ -30,4 +43,10 @@ export interface OwnerBackend {
   decideByVoice(order: OwnerOrder, audio: Blob): Promise<VoiceDecision>;
   /** The order spoken in the owner's language, or null where there is no speech. */
   announcementUrl(order: OwnerOrder): string | null;
+  /** Every product with its stock now. */
+  stock(): Promise<Product[]>;
+  /** Reads a photo of today's bill into lines for the owner to check (spec B1). */
+  scanBill(photo: Blob): Promise<ScannedBill>;
+  /** The owner's yes to a checked bill: stock, prices, payable and the delivery check. */
+  confirmBill(bill: ScannedBill, distributorId: string, lines: ConfirmLine[]): Promise<BillOutcome>;
 }

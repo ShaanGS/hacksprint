@@ -3,6 +3,7 @@
 import { Volume2, WifiOff } from "lucide-react";
 import { AnimatePresence, motion } from "motion/react";
 import { useState, type ReactNode } from "react";
+import { BillScan } from "@/components/owner/bill-scan";
 import { CreditTab } from "@/components/owner/credit-tab";
 import { OrdersTab } from "@/components/owner/orders-tab";
 import { useOwnerLanguage } from "@/components/owner/owner-language";
@@ -12,6 +13,7 @@ import { TodayTab } from "@/components/owner/today-tab";
 import { useHoldToDecide } from "@/components/owner/use-hold-to-decide";
 import { useNotice } from "@/components/owner/use-notice";
 import { useOwnerOrders } from "@/components/owner/use-owner-orders";
+import { useStock } from "@/components/owner/use-stock";
 import type { OwnerVoice } from "@/components/owner/use-owner-voice";
 import { useWakeLock } from "@/components/owner/use-wake-lock";
 import { Art } from "@/components/ui/art";
@@ -24,9 +26,9 @@ import { previewProducts, previewShop } from "@/lib/preview/data";
 import { creditRows, daySummary } from "@/lib/preview/owner";
 import { previewRecorder } from "@/lib/preview/owner-backend";
 
-// The live app has the Orders tab until the stock, credit and home numbers have their API
-// (spec section 11, steps 3 to 5); the preview shows every tab on sample data.
-const LIVE_TABS: OwnerTab[] = ["orders"];
+// The live app has Orders and Stock until credit and the home numbers have their API (spec
+// section 11, steps 4 and 5); the preview shows every tab on sample data.
+const LIVE_TABS: OwnerTab[] = ["orders", "stock"];
 const PREVIEW_TABS: OwnerTab[] = ["orders", "stock", "credit", "today"];
 
 /** The owner's app: today's orders first, then stock, credit and the day's numbers. */
@@ -58,6 +60,7 @@ export function OwnerApp({
     onMicBlocked: () => notify(text.micBlocked),
     onResult: (result) => notify(heardLine(result)),
   });
+  const stock = useStock(backend, tab === "stock");
   useWakeLock(live);
 
   function heardLine({ heard, decision }: VoiceDecision): string {
@@ -114,7 +117,17 @@ export function OwnerApp({
               <Art name="clock" size={120} eager />
             </div>
           ))}
-        {tab === "stock" && <StockTab products={previewProducts} />}
+        {tab === "stock" &&
+          (stock.products ? (
+            <StockTab
+              products={stock.products}
+              bill={<BillScan backend={backend} products={stock.products} onAdded={stock.reload} />}
+            />
+          ) : (
+            <div className="grid h-full place-items-center">
+              <Art name="crate" size={120} eager />
+            </div>
+          ))}
         {tab === "credit" && <CreditTab rows={creditRows(orders)} />}
         {tab === "today" && (
           <TodayTab

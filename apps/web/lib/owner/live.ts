@@ -1,4 +1,11 @@
-import { SignedOutError, type OwnerBackend, type VoiceDecision } from "@/lib/owner/backend";
+import type { BillOutcome, ScannedBill } from "@/lib/bills/types";
+import type { Product } from "@/lib/catalog";
+import {
+  RequestError,
+  SignedOutError,
+  type OwnerBackend,
+  type VoiceDecision,
+} from "@/lib/owner/backend";
 import type { OwnerOrder } from "@/lib/owner/types";
 
 // The owner's screens on the real API (spec section 9). The session is an httpOnly cookie set
@@ -7,7 +14,7 @@ import type { OwnerOrder } from "@/lib/owner/types";
 async function call<T>(url: string, init?: RequestInit): Promise<T> {
   const response = await fetch(url, { cache: "no-store", ...init });
   if (response.status === 401) throw new SignedOutError();
-  if (!response.ok) throw new Error(`${url} failed: HTTP ${response.status}`);
+  if (!response.ok) throw new RequestError(url, response.status);
   return (await response.json()) as T;
 }
 
@@ -45,6 +52,25 @@ export const liveOwner: OwnerBackend = {
   },
   announcementUrl(order) {
     return `/api/orders/${order.id}/announce`;
+  },
+  async stock() {
+    return (await call<{ products: Product[] }>("/api/stock")).products;
+  },
+  scanBill(photo) {
+    const form = new FormData();
+    form.append("photo", photo, "bill.jpg");
+    return call<ScannedBill>("/api/bills", { method: "POST", body: form });
+  },
+  confirmBill(bill, distributorId, lines) {
+    return post<BillOutcome>(`/api/bills/${bill.id}/confirm`, {
+      distributor_id: distributorId,
+      lines: lines.map((line) => ({
+        product_id: line.productId,
+        qty: line.qty,
+        unit_cost_paise: line.unitCostPaise,
+        mrp_paise: line.mrpPaise,
+      })),
+    });
   },
 };
 

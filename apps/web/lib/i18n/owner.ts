@@ -1,5 +1,6 @@
 import type { Decision } from "@/lib/owner/approval";
 import type { Lang } from "@/lib/i18n/languages";
+import type { ProductUnit } from "@/lib/orders/quantity";
 import type { RejectReason } from "@/lib/orders/state";
 
 // The owner app's words. The owner reads and hears the shop in their own language (spec A2),
@@ -53,6 +54,39 @@ export type OwnerText = {
   rejected: string;
   items: (count: number) => string;
   tabs: { orders: string; stock: string; credit: string; today: string };
+  stockSummary: (count: number, low: number, out: number) => string;
+  filters: { all: string; low: string; out: string };
+  runningLow: string;
+  outOfStock: string;
+  left: (qty: number, unit: ProductUnit) => string;
+  scanTitle: string;
+  scanText: string;
+  takePhoto: string;
+  readingBill: string;
+  billUnreadable: string;
+  retakePhoto: string;
+  checkBill: string;
+  billFrom: (distributor: string, number: string | null) => string;
+  whichDistributor: string;
+  alreadyAdded: (date: string) => string;
+  whichProduct: string;
+  onTheBill: (name: string) => string;
+  lineUnreadable: string;
+  billSays: (amount: string) => string;
+  lessOne: string;
+  moreOne: string;
+  leaveOut: string;
+  putBack: string;
+  addToStock: (amount: string) => string;
+  addedTitle: string;
+  addedText: (amount: string, distributor: string) => string;
+  missingTitle: string;
+  orderedGot: (ordered: number, got: number) => string;
+  priceUpTitle: string;
+  priceUp: (before: string, now: string, percent: number) => string;
+  allCame: string;
+  stockNow: (added: string, now: string) => string;
+  done: string;
   /** What the phone says when an order arrives. */
   announce: (customer: string, items: string, total: string) => string;
 };
@@ -115,6 +149,43 @@ const en: OwnerText = {
   rejected: "Rejected",
   items: (count) => (count === 1 ? "1 item" : `${count} items`),
   tabs: { orders: "Orders", stock: "Stock", credit: "Credit", today: "Today" },
+  stockSummary: (count, low, out) => `${count} products · ${low} running low · ${out} out`,
+  filters: { all: "All", low: "Running low", out: "Out" },
+  runningLow: "Running low",
+  outOfStock: "Out of stock",
+  left: (qty, unit) =>
+    unit === "kg" || unit === "litre"
+      ? `${qty} ${unit} left`
+      : `${qty} ${unit === "piece" ? "" : qty === 1 ? "pack " : "packs "}left`,
+  scanTitle: "Today's delivery",
+  scanText: "Photograph the bill. Stock, prices and what you owe update themselves.",
+  takePhoto: "Take a photo of the bill",
+  readingBill: "Reading the bill…",
+  billUnreadable: "The bill could not be read. Take the photo again with the whole bill in view.",
+  retakePhoto: "Take another photo",
+  checkBill: "Check the bill",
+  billFrom: (distributor, number) => (number ? `${distributor} · Bill ${number}` : distributor),
+  whichDistributor: "Which distributor is it from?",
+  alreadyAdded: (date) =>
+    `This bill was added on ${date}. Adding it again would count the stock twice.`,
+  whichProduct: "Which product?",
+  onTheBill: (name) => `On the bill: ${name}`,
+  lineUnreadable: "This line could not be read",
+  billSays: (amount) => `The bill says ${amount}`,
+  lessOne: "One less",
+  moreOne: "One more",
+  leaveOut: "Leave out",
+  putBack: "Put back",
+  addToStock: (amount) => `Add ${amount} to stock`,
+  addedTitle: "Added to stock",
+  addedText: (amount, distributor) => `${amount} bill from ${distributor}`,
+  missingTitle: "Not in the delivery",
+  orderedGot: (ordered, got) => `Ordered ${ordered}, came ${got}`,
+  priceUpTitle: "Price went up",
+  priceUp: (before, now, percent) => `${before} → ${now}, up ${percent}% since the last bill`,
+  allCame: "Everything you ordered came, at the same price.",
+  stockNow: (added, now) => `+${added}, now ${now}`,
+  done: "Done",
   announce: (customer, items, total) =>
     `New order from ${customer}: ${items}. Total ${total}. Approve?`,
 };
@@ -177,6 +248,45 @@ const ta: OwnerText = {
   rejected: "மறுக்கப்பட்டது",
   items: (count) => (count === 1 ? "1 பொருள்" : `${count} பொருட்கள்`),
   tabs: { orders: "ஆர்டர்கள்", stock: "சரக்கு", credit: "கடன்", today: "இன்று" },
+  stockSummary: (count, low, out) => `${count} பொருட்கள் · ${low} குறைவு · ${out} தீர்ந்தது`,
+  filters: { all: "அனைத்தும்", low: "குறைவு", out: "தீர்ந்தது" },
+  runningLow: "குறைவாக உள்ளது",
+  outOfStock: "தீர்ந்துவிட்டது",
+  left: (qty, unit) =>
+    unit === "kg"
+      ? `${qty} கிலோ மீதம்`
+      : unit === "litre"
+        ? `${qty} லிட்டர் மீதம்`
+        : `${qty} மீதம்`,
+  scanTitle: "இன்றைய டெலிவரி",
+  scanText: "பில்லை போட்டோ எடுங்கள். சரக்கு, விலை, கொடுக்க வேண்டியது தானாக மாறும்.",
+  takePhoto: "பில்லை போட்டோ எடுங்கள்",
+  readingBill: "பில்லைப் படிக்கிறது…",
+  billUnreadable: "பில்லைப் படிக்க முடியவில்லை. முழு பில்லும் தெரியும்படி மீண்டும் எடுங்கள்.",
+  retakePhoto: "மீண்டும் போட்டோ எடுங்கள்",
+  checkBill: "பில்லைச் சரிபாருங்கள்",
+  billFrom: (distributor, number) => (number ? `${distributor} · பில் ${number}` : distributor),
+  whichDistributor: "இது எந்த விநியோகஸ்தரிடமிருந்து?",
+  alreadyAdded: (date) =>
+    `இந்த பில் ${date} அன்றே சேர்க்கப்பட்டது. மீண்டும் சேர்த்தால் சரக்கு இரண்டு முறை கூடும்.`,
+  whichProduct: "எந்தப் பொருள்?",
+  onTheBill: (name) => `பில்லில்: ${name}`,
+  lineUnreadable: "இந்த வரியைப் படிக்க முடியவில்லை",
+  billSays: (amount) => `பில்லில் ${amount}`,
+  lessOne: "ஒன்று குறை",
+  moreOne: "ஒன்று கூட்டு",
+  leaveOut: "விடு",
+  putBack: "மீண்டும் சேர்",
+  addToStock: (amount) => `${amount} சரக்கில் சேர்`,
+  addedTitle: "சரக்கில் சேர்க்கப்பட்டது",
+  addedText: (amount, distributor) => `${distributor} பில் ${amount}`,
+  missingTitle: "டெலிவரியில் வரவில்லை",
+  orderedGot: (ordered, got) => `ஆர்டர் ${ordered}, வந்தது ${got}`,
+  priceUpTitle: "விலை ஏறியது",
+  priceUp: (before, now, percent) => `${before} → ${now}, கடந்த பில்லை விட ${percent}% அதிகம்`,
+  allCame: "ஆர்டர் செய்த அனைத்தும் அதே விலையில் வந்தது.",
+  stockNow: (added, now) => `+${added}, இப்போது ${now}`,
+  done: "முடிந்தது",
   announce: (customer, items, total) =>
     `${customer} புதிய ஆர்டர்: ${items}. மொத்தம் ${total}. ஏற்கலாமா?`,
 };

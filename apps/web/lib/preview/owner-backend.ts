@@ -2,6 +2,8 @@ import type { Recorder } from "@/lib/audio/recorder";
 import type { SubmittedStatus } from "@/lib/customer/backend";
 import type { OwnerBackend } from "@/lib/owner/backend";
 import type { OwnerOrder } from "@/lib/owner/types";
+import { previewBills } from "@/lib/preview/bill";
+import { previewProducts } from "@/lib/preview/data";
 import { previewOwnerOrders } from "@/lib/preview/owner";
 
 // The owner's screens on sample data. Moves follow transition_order: an order moves only from
@@ -19,6 +21,9 @@ export const previewRecorder: Recorder = {
 
 export function previewOwner(): OwnerBackend {
   let orders = previewOwnerOrders();
+  // This phone's own copy of the shelves, so a confirmed bill adds to them.
+  const products = previewProducts.map((product) => ({ ...product }));
+  const bills = previewBills(products);
 
   function move(
     id: string,
@@ -60,6 +65,11 @@ export function previewOwner(): OwnerBackend {
     announcementUrl() {
       return null;
     },
+    async stock() {
+      return products.map((product) => ({ ...product }));
+    },
+    scanBill: bills.scanBill,
+    confirmBill: bills.confirmBill,
   };
   return backend;
 }
