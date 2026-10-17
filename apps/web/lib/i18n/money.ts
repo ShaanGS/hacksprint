@@ -148,6 +148,15 @@ export type MoneyText = {
   officialLinks: string;
   checkedOn: (date: string) => string;
   makePack: string;
+  applyWithAgent: string;
+  agentTitle: string;
+  agentSteps: { read: string; scheme: string; fill: string; documents: string; submit: string };
+  agentRead: (months: number, verified: Money, declared: Money, onTime: number | null) => string;
+  agentFilled: (amount: Money) => string;
+  agentDocuments: (have: string[], missing: string[]) => string;
+  agentWaiting: string;
+  agentFields: { shop: string; applicant: string; amount: string; purpose: string; sales: string };
+  agentSimulated: string;
   packText: string;
   openPack: string;
   statementTitle: string;
@@ -361,6 +370,30 @@ const en: MoneyText = {
   officialLinks: "Official links",
   checkedOn: (date) => `Facts checked on ${date}`,
   makePack: "Make the loan pack",
+  applyWithAgent: "Let the agent apply (demo)",
+  agentTitle: "Applying for you",
+  agentSteps: {
+    read: "Reading your records",
+    scheme: "Choosing the scheme",
+    fill: "Filling the application",
+    documents: "Attaching documents",
+    submit: "Ready to submit",
+  },
+  agentRead: (months, verified, declared, onTime) =>
+    `${months} months: ${verified} a month by verified payments, ${declared} a month in cash you said${onTime === null ? "" : `, ${onTime}% of bills paid on time`}.`,
+  agentFilled: (amount) => `A loan of ${amount}, from your own numbers.`,
+  agentDocuments: (have, missing) =>
+    `Attached: ${have.join(", ")}.${missing.length > 0 ? ` Missing: ${missing.join(", ")}.` : ""}`,
+  agentWaiting: "Waiting for your Aadhaar OTP on the official portal.",
+  agentFields: {
+    shop: "Shop",
+    applicant: "Applicant",
+    amount: "Loan",
+    purpose: "For",
+    sales: "Monthly sales",
+  },
+  agentSimulated:
+    "This is a simulation. A real application needs your own Aadhaar OTP on the official portal, and the bank decides. Nothing was sent.",
   packText:
     "Statement, stock quotation, document checklist and official links. Print it and take it to your bank yourself.",
   openPack: "Open the loan pack",
@@ -569,6 +602,30 @@ const ta: MoneyText = {
   officialLinks: "அதிகாரப்பூர்வ இணைப்புகள்",
   checkedOn: (date) => `${date} அன்று சரிபார்த்த தகவல்`,
   makePack: "கடன் ஆவணத் தொகுப்பைத் தயாரி",
+  applyWithAgent: "முகவர் விண்ணப்பிக்கட்டும் (டெமோ)",
+  agentTitle: "உங்களுக்காக விண்ணப்பிக்கிறது",
+  agentSteps: {
+    read: "உங்கள் பதிவுகளைப் படிக்கிறது",
+    scheme: "திட்டத்தைத் தேர்கிறது",
+    fill: "விண்ணப்பத்தை நிரப்புகிறது",
+    documents: "ஆவணங்களை இணைக்கிறது",
+    submit: "சமர்ப்பிக்கத் தயார்",
+  },
+  agentRead: (months, verified, declared, onTime) =>
+    `${months} மாதங்கள்: மாதம் ${verified} சரிபார்த்த பணம், ${declared} நீங்கள் சொன்ன ரொக்கம்${onTime === null ? "" : `, ${onTime}% பில்கள் நேரத்தில்`}.`,
+  agentFilled: (amount) => `உங்கள் கணக்கிலிருந்து ${amount} கடன்.`,
+  agentDocuments: (have, missing) =>
+    `இணைத்தவை: ${have.join(", ")}.${missing.length > 0 ? ` இல்லாதவை: ${missing.join(", ")}.` : ""}`,
+  agentWaiting: "அதிகாரப்பூர்வ இணையதளத்தில் உங்கள் ஆதார் OTP-க்குக் காத்திருக்கிறது.",
+  agentFields: {
+    shop: "கடை",
+    applicant: "விண்ணப்பதாரர்",
+    amount: "கடன்",
+    purpose: "எதற்காக",
+    sales: "மாத விற்பனை",
+  },
+  agentSimulated:
+    "இது ஒரு மாதிரி மட்டும். உண்மையான விண்ணப்பத்துக்கு அதிகாரப்பூர்வ இணையதளத்தில் உங்கள் ஆதார் OTP தேவை; வங்கியே முடிவு செய்யும். எதுவும் அனுப்பப்படவில்லை.",
   packText:
     "அறிக்கை, சரக்கு விலைப்பட்டியல், ஆவணப் பட்டியல், அதிகாரப்பூர்வ இணைப்புகள். அச்சிட்டு நீங்களே உங்கள் வங்கிக்கு எடுத்துச் செல்லுங்கள்.",
   openPack: "கடன் தொகுப்பைத் திற",

@@ -4,6 +4,7 @@ import type { Margin } from "@/lib/margins";
 import { call, post, upload } from "@/lib/owner/fetch";
 import type { SourceLabel } from "@/lib/rotation/labels";
 import type { Reason, rotationResponse } from "@/lib/rotation/responses";
+import type { ChecklistItem } from "@/lib/loans/pack";
 import type { QuestionTopic } from "@/lib/owner-voice/types";
 import type { RotationPart, SourceRow } from "@/lib/rotation/sources";
 import type { MudraBandKey } from "@/lib/schemes/catalog";
@@ -163,6 +164,19 @@ export type LoanReady = {
   fixed_lines: string[];
 };
 
+export type Application = {
+  simulated: true;
+  shop: string;
+  owner: string;
+  loan_paise: number;
+  purpose: LoanPurpose;
+  band: MudraBandKey | null;
+  months: number;
+  monthly_sales: { verified_paise: number; declared_paise: number };
+  bills_paid_on_time: number | null;
+  documents: { key: ChecklistItem["key"]; status: ChecklistItem["status"] }[];
+};
+
 export type Value = {
   late_credit_recovered_30d: { verified_paise: number; declared_paise: number };
   money_cycle_days: {
@@ -193,6 +207,8 @@ export const ownerApi = {
   costs: () => call<Costs>("/api/setup/costs"),
   statement: () => call<{ share_url: string }>("/api/statement?months=3"),
   loanReady: (purpose: LoanPurpose) => post<LoanReady>("/api/loan-ready", { purpose }),
+  applyAgent: (loanRequestId: string) =>
+    post<Application>("/api/loan-apply", { loan_request_id: loanRequestId }),
   loanPack: (loanRequestId: string) =>
     post<{ share_url: string }>("/api/loan-pack", { loan_request_id: loanRequestId }),
   hear: (audio: Blob, lang: Lang) => {

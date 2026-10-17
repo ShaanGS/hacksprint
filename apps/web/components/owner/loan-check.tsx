@@ -1,7 +1,8 @@
 "use client";
 
-import { Check, ExternalLink, FileText } from "lucide-react";
-import { useState, type ReactNode } from "react";
+import { Bot, Check, ExternalLink, FileText } from "lucide-react";
+import { useCallback, useState, type ReactNode } from "react";
+import { ApplyAgent } from "@/components/owner/apply-agent";
 import { useOwnerLanguage } from "@/components/owner/owner-language";
 import { useOwnerScreen } from "@/components/owner/owner-screen";
 import { useDates } from "@/components/owner/use-dates";
@@ -21,8 +22,10 @@ import { schemeWords } from "@/lib/schemes/catalog";
  */
 export function LoanCheck({ onCollect }: { onCollect: () => void }) {
   const { lang, text } = useOwnerLanguage();
-  const { notify } = useOwnerScreen();
+  const { demo, notify } = useOwnerScreen();
   const [purpose, setPurpose] = useState<LoanPurpose>("stock_rotation");
+  const [applying, setApplying] = useState<string | null>(null);
+  const stopApplying = useCallback(() => setApplying(null), []);
   const [answer, setAnswer] = useState<LoanReady | null>(null);
   const [packUrl, setPackUrl] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
@@ -121,12 +124,27 @@ export function LoanCheck({ onCollect }: { onCollect: () => void }) {
                   {text.makePack}
                 </Button>
               )}
+              {demo && !answer.no_loan_needed && (
+                <Button
+                  wide
+                  variant="soft"
+                  className="mt-2"
+                  onClick={() => {
+                    setApplying(answer.loan_request_id);
+                    setAnswer(null);
+                  }}
+                >
+                  <Bot aria-hidden className="size-5" />
+                  {text.applyWithAgent}
+                </Button>
+              )}
             </div>
           )
         }
       >
         {answer && <Answer answer={answer} />}
       </Sheet>
+      <ApplyAgent loanRequestId={applying} onClose={stopApplying} />
     </>
   );
 }
