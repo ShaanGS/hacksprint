@@ -63,13 +63,11 @@ export function SchemesSection({ shopName, summary }: { shopName: string; summar
     <section className="mt-6 rounded-3xl bg-surface-muted p-4">
       <div className="flex items-center gap-2">
         <Landmark aria-hidden className="size-6" />
-        <h2 className="text-xl leading-tight font-extrabold tracking-tight">
-          Government schemes
-        </h2>
+        <h2 className="text-xl leading-tight font-extrabold tracking-tight">Government schemes</h2>
       </div>
       <p className="mt-1 text-sm text-ink-muted">
-        Help for small shops. Check eligibility on the official site — Munim only shows you where
-        to look.
+        Help for small shops. Check eligibility on the official site — Munim only shows you where to
+        look.
       </p>
 
       <ul className="mt-4 space-y-3">

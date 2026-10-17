@@ -5,6 +5,7 @@ import { motion } from "motion/react";
 import { useState } from "react";
 import { qtyLabel } from "@/components/owner/order-card";
 import { Art, toArtName } from "@/components/ui/art";
+import { RepaymentPlanner } from "@/components/owner/repayment-planner";
 import { SchemesSection } from "@/components/owner/schemes-section";
 import { Button } from "@/components/ui/button";
 import { FeatureCard } from "@/components/ui/feature-card";
@@ -102,6 +103,8 @@ export function TodayTab({
           </div>
         )}
       </section>
+
+      <RepaymentPlanner summary={summary} />
 
       <SchemesSection shopName={shopName} summary={summary} />
     </main>
