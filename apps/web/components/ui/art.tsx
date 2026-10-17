@@ -57,7 +57,7 @@ export function toArtName(value: string): ArtName {
   return artNames.find((name) => name === value) ?? "bag";
 }
 
-export const bannerNames = ["voice", "approve", "bill", "night"] as const;
+export const bannerNames = ["voice"] as const;
 
 export type BannerName = (typeof bannerNames)[number];
 
@@ -92,7 +92,7 @@ const circles = {
   lg: { box: "size-16", art: 50 },
 } as const;
 
-/** Art in a soft mint circle, for rows and shortcuts. */
+/** Art in a soft grey circle, for rows and shortcuts. */
 export function ArtCircle({
   name,
   size = "md",
@@ -116,8 +116,8 @@ export function ArtCircle({
 }
 
 /**
- * A wide illustration. Decorative: the card's own text carries the meaning. `flush` drops the
- * rounding and ratio so a FeatureCard can set the height and let it meet the panel edge to edge.
+ * A wide illustration. Decorative: the screen's own text carries the meaning. `flush` drops the
+ * rounding and ratio, so the box around it sets the height and the picture meets its edges.
  */
 export function Banner({
   name,
