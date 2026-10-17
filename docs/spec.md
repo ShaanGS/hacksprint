@@ -151,6 +151,7 @@ Money in integer paise. Quantities numeric(10,3).
 | POST /api/webhooks/paytm | Paid callback (verified, idempotent) |
 | POST /api/bills | Bill photo upload; returns parsed lines |
 | POST /api/bills/{id}/confirm | Confirm lines; updates stock, bill_items, payables; runs delivery check and price alerts |
+| GET /api/stock | Every product with its stock, for the owner's Stock tab |
 | GET /api/restock/suggestions | Low-stock items grouped by distributor with drafted quantities |
 | POST /api/purchase-orders | Create draft reorder |
 | POST /api/purchase-orders/{id}/send | Owner-approved send via n8n |
@@ -196,3 +197,4 @@ Real phone number integration, counter camera, comparing prices with quick comme
 | n8n sends the reorder and nightly report on Telegram (16 Oct) | Free, instant and visible on stage; spec B3 allows a mock send | WhatsApp Business API, which needs approval in advance |
 | Our own test payment page until Paytm staging keys arrive | Flow 1 works end to end on day one; the same "mark paid" path serves both | Blocking the demo on keys |
 | Push-to-talk voice, one turn at a time | Reliable on venue Wi-Fi, simpler to build and explain | Streaming interruptible voice |
+| A price-rise alert compares a line with the same distributor's last bill (17 Oct) | The alert says that distributor raised the price; comparing across distributors is C3 | Comparing with whichever distributor billed the product last |
