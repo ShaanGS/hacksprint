@@ -26,6 +26,8 @@ export type MoneyText = {
   holdAndSpeak: string;
   holdLonger: string;
   micAllow: string;
+  micTurnOn: string;
+  micReady: string;
   // The voice card (B1)
   entryTitles: Record<EntryKind, string>;
   notUnderstoodEntry: string;
@@ -182,6 +184,8 @@ const en: MoneyText = {
   holdAndSpeak: "Hold and speak",
   holdLonger: "Hold the mic while you speak",
   micAllow: "Allow the microphone to speak your entries",
+  micTurnOn: "Tap to turn on the microphone",
+  micReady: "Microphone on. Hold the button and speak.",
   entryTitles: {
     credit_given: "Credit given",
     credit_repaid_cash: "Paid back in cash",
@@ -389,6 +393,8 @@ const ta: MoneyText = {
   holdAndSpeak: "பிடித்துப் பேசுங்கள்",
   holdLonger: "பேசும்போது மைக்கைப் பிடித்தே இருங்கள்",
   micAllow: "குரலில் சொல்ல, மைக்கை அனுமதியுங்கள்",
+  micTurnOn: "மைக்கை இயக்க இங்கே தட்டுங்கள்",
+  micReady: "மைக் தயார். பட்டனைப் பிடித்துப் பேசுங்கள்.",
   entryTitles: {
     credit_given: "கடன் கொடுத்தது",
     credit_repaid_cash: "ரொக்கமாகத் திருப்பித் தந்தது",

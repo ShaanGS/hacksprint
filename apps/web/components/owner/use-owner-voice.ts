@@ -9,6 +9,8 @@ const CHIME = "/sounds/new-order.mp3";
 
 export type OwnerVoice = {
   soundOn: boolean;
+  /** The microphone is allowed and open, so holding the mic records at once. */
+  micOn: boolean;
   /** Call inside a tap, before any await. */
   unlockSound(): void;
   /** Asks for the microphone once; holding the mic before it is allowed asks again. */
@@ -29,9 +31,11 @@ export function useOwnerVoice(): OwnerVoice {
   const recorder = useRef<Recorder | null>(null);
   const queue = useRef<Promise<void>>(Promise.resolve());
   const [soundOn, setSoundOn] = useState(false);
+  const [micOn, setMicOn] = useState(false);
 
   return {
     soundOn,
+    micOn,
     unlockSound() {
       player.current ??= createPlayer();
       player.current.unlock().then(setSoundOn);
@@ -40,6 +44,7 @@ export function useOwnerVoice(): OwnerVoice {
       if (recorder.current) return recorder.current;
       const stream = await openMicrophone().catch(() => null);
       recorder.current = stream ? createRecorder(stream) : null;
+      setMicOn(recorder.current !== null);
       return recorder.current;
     },
     announce(speechUrl) {

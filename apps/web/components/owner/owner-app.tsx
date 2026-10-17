@@ -1,6 +1,6 @@
 "use client";
 
-import { WifiOff } from "lucide-react";
+import { Mic, WifiOff } from "lucide-react";
 import { AnimatePresence } from "motion/react";
 import { useMemo, useState } from "react";
 import { BankTab } from "@/components/owner/bank-tab";
@@ -48,6 +48,11 @@ export function OwnerApp({
     onMicBlocked: () => notify(text.micAllow),
   });
 
+  /** A tap that asks for the microphone, so the phone shows its permission prompt. */
+  async function turnOnMic() {
+    notify((await voice.askMicrophone()) ? text.micReady : text.micAllow);
+  }
+
   async function hear(audio: Blob) {
     setHearing(true);
     try {
@@ -75,6 +80,11 @@ export function OwnerApp({
         <div className="relative h-full">
           <TopNotices>
             <AnimatePresence initial={false}>
+              {!voice.micOn && (
+                <Pill key="mic" icon={<Mic aria-hidden className="size-4" />} onClick={turnOnMic}>
+                  {text.micTurnOn}
+                </Pill>
+              )}
               {offline && (
                 <Pill key="offline" icon={<WifiOff aria-hidden className="size-4" />}>
                   {text.offline}
