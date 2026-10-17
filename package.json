@@ -15,7 +15,8 @@
     "smoke": "tsx scripts/smoke/run.ts",
     "dev:order": "tsx scripts/dev/create-order.ts",
     "demo:reset": "tsx scripts/dev/demo-reset.ts",
-    "demo:check": "tsx scripts/dev/demo-check.ts"
+    "demo:check": "tsx scripts/dev/demo-check.ts",
+    "eval:planner": "tsx scripts/eval/planner.ts"
   },
   "devDependencies": {
     "@google/genai": "^2.27.0",
