@@ -75,9 +75,10 @@ body {
   }
 }
 
-/* The front page's hand and phone fade into the page at the wrist. */
+/* The front page's hand and phone fade into the page at the wrist, gone before the forearm
+   reaches the picture's left edge (93% down), so no cut edge shows. */
 @utility fade-bottom {
-  mask-image: linear-gradient(to bottom, black 72%, transparent 100%);
+  mask-image: linear-gradient(to bottom, black 72%, transparent 90%);
 }
 
 /* Bottom bars clear the phone's home indicator, or the drawn one in the laptop frame. */
