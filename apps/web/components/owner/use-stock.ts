@@ -3,11 +3,10 @@ import type { Product } from "@/lib/catalog";
 import type { OwnerBackend } from "@/lib/owner/backend";
 
 /** The shelves, fetched when the Stock tab opens and again after a bill adds to them. */
-export function useStock(backend: OwnerBackend, open: boolean) {
+export function useStock(backend: OwnerBackend) {
   const [products, setProducts] = useState<Product[] | null>(null);
 
   useEffect(() => {
-    if (!open) return;
     let current = true;
     backend.stock().then(
       (next) => {
@@ -19,7 +18,7 @@ export function useStock(backend: OwnerBackend, open: boolean) {
     return () => {
       current = false;
     };
-  }, [backend, open]);
+  }, [backend]);
 
   const reload = useCallback(() => {
     backend.stock().then(setProducts, () => undefined);

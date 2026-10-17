@@ -138,6 +138,7 @@ export function Talk({
         readBack={convo.readBack}
         onQuantity={convo.changeQuantity}
         onSend={convo.send}
+        onSources={backend.priceSources}
       />
     </main>
   );

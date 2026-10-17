@@ -203,5 +203,24 @@ export function previewCustomer(lang: Lang, customerName: string): CustomerBacke
     audioUrl() {
       return null;
     },
+
+    // In the preview every price was printed on Sri Balaji Agencies' last bill.
+    async priceSources() {
+      const billedOn = new Date(Date.now() - 10 * 24 * 60 * 60 * 1000).toISOString();
+      return cart().lines.map((line) => ({
+        productId: line.code,
+        name: line.name,
+        art: line.art,
+        pricePaise: line.unitPricePaise,
+        bill: {
+          distributor: "Sri Balaji Agencies",
+          billNumber: "SB-2058",
+          billedOn,
+          mrpPaise: line.unitPricePaise,
+          unitCostPaise: null,
+          photoUrl: null,
+        },
+      }));
+    },
   };
 }

@@ -21,6 +21,11 @@ export const en = {
   review: "Review order",
   cartEmpty: "Nothing in your order yet",
   total: "Total",
+  pricesFrom: "Where the prices come from",
+  pricesNote:
+    "Every price is the MRP printed on the shop's bill. The assistant never sets a price.",
+  priceOnBill: (mrp: string, bill: string) => `MRP ${mrp} on ${bill}`,
+  priceSetByShop: "Set by the shop",
   payByLink: "Pay with a Paytm link",
   onAccount: "Put it on my account",
   sendOrder: (shop: string) => `Send to ${shop}`,

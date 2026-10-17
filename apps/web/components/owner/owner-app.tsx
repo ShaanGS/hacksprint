@@ -3,33 +3,28 @@
 import { Volume2, WifiOff } from "lucide-react";
 import { AnimatePresence, motion } from "motion/react";
 import { useState, type ReactNode } from "react";
-import { BillScan } from "@/components/owner/bill-scan";
 import { CreditTab } from "@/components/owner/credit-tab";
+import { HomeTab } from "@/components/owner/home-tab";
 import { OrdersTab } from "@/components/owner/orders-tab";
 import { useOwnerLanguage } from "@/components/owner/owner-language";
-import { StockTab } from "@/components/owner/stock-tab";
+import { StockView } from "@/components/owner/stock-view";
 import { TabBar, type OwnerTab } from "@/components/owner/tab-bar";
-import { TodayTab } from "@/components/owner/today-tab";
 import { useHoldToDecide } from "@/components/owner/use-hold-to-decide";
 import { useNotice } from "@/components/owner/use-notice";
 import { useOwnerOrders } from "@/components/owner/use-owner-orders";
-import { useStock } from "@/components/owner/use-stock";
 import type { OwnerVoice } from "@/components/owner/use-owner-voice";
 import { useWakeLock } from "@/components/owner/use-wake-lock";
 import { Art } from "@/components/ui/art";
 import { snappy } from "@/lib/motion";
 import type { OwnerBackend, VoiceDecision } from "@/lib/owner/backend";
-import { reportSentence } from "@/lib/owner/report";
-import { isLow, reorderList } from "@/lib/owner/stock";
 import { takings } from "@/lib/owner/summary";
-import { previewProducts, previewShop } from "@/lib/preview/data";
-import { creditRows, daySummary } from "@/lib/preview/owner";
+import { creditRows } from "@/lib/preview/owner";
 import { previewRecorder } from "@/lib/preview/owner-backend";
 
-// The live app has Orders and Stock until credit and the home numbers have their API (spec
-// section 11, steps 4 and 5); the preview shows every tab on sample data.
-const LIVE_TABS: OwnerTab[] = ["orders", "stock"];
-const PREVIEW_TABS: OwnerTab[] = ["orders", "stock", "credit", "today"];
+// The live app gets the Credit tab with the credit book's API (spec section 11, step 5); the
+// preview shows every tab on sample data.
+const LIVE_TABS: OwnerTab[] = ["orders", "stock", "home"];
+const PREVIEW_TABS: OwnerTab[] = ["orders", "stock", "credit", "home"];
 
 /** The owner's app: today's orders first, then stock, credit and the day's numbers. */
 export function OwnerApp({
@@ -60,7 +55,6 @@ export function OwnerApp({
     onMicBlocked: () => notify(text.micBlocked),
     onResult: (result) => notify(heardLine(result)),
   });
-  const stock = useStock(backend, tab === "stock");
   useWakeLock(live);
 
   function heardLine({ heard, decision }: VoiceDecision): string {
@@ -117,29 +111,9 @@ export function OwnerApp({
               <Art name="clock" size={120} eager />
             </div>
           ))}
-        {tab === "stock" &&
-          (stock.products ? (
-            <StockTab
-              products={stock.products}
-              bill={<BillScan backend={backend} products={stock.products} onAdded={stock.reload} />}
-            />
-          ) : (
-            <div className="grid h-full place-items-center">
-              <Art name="crate" size={120} eager />
-            </div>
-          ))}
+        {tab === "stock" && <StockView backend={backend} />}
         {tab === "credit" && <CreditTab rows={creditRows(orders)} />}
-        {tab === "today" && (
-          <TodayTab
-            distributorName={previewShop.distributorName}
-            summary={daySummary(orders)}
-            report={reportSentence(
-              daySummary(orders),
-              previewProducts.filter(isLow).map((product) => product.name),
-            )}
-            reorder={reorderList(previewProducts)}
-          />
-        )}
+        {tab === "home" && <HomeTab backend={backend} />}
       </div>
       {tabs.length > 1 && <TabBar tabs={tabs} tab={tab} onChange={setTab} waiting={waiting} />}
     </div>

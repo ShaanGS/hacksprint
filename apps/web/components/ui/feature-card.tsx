@@ -19,6 +19,7 @@ export function FeatureCard({
   text,
   action,
   href,
+  onClick,
   children,
   className,
 }: {
@@ -28,6 +29,8 @@ export function FeatureCard({
   /** The link's words, shown with an arrow when the card has an `href`. */
   action?: string;
   href?: string;
+  /** Makes the whole card a button, for a card that opens a sheet. */
+  onClick?: () => void;
   /** Extra content on the panel, such as a button. */
   children?: ReactNode;
   className?: string;
@@ -57,6 +60,17 @@ export function FeatureCard({
       <Link href={href} className={cn(shell, "transition-transform active:scale-98")}>
         {body}
       </Link>
+    );
+  }
+  if (onClick) {
+    return (
+      <button
+        type="button"
+        onClick={onClick}
+        className={cn(shell, "w-full text-left transition-transform active:scale-98")}
+      >
+        {body}
+      </button>
     );
   }
   return <div className={shell}>{body}</div>;

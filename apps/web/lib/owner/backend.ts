@@ -1,6 +1,7 @@
 import type { BillOutcome, ConfirmLine, ScannedBill } from "@/lib/bills/types";
 import type { Product } from "@/lib/catalog";
 import type { PaymentMode } from "@/lib/orders/submit";
+import type { HomeNumbers, HomeSource, HomeSourceKind, PriceSource } from "@/lib/sources/types";
 import type { RejectReason } from "@/lib/orders/state";
 import type { Decision } from "@/lib/owner/approval";
 import type { OwnerOrder } from "@/lib/owner/types";
@@ -49,4 +50,10 @@ export interface OwnerBackend {
   scanBill(photo: Blob): Promise<ScannedBill>;
   /** The owner's yes to a checked bill: stock, prices, payable and the delivery check. */
   confirmBill(bill: ScannedBill, distributorId: string, lines: ConfirmLine[]): Promise<BillOutcome>;
+  /** Today's home numbers (spec E1). */
+  home(): Promise<HomeNumbers>;
+  /** The rows behind a home number (spec E3). */
+  homeSource(kind: HomeSourceKind): Promise<HomeSource>;
+  /** The bill line behind a product's price (spec E3). */
+  priceSource(product: Product): Promise<PriceSource>;
 }

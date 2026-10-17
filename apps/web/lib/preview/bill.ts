@@ -8,6 +8,7 @@ import type {
 } from "@/lib/bills/types";
 import type { Product } from "@/lib/catalog";
 import { lineTotalPaise } from "@/lib/orders/totals";
+import type { HomeSource, PriceSource } from "@/lib/sources/types";
 
 // The bill scan on sample data: whatever photo is taken, the preview "reads" today's delivery
 // bill from Sri Balaji Agencies (scripts/fixtures/delivery-bill-sb-2073.jpg), and confirming it
@@ -39,6 +40,28 @@ const lastCost: Record<string, number> = {
   "gold-winner-oil": 14200,
 };
 
+const DAY_MS = 24 * 60 * 60 * 1000;
+
+function daysFromNow(days: number): string {
+  return new Date(Date.now() + days * DAY_MS).toISOString().slice(0, 10);
+}
+
+/** What the shop owed its distributors before today's delivery. */
+const earlierPayables = [
+  {
+    distributor: "Murugan Traders",
+    billNumber: "MT-131",
+    amountPaise: 987000,
+    due: daysFromNow(1),
+  },
+  {
+    distributor: "Sri Balaji Agencies",
+    billNumber: "SB-2058",
+    amountPaise: 1864000,
+    due: daysFromNow(5),
+  },
+];
+
 const printed = [
   ["Aashirvaad Shudh Chakki Atta 5 kg", "atta", 10, 27400, 29500],
   ["Sugar (per kg)", "sugar", 10, 4000, 4600],
@@ -48,6 +71,7 @@ const printed = [
 
 export function previewBills(products: Product[]) {
   let addedOn: string | null = null;
+  let today: { lines: ConfirmLine[]; totalPaise: number } | null = null;
 
   async function scanBill(): Promise<ScannedBill> {
     await new Promise((resolve) => setTimeout(resolve, READ_MS));
@@ -118,8 +142,46 @@ export function previewBills(products: Product[]) {
         total + lineTotalPaise({ qty: line.qty, unitPricePaise: line.unitCostPaise }),
       0,
     );
+    today = { lines, totalPaise };
     return { totalPaise, stock, issues };
   }
 
-  return { scanBill, confirmBill };
+  /** What the shop owes, with today's bill once it is in. */
+  function payables(): Extract<HomeSource, { kind: "owed-by-shop" }>["rows"] {
+    const todays = today
+      ? [
+          {
+            distributor: "Sri Balaji Agencies",
+            billNumber: "SB-2073",
+            amountPaise: today.totalPaise,
+            due: daysFromNow(15),
+          },
+        ]
+      : [];
+    return [...earlierPayables, ...todays];
+  }
+
+  /** Today's bill for what it delivered; Sri Balaji's last bill for everything else. */
+  function priceSource(product: Product): PriceSource {
+    const line = today?.lines.find((l) => l.productId === product.id);
+    return {
+      productId: product.id,
+      name: product.name,
+      art: product.art,
+      pricePaise: product.pricePaise,
+      bill: {
+        distributor: "Sri Balaji Agencies",
+        billNumber: line ? "SB-2073" : "SB-2058",
+        billedOn: daysFromNow(line ? 0 : -10),
+        mrpPaise: line?.mrpPaise ?? product.pricePaise,
+        unitCostPaise:
+          line?.unitCostPaise ??
+          lastCost[product.id] ??
+          Math.round((product.pricePaise * 0.86) / 100) * 100,
+        photoUrl: null,
+      },
+    };
+  }
+
+  return { scanBill, confirmBill, payables, priceSource };
 }

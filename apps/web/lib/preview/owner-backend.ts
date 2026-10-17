@@ -4,7 +4,9 @@ import type { OwnerBackend } from "@/lib/owner/backend";
 import type { OwnerOrder } from "@/lib/owner/types";
 import { previewBills } from "@/lib/preview/bill";
 import { previewProducts } from "@/lib/preview/data";
-import { previewOwnerOrders } from "@/lib/preview/owner";
+import { creditRows, previewOwnerOrders } from "@/lib/preview/owner";
+import { takings } from "@/lib/owner/summary";
+import type { HomeSource } from "@/lib/sources/types";
 
 // The owner's screens on sample data. Moves follow transition_order: an order moves only from
 // the state it is in. A link is "paid" a few seconds after approval, so the preview shows an
@@ -70,6 +72,60 @@ export function previewOwner(): OwnerBackend {
     },
     scanBill: bills.scanBill,
     confirmBill: bills.confirmBill,
+    async home() {
+      const saved = orders.filter((order) => order.status !== "rejected");
+      const sources = await Promise.all(
+        (["collected", "owed-to-shop", "owed-by-shop"] as const).map(backend.homeSource),
+      );
+      return {
+        ordersCount: saved.length,
+        ordersPaise: saved.reduce((total, order) => total + order.totalPaise, 0),
+        collectedPaise: sources[0].totalPaise,
+        owedToShopPaise: sources[1].totalPaise,
+        owedByShopPaise: sources[2].totalPaise,
+      };
+    },
+    async homeSource(kind): Promise<HomeSource> {
+      const total = (rows: { amountPaise: number }[]) =>
+        rows.reduce((sum, row) => sum + row.amountPaise, 0);
+      const at = new Date().toISOString();
+      if (kind === "orders") {
+        const rows = orders
+          .filter((order) => order.status !== "rejected")
+          .map((order) => ({
+            orderNumber: order.number,
+            customer: order.customer,
+            amountPaise: order.totalPaise,
+            at,
+          }));
+        return { kind, totalPaise: total(rows), rows };
+      }
+      if (kind === "collected") {
+        const paid = orders.filter(
+          (o) => o.paymentMode === "link" && (o.status === "paid" || o.status === "delivered"),
+        );
+        const rows = paid.map((order) => ({
+          orderNumber: order.number,
+          customer: order.customer,
+          amountPaise: order.totalPaise,
+          at,
+          reference: null,
+        }));
+        return { kind, totalPaise: takings(orders).collectedPaise, rows };
+      }
+      if (kind === "owed-to-shop") {
+        const rows = creditRows(orders).map((row) => ({
+          customer: row.customer,
+          amountPaise: row.owedPaise,
+        }));
+        return { kind, totalPaise: total(rows), rows };
+      }
+      const rows = bills.payables();
+      return { kind, totalPaise: total(rows), rows };
+    },
+    async priceSource(product) {
+      return bills.priceSource(product);
+    },
   };
   return backend;
 }

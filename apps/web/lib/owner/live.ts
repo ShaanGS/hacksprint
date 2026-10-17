@@ -7,6 +7,7 @@ import {
   type VoiceDecision,
 } from "@/lib/owner/backend";
 import type { OwnerOrder } from "@/lib/owner/types";
+import type { HomeNumbers, HomeSource, PriceSource } from "@/lib/sources/types";
 
 // The owner's screens on the real API (spec section 9). The session is an httpOnly cookie set
 // by the PIN, so every call is a plain fetch; a 401 sends the owner back to the PIN screen.
@@ -71,6 +72,15 @@ export const liveOwner: OwnerBackend = {
         mrp_paise: line.mrpPaise,
       })),
     });
+  },
+  home() {
+    return call<HomeNumbers>("/api/home");
+  },
+  homeSource(kind) {
+    return call<HomeSource>(`/api/sources/home/${kind}`);
+  },
+  priceSource(product) {
+    return call<PriceSource>(`/api/sources/price/${product.id}`);
   },
 };
 

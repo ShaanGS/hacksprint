@@ -14,9 +14,18 @@ type Filter = "all" | "low" | "out";
 
 /**
  * O2: the shelves at a glance, under today's delivery bill (spec B1). Every product is a tile
- * with its picture and how full it is.
+ * with its picture and how full it is; tapping it shows the bill behind its price.
  */
-export function StockTab({ products, bill }: { products: Product[]; bill: ReactNode }) {
+export function StockTab({
+  products,
+  bill,
+  onProduct,
+}: {
+  products: Product[];
+  bill: ReactNode;
+  /** Opens where the product's price comes from (spec E3). */
+  onProduct: (product: Product) => void;
+}) {
   const { text } = useOwnerLanguage();
   const [filter, setFilter] = useState<Filter>("all");
   const low = products.filter((p) => isLow(p) && p.stockQty > 0);
@@ -38,7 +47,13 @@ export function StockTab({ products, bill }: { products: Product[]; bill: ReactN
       </div>
       <div className="mt-4 grid grid-cols-2 gap-3">
         {shown.map((product) => (
-          <Tile key={product.code} art={toArtName(product.art)} artSize={80} size="lg">
+          <Tile
+            key={product.code}
+            art={toArtName(product.art)}
+            artSize={80}
+            size="lg"
+            onClick={() => onProduct(product)}
+          >
             {product.stockQty <= 0 ? (
               <Badge tone="danger">{text.outOfStock}</Badge>
             ) : (

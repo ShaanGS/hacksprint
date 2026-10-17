@@ -1,16 +1,16 @@
 "use client";
 
-import { BookOpen, ClipboardList, Moon, Package, type LucideIcon } from "lucide-react";
+import { BookOpen, ClipboardList, House, Package, type LucideIcon } from "lucide-react";
 import { useOwnerLanguage } from "@/components/owner/owner-language";
 import { cn } from "@/lib/cn";
 
-export type OwnerTab = "orders" | "stock" | "credit" | "today";
+export type OwnerTab = "orders" | "stock" | "credit" | "home";
 
 const icons: Record<OwnerTab, LucideIcon> = {
   orders: ClipboardList,
   stock: Package,
   credit: BookOpen,
-  today: Moon,
+  home: House,
 };
 
 const columns = ["", "grid-cols-1", "grid-cols-2", "grid-cols-3", "grid-cols-4"];
