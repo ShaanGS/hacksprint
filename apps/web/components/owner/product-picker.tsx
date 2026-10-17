@@ -2,16 +2,18 @@
 
 import { Art, toArtName } from "@/components/ui/art";
 import { ListRow } from "@/components/ui/list-row";
-import type { Product } from "@/lib/catalog";
+
+/** What a picker needs to show a product; the Stock tab's rows carry it. */
+export type Pickable = { id: string; name: string; art: string; packSize: string | null };
 
 function words(text: string): Set<string> {
   return new Set(text.toLowerCase().match(/[a-z]{3,}/g) ?? []);
 }
 
 /** Products sharing a word with what the bill printed come first: likely, not certain. */
-export function likelyFirst(products: Product[], printedName: string): Product[] {
+export function likelyFirst(products: Pickable[], printedName: string): Pickable[] {
   const printed = words(printedName);
-  const shared = (p: Product) => [...words(p.name)].filter((w) => printed.has(w)).length;
+  const shared = (p: Pickable) => [...words(p.name)].filter((w) => printed.has(w)).length;
   return [...products].sort((a, b) => shared(b) - shared(a) || a.name.localeCompare(b.name));
 }
 
@@ -21,9 +23,9 @@ export function ProductPicker({
   printedName,
   onPick,
 }: {
-  products: Product[];
+  products: Pickable[];
   printedName: string;
-  onPick: (product: Product) => void;
+  onPick: (product: Pickable) => void;
 }) {
   return (
     <ul className="-mx-3">

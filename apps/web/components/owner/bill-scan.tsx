@@ -1,21 +1,20 @@
 "use client";
 
-import { Camera, LoaderCircle } from "lucide-react";
+import { Camera, ImageIcon, LoaderCircle } from "lucide-react";
 import Image from "next/image";
-import { useRef, useState } from "react";
+import { useRef, useState, type ChangeEvent } from "react";
 import { BillCheck, canConfirm, checkedTotal, type CheckLine } from "@/components/owner/bill-check";
 import { BillResult } from "@/components/owner/bill-result";
 import { useOwnerLanguage } from "@/components/owner/owner-language";
-import { ProductPicker } from "@/components/owner/product-picker";
+import { ProductPicker, type Pickable } from "@/components/owner/product-picker";
 import { Art } from "@/components/ui/art";
 import { Button } from "@/components/ui/button";
 import { FeatureCard } from "@/components/ui/feature-card";
 import { Sheet } from "@/components/ui/sheet";
 import { shrinkPhoto } from "@/lib/bills/photo";
 import type { BillOutcome, ScannedBill } from "@/lib/bills/types";
-import type { Product } from "@/lib/catalog";
 import { formatMoney } from "@/lib/money";
-import type { OwnerBackend } from "@/lib/owner/backend";
+import { ownerApi } from "@/lib/owner/api";
 
 type Step =
   | { name: "closed" }
@@ -28,17 +27,10 @@ type Step =
  * B1, B4, C1: photograph today's bill, check its lines by tapping, and it goes into stock; then
  * see what did not come and what got dearer. Nothing changes until the owner says yes.
  */
-export function BillScan({
-  backend,
-  products,
-  onAdded,
-}: {
-  backend: OwnerBackend;
-  products: Product[];
-  onAdded: () => void;
-}) {
+export function BillScan({ products, onAdded }: { products: Pickable[]; onAdded: () => void }) {
   const { text } = useOwnerLanguage();
   const camera = useRef<HTMLInputElement>(null);
+  const gallery = useRef<HTMLInputElement>(null);
   const [step, setStep] = useState<Step>({ name: "closed" });
   const [lines, setLines] = useState<CheckLine[]>([]);
   const [distributorId, setDistributorId] = useState<string | null>(null);
@@ -51,7 +43,7 @@ export function BillScan({
     const photoUrl = URL.createObjectURL(file);
     setStep({ name: "reading", photoUrl });
     try {
-      const bill = await backend.scanBill(await shrinkPhoto(file));
+      const bill = await ownerApi.scanBill(await shrinkPhoto(file));
       if (mine !== attempt.current) return;
       setLines(bill.lines.map((line) => ({ ...line, included: true })));
       setDistributorId(bill.distributorId);
@@ -68,7 +60,7 @@ export function BillScan({
     setStep({ name: "checking", bill, saving: true, failed: false });
     try {
       const going = lines.filter((line) => line.included);
-      const outcome = await backend.confirmBill(
+      const outcome = await ownerApi.confirmBill(
         bill,
         distributorId,
         going.map((line) => ({
@@ -84,6 +76,12 @@ export function BillScan({
     } catch {
       setStep({ name: "checking", bill, saving: false, failed: true });
     }
+  }
+
+  function pickPhoto(event: ChangeEvent<HTMLInputElement>) {
+    const file = event.target.files?.[0];
+    event.target.value = "";
+    if (file) read(file);
   }
 
   function change(index: number, update: Partial<CheckLine>) {
@@ -107,19 +105,25 @@ export function BillScan({
           <Camera aria-hidden className="size-5" />
           {text.takePhoto}
         </button>
+        <button
+          type="button"
+          onClick={() => gallery.current?.click()}
+          className="mt-2 flex min-h-11 w-full items-center justify-center gap-2 rounded-xl text-sm font-semibold text-accent-ink"
+        >
+          <ImageIcon aria-hidden className="size-4" />
+          {text.choosePhoto}
+        </button>
       </FeatureCard>
+      {/* The camera opens straight away; the second input picks a photo already taken. */}
       <input
         ref={camera}
         type="file"
         accept="image/*"
         capture="environment"
         className="hidden"
-        onChange={(event) => {
-          const file = event.target.files?.[0];
-          event.target.value = "";
-          if (file) read(file);
-        }}
+        onChange={pickPhoto}
       />
+      <input ref={gallery} type="file" accept="image/*" className="hidden" onChange={pickPhoto} />
 
       <Sheet
         open={step.name !== "closed"}

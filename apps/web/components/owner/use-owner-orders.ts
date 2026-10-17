@@ -1,7 +1,8 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import type { RejectReason } from "@/lib/orders/state";
 import type { PaymentMode } from "@/lib/orders/submit";
-import { SignedOutError, type OwnerBackend, type VoiceDecision } from "@/lib/owner/backend";
+import type { OwnerBackend, VoiceDecision } from "@/lib/owner/backend";
+import { SignedOutError } from "@/lib/owner/fetch";
 import type { OwnerOrder } from "@/lib/owner/types";
 
 // The owner's orders, fetched every 2 seconds (spec section 13). A decision shows at once and

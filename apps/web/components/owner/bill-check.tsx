@@ -10,7 +10,7 @@ import { QtyStepper } from "@/components/ui/qty-stepper";
 import { cn } from "@/lib/cn";
 import { lineAgrees, lineReady } from "@/lib/bills/match";
 import type { ScannedBill, ScannedLine } from "@/lib/bills/types";
-import type { Product } from "@/lib/catalog";
+import type { Pickable } from "@/components/owner/product-picker";
 import { langInfo } from "@/lib/i18n/languages";
 import { formatMoney } from "@/lib/money";
 import { lineTotalPaise } from "@/lib/orders/totals";
@@ -56,7 +56,7 @@ export function BillCheck({
 }: {
   bill: ScannedBill;
   lines: CheckLine[];
-  products: Product[];
+  products: Pickable[];
   distributorId: string | null;
   onDistributor: (id: string) => void;
   onQty: (index: number, qty: number) => void;
@@ -128,7 +128,7 @@ function Line({
   onPick,
 }: {
   line: CheckLine;
-  product: Product | null;
+  product: Pickable | null;
   onQty: (qty: number) => void;
   onInclude: (included: boolean) => void;
   onPick: () => void;

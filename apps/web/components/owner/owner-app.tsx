@@ -1,158 +1,120 @@
 "use client";
 
-import { Volume2, WifiOff } from "lucide-react";
-import { AnimatePresence, motion } from "motion/react";
-import { useState, type ReactNode } from "react";
-import { CreditView } from "@/components/owner/credit-view";
+import { WifiOff } from "lucide-react";
+import { AnimatePresence } from "motion/react";
+import { useMemo, useState } from "react";
+import { BankTab } from "@/components/owner/bank-tab";
+import { CollectTab } from "@/components/owner/collect-tab";
+import { DemoTools } from "@/components/owner/demo-tools";
 import { HomeTab } from "@/components/owner/home-tab";
-import { OrdersTab } from "@/components/owner/orders-tab";
+import { LiveUpdates } from "@/components/owner/live";
 import { useOwnerLanguage } from "@/components/owner/owner-language";
-import { StockView } from "@/components/owner/stock-view";
+import { OwnerScreenContext } from "@/components/owner/owner-screen";
+import { StockTab } from "@/components/owner/stock-tab";
 import { TabBar, type OwnerTab } from "@/components/owner/tab-bar";
+import { Pill, TopNotices } from "@/components/owner/top-notices";
 import { useHoldToTalk } from "@/components/owner/use-hold-to-talk";
 import { useNotice } from "@/components/owner/use-notice";
-import { useOwnerOrders } from "@/components/owner/use-owner-orders";
 import type { OwnerVoice } from "@/components/owner/use-owner-voice";
-import { useWakeLock } from "@/components/owner/use-wake-lock";
-import { Art } from "@/components/ui/art";
-import { snappy } from "@/lib/motion";
-import type { OwnerBackend, VoiceDecision } from "@/lib/owner/backend";
-import { takings } from "@/lib/owner/summary";
-import { previewRecorder } from "@/lib/preview/owner-backend";
+import { VoiceSheet } from "@/components/owner/voice-sheet";
+import { HoldMic } from "@/components/ui/hold-mic";
+import { ownerApi, type VoiceCard } from "@/lib/owner/api";
 
-const TABS: OwnerTab[] = ["orders", "stock", "credit", "home"];
-
-/** The owner's app: today's orders first, then stock, credit and the day's numbers. */
+/**
+ * The owner's app (spec section 7): where his money is, who to collect from, his stock and the
+ * bank. The mic in the middle of the tab bar takes any of the four spoken entries from any tab.
+ */
 export function OwnerApp({
-  live,
-  backend,
-  ownerName,
+  shopId,
+  demo,
   voice,
   onSignedOut,
 }: {
-  live: boolean;
-  backend: OwnerBackend;
-  ownerName: string;
+  shopId: string;
+  demo: boolean;
   voice: OwnerVoice;
   onSignedOut: () => void;
 }) {
   const { text } = useOwnerLanguage();
-  const [tab, setTab] = useState<OwnerTab>("orders");
+  const [tab, setTab] = useState<OwnerTab>("home");
   const [notice, notify] = useNotice();
-  const shop = useOwnerOrders(backend, {
-    onArrived: (order) => voice.announce(backend.announcementUrl(order)),
-    onSignedOut,
-    onFailed: () => notify(text.failed),
-  });
-  const askMicrophone = live ? voice.askMicrophone : async () => previewRecorder;
+  const [offline, setOffline] = useState(false);
+  const [card, setCard] = useState<VoiceCard | null>(null);
+  const [tools, setTools] = useState(false);
+  const [hearing, setHearing] = useState(false);
   const hold = useHoldToTalk({
-    askMicrophone,
+    askMicrophone: voice.askMicrophone,
     onTooShort: () => notify(text.holdToSay),
     onMicBlocked: () => notify(text.micBlocked),
   });
-  useWakeLock(live);
 
-  function heardLine({ heard, decision }: VoiceDecision): string {
-    if (!heard) return text.notUnderstood;
-    return `${text.heard(heard)} · ${decision ? text.decided[decision] : text.notUnderstood}`;
+  async function hear(audio: Blob) {
+    setHearing(true);
+    try {
+      setCard(await ownerApi.hear(audio));
+    } catch {
+      notify(text.failed);
+    } finally {
+      setHearing(false);
+    }
   }
 
-  const orders = shop.orders ?? [];
-  const waiting = orders.filter((order) => order.status === "pending_approval").length;
-  return (
-    <div className="relative h-full">
-      <div className="pointer-events-none absolute inset-x-0 top-0 z-40 flex flex-col items-center gap-2 px-4 pt-3">
-        <AnimatePresence initial={false}>
-          {live && !voice.soundOn && (
-            <Pill
-              key="sound"
-              icon={<Volume2 aria-hidden className="size-4" />}
-              onClick={() => {
-                voice.unlockSound();
-                voice.askMicrophone();
-              }}
-            >
-              {text.soundOff}
-            </Pill>
-          )}
-          {shop.offline && (
-            <Pill key="offline" icon={<WifiOff aria-hidden className="size-4" />}>
-              {text.offline}
-            </Pill>
-          )}
-          {notice && <Pill key="notice">{notice}</Pill>}
-        </AnimatePresence>
-      </div>
-
-      {/* Keyed on the tab, so each tab opens at its top. */}
-      <div key={tab} className="h-full overflow-y-auto">
-        {tab === "orders" &&
-          (shop.orders ? (
-            <OrdersTab
-              ownerName={ownerName}
-              orders={orders}
-              takings={takings(orders)}
-              mic={hold.mic}
-              onHoldStart={hold.holdStarted}
-              onHoldEnd={(order) =>
-                hold.holdEnded(async (audio) => {
-                  const result = await shop.decideByVoice(order, audio);
-                  if (result) notify(heardLine(result));
-                })
-              }
-              onApprove={shop.approve}
-              onReject={shop.reject}
-              onDeliver={shop.deliver}
-              onRetryLink={shop.retryLink}
-            />
-          ) : (
-            <div className="grid h-full place-items-center">
-              <Art name="clock" size={120} eager />
-            </div>
-          ))}
-        {tab === "stock" && <StockView backend={backend} />}
-        {tab === "credit" && (
-          <CreditView backend={backend} askMicrophone={askMicrophone} notify={notify} />
-        )}
-        {tab === "home" && <HomeTab backend={backend} />}
-      </div>
-      <TabBar tabs={TABS} tab={tab} onChange={setTab} waiting={waiting} />
-    </div>
+  const screen = useMemo(
+    () => ({ demo, notify, openDemoTools: () => setTools(true) }),
+    [demo, notify],
   );
-}
-
-/** A message floating at the top of the screen; with onClick it is a button. */
-function Pill({
-  icon,
-  onClick,
-  children,
-}: {
-  icon?: ReactNode;
-  onClick?: () => void;
-  children: ReactNode;
-}) {
-  const style =
-    "pointer-events-auto flex min-h-11 max-w-full items-center gap-2 rounded-full bg-ink px-4 py-2 text-sm font-semibold text-surface shadow-float";
+  const status =
+    hold.mic === "listening"
+      ? text.listening
+      : hold.mic === "thinking" || hearing
+        ? text.working
+        : null;
   return (
-    <motion.div
-      layout
-      initial={{ y: -12, opacity: 0 }}
-      animate={{ y: 0, opacity: 1 }}
-      exit={{ y: -12, opacity: 0 }}
-      transition={snappy}
-      role={onClick ? undefined : "status"}
-    >
-      {onClick ? (
-        <button type="button" onClick={onClick} className={style}>
-          {icon}
-          {children}
-        </button>
-      ) : (
-        <p className={style}>
-          {icon}
-          {children}
-        </p>
-      )}
-    </motion.div>
+    <OwnerScreenContext value={screen}>
+      <LiveUpdates shopId={shopId} onOffline={setOffline} onSignedOut={onSignedOut}>
+        <div className="relative h-full">
+          <TopNotices>
+            <AnimatePresence initial={false}>
+              {offline && (
+                <Pill key="offline" icon={<WifiOff aria-hidden className="size-4" />}>
+                  {text.offline}
+                </Pill>
+              )}
+              {status && <Pill key="status">{status}</Pill>}
+              {notice && <Pill key="notice">{notice}</Pill>}
+            </AnimatePresence>
+          </TopNotices>
+
+          {/* Keyed on the tab, so each tab opens at its top. */}
+          <div key={tab} className="h-full overflow-y-auto">
+            {tab === "home" && <HomeTab onCollect={() => setTab("collect")} />}
+            {tab === "collect" && <CollectTab />}
+            {tab === "stock" && <StockTab onBank={() => setTab("bank")} />}
+            {tab === "bank" && <BankTab onCollect={() => setTab("collect")} />}
+          </div>
+
+          <TabBar
+            tab={tab}
+            onChange={setTab}
+            mic={
+              <HoldMic
+                size="md"
+                state={hold.mic}
+                label={status ?? text.holdAndSpeak}
+                onHoldStart={hold.holdStarted}
+                onHoldEnd={() => hold.holdEnded(hear)}
+              />
+            }
+          />
+
+          <VoiceSheet
+            key={card?.entry_id ?? card?.transcript ?? "none"}
+            card={card}
+            onDone={() => setCard(null)}
+          />
+          {demo && <DemoTools open={tools} onClose={() => setTools(false)} onRecording={hear} />}
+        </div>
+      </LiveUpdates>
+    </OwnerScreenContext>
   );
 }

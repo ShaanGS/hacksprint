@@ -1,52 +1,66 @@
 "use client";
 
 import Image from "next/image";
+import { useEffect, useState } from "react";
 import { useOwnerLanguage } from "@/components/owner/owner-language";
+import { SourceBadge } from "@/components/owner/source-badge";
+import { useDates } from "@/components/owner/use-dates";
 import { Amount } from "@/components/ui/amount";
 import { Art, toArtName } from "@/components/ui/art";
 import { ListRow } from "@/components/ui/list-row";
 import { Monogram } from "@/components/ui/monogram";
 import { Sheet } from "@/components/ui/sheet";
-import { langInfo } from "@/lib/i18n/languages";
 import { formatMoney } from "@/lib/money";
-import type { HomeSource, HomeSourceKind, PriceSource } from "@/lib/sources/types";
-
-function useDates() {
-  const { lang } = useOwnerLanguage();
-  const locale = langInfo[lang].sarvamCode;
-  return {
-    time: (iso: string) =>
-      new Date(iso).toLocaleTimeString(locale, { hour: "numeric", minute: "2-digit" }),
-    day: (iso: string) =>
-      new Date(iso).toLocaleDateString(locale, { day: "numeric", month: "short" }),
-  };
-}
+import { ownerApi, type SourceRows } from "@/lib/owner/api";
+import type { RotationPart, SourceRow } from "@/lib/rotation/sources";
+import type { PriceSource } from "@/lib/sources/types";
 
 /**
- * E3: the rows behind a home number, and what they add up to, which is the number tapped. The
- * owner can check any number against the orders, payments, credit or bills it came from.
+ * E3: the rows behind a number on the money screens, and what they add up to, which is the
+ * number tapped. Each row says where it came from.
  */
-export function SourceSheet({
-  kind,
-  source,
+export function RotationSourceSheet({
+  part,
   onClose,
 }: {
-  kind: HomeSourceKind | null;
-  source: HomeSource | null;
+  part: RotationPart | null;
   onClose: () => void;
 }) {
   const { text } = useOwnerLanguage();
+  const [source, setSource] = useState<SourceRows | null>(null);
+
+  useEffect(() => {
+    if (!part) return;
+    let current = true;
+    ownerApi.source(part).then(
+      (next) => {
+        if (current) setSource(next);
+      },
+      () => {
+        if (current) onClose();
+      },
+    );
+    return () => {
+      current = false;
+      setSource(null);
+    };
+  }, [part, onClose]);
+
+  const usualWeek = part === "usual_week_sales";
   return (
     <Sheet
-      open={kind !== null}
+      open={part !== null}
       onOpenChange={(open) => !open && onClose()}
-      title={kind ? text.sourceTitles[kind] : ""}
+      title={part ? text.parts[part] : ""}
       footer={
         source && (
-          <p className="flex items-baseline justify-between text-lg font-bold">
-            {text.addsUpTo}
-            <Amount paise={source.totalPaise} size="xl" />
-          </p>
+          <div className="pb-3">
+            <p className="flex items-baseline justify-between text-lg font-bold">
+              {usualWeek ? text.usualWeek : text.addsUpTo}
+              <Amount paise={source.total_paise} size="xl" />
+            </p>
+            {usualWeek && <p className="text-sm text-ink-muted">{text.usualWeekNote}</p>}
+          </div>
         )
       }
     >
@@ -55,88 +69,116 @@ export function SourceSheet({
           <Art name="clock" size={72} />
         </div>
       ) : source.rows.length === 0 ? (
-        <p className="py-8 text-center text-base text-ink-muted">{text.nothingYet}</p>
+        <p className="py-8 text-center text-base text-ink-muted">{text.nothingHere}</p>
       ) : (
         <ul className="-mx-3">
-          <Rows source={source} />
+          {source.rows.map((row, index) => (
+            <li key={index}>
+              <SourceRowView row={row} />
+            </li>
+          ))}
         </ul>
       )}
     </Sheet>
   );
 }
 
-function Rows({ source }: { source: HomeSource }) {
+function SourceRowView({ row }: { row: SourceRow }) {
   const { text } = useOwnerLanguage();
   const dates = useDates();
-  switch (source.kind) {
-    case "orders":
-      return source.rows.map((row) => (
-        <li key={row.orderNumber}>
-          <ListRow
-            art={<Monogram name={row.customer} />}
-            title={row.customer}
-            meta={`#${row.orderNumber} · ${dates.time(row.at)}`}
-            trailing={<Amount paise={row.amountPaise} size="md" />}
-          />
-        </li>
-      ));
-    case "collected":
-      return source.rows.map((row) => (
-        <li key={`${row.orderNumber}-${row.at}`}>
-          <ListRow
-            art={<Monogram name={row.customer} />}
-            title={row.customer}
-            meta={[
-              `#${row.orderNumber}`,
-              dates.time(row.at),
-              row.reference && text.reference(row.reference),
-            ]
-              .filter(Boolean)
-              .join(" · ")}
-            trailing={<Amount paise={row.amountPaise} size="md" />}
-          />
-        </li>
-      ));
-    case "owed-to-shop":
-      return source.rows.map((row) => (
-        <li key={row.customer}>
-          <ListRow
-            art={<Monogram name={row.customer} />}
-            title={row.customer}
-            trailing={<Amount paise={row.amountPaise} size="md" />}
-          />
-        </li>
-      ));
-    case "owed-by-shop":
-      return source.rows.map((row) => (
-        <li key={`${row.distributor}-${row.billNumber}`}>
-          <ListRow
-            art={<Art name="crate" size={44} />}
-            title={row.distributor}
-            meta={[row.billNumber, text.due(dates.day(row.due))].filter(Boolean).join(" · ")}
-            trailing={<Amount paise={row.amountPaise} size="md" />}
-          />
-        </li>
-      ));
-  }
+  const shown = (() => {
+    switch (row.kind) {
+      case "bill":
+        return {
+          art: <Art name="bill" size={44} />,
+          title: [row.distributor, row.bill_number].filter(Boolean).join(" · "),
+          meta:
+            row.overdue_days > 0
+              ? text.overdueBy(row.overdue_days)
+              : text.dueOn(dates.day(row.due_date)),
+        };
+      case "cost":
+        return {
+          art: <Art name="coins" size={44} />,
+          title: text.costs[row.cost as keyof typeof text.costs] ?? row.cost,
+          meta: row.period === "month" ? text.perMonth : text.perWeek,
+        };
+      case "money_in_hand":
+        return {
+          art: <Art name="savings" size={44} />,
+          title: text.moneyInHandSaid,
+          meta: dates.dayAndTime(row.at),
+        };
+      case "payment":
+        return {
+          art: <Art name="phone-pay" size={44} />,
+          title: text.paymentIn,
+          meta: dates.dayAndTime(row.at),
+        };
+      case "day_sales":
+        return {
+          art: <Art name="coins" size={44} />,
+          title: dates.weekday(row.date),
+          meta: text.daySales,
+        };
+      case "customer":
+        return {
+          art: <Monogram name={row.name} />,
+          title: row.name,
+          meta: `${text.status[row.status]} · ${text.owesSince(dates.day(row.oldest_unpaid))}`,
+        };
+      case "product":
+        return {
+          art: <Art name={toArtName(row.art)} size={44} />,
+          title: row.name,
+          meta: row.counted_at ? text.countedOn(dates.day(row.counted_at)) : text.notCounted,
+        };
+    }
+  })();
+  return (
+    <ListRow
+      art={shown.art}
+      title={shown.title}
+      meta={shown.meta}
+      note={<SourceBadge label={row.label} />}
+      trailing={<Amount paise={row.paise} size="md" />}
+    />
+  );
 }
 
-/** E3 for a price: the bill line that printed it, what the shop paid, and the bill's photo. */
+/** E3 for a cost: the bill line that printed it, what the shop paid, and the bill's photo. */
 export function PriceSheet({
-  open,
-  source,
+  productId,
   onClose,
 }: {
-  open: boolean;
-  source: PriceSource | null;
+  productId: string | null;
   onClose: () => void;
 }) {
   const { text } = useOwnerLanguage();
   const dates = useDates();
+  const [source, setSource] = useState<PriceSource | null>(null);
+
+  useEffect(() => {
+    if (!productId) return;
+    let current = true;
+    ownerApi.priceSource(productId).then(
+      (next) => {
+        if (current) setSource(next);
+      },
+      () => {
+        if (current) onClose();
+      },
+    );
+    return () => {
+      current = false;
+      setSource(null);
+    };
+  }, [productId, onClose]);
+
   const bill = source?.bill;
   return (
     <Sheet
-      open={open}
+      open={productId !== null}
       onOpenChange={(next) => !next && onClose()}
       title={text.priceTitle}
       description={source?.name}

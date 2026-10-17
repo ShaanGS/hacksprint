@@ -7,20 +7,20 @@ import { Art, toArtName } from "@/components/ui/art";
 import { Sheet } from "@/components/ui/sheet";
 import { formatMoney } from "@/lib/money";
 import type { Margin } from "@/lib/margins";
-import type { OwnerBackend } from "@/lib/owner/backend";
+import { ownerApi } from "@/lib/owner/api";
 
 /**
  * C2, C3: what each item earns, from its latest bill, and where it is cheaper. A card on the
  * Stock tab opens the list; items another distributor sells for less come first.
  */
-export function Margins({ backend }: { backend: OwnerBackend }) {
+export function Margins() {
   const { text } = useOwnerLanguage();
   const [open, setOpen] = useState(false);
   const [rows, setRows] = useState<Margin[] | null>(null);
 
   function show() {
     setOpen(true);
-    backend.margins().then(setRows, () => setOpen(false));
+    ownerApi.margins().then(setRows, () => setOpen(false));
   }
 
   return (
@@ -28,7 +28,7 @@ export function Margins({ backend }: { backend: OwnerBackend }) {
       <button
         type="button"
         onClick={show}
-        className="flex w-full items-center gap-3 rounded-2xl bg-tint-mint p-3 text-left transition-transform active:scale-98"
+        className="flex w-full items-center gap-3 rounded-2xl bg-surface-muted p-3 text-left transition-transform active:scale-98"
       >
         <Art name="coins" size={56} />
         <span className="min-w-0 flex-1 text-lg font-bold">{text.marginsTitle}</span>

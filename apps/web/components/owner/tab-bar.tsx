@@ -1,72 +1,66 @@
 "use client";
 
-import { BookOpen, ClipboardList, House, Package, type LucideIcon } from "lucide-react";
+import { Banknote, House, Landmark, Package, type LucideIcon } from "lucide-react";
+import type { ReactNode } from "react";
 import { useOwnerLanguage } from "@/components/owner/owner-language";
 import { cn } from "@/lib/cn";
 
-export type OwnerTab = "orders" | "stock" | "credit" | "home";
+export type OwnerTab = "home" | "collect" | "stock" | "bank";
 
 const icons: Record<OwnerTab, LucideIcon> = {
-  orders: ClipboardList,
-  stock: Package,
-  credit: BookOpen,
   home: House,
+  collect: Banknote,
+  stock: Package,
+  bank: Landmark,
 };
 
-const columns = ["", "grid-cols-1", "grid-cols-2", "grid-cols-3", "grid-cols-4"];
-
-/** The owner app's places, floating over the page so the content scrolls under it. */
+/**
+ * The owner app's places, floating over the page so the content scrolls under it. The mic sits
+ * raised in the middle, so it can be held from any tab.
+ */
 export function TabBar({
-  tabs,
   tab,
   onChange,
-  waiting,
+  mic,
 }: {
-  tabs: OwnerTab[];
   tab: OwnerTab;
   onChange: (tab: OwnerTab) => void;
-  /** Orders that need the owner, shown on the Orders tab. */
-  waiting: number;
+  mic: ReactNode;
 }) {
   const { text } = useOwnerLanguage();
+  const button = (id: OwnerTab) => {
+    const Icon = icons[id];
+    const active = tab === id;
+    return (
+      <button
+        key={id}
+        type="button"
+        aria-current={active ? "page" : undefined}
+        onClick={() => onChange(id)}
+        className={cn(
+          "flex min-h-14 flex-col items-center justify-center gap-1 text-xs",
+          active ? "font-bold text-ink" : "font-medium text-ink-faint",
+        )}
+      >
+        <span
+          className={cn(
+            "grid h-8 w-14 place-items-center rounded-full transition-colors",
+            active && "bg-surface-pressed",
+          )}
+        >
+          <Icon aria-hidden className="size-6" strokeWidth={active ? 2.5 : 2} />
+        </span>
+        <span className="max-w-full truncate px-1">{text.tabs[id]}</span>
+      </button>
+    );
+  };
   return (
-    <nav
-      className={cn(
-        "pb-safe absolute inset-x-0 bottom-0 z-30 grid border-t border-border bg-surface/90 pt-2 backdrop-blur",
-        columns[tabs.length],
-      )}
-    >
-      {tabs.map((id) => {
-        const Icon = icons[id];
-        const active = tab === id;
-        return (
-          <button
-            key={id}
-            type="button"
-            aria-current={active ? "page" : undefined}
-            onClick={() => onChange(id)}
-            className={cn(
-              "flex min-h-14 flex-col items-center justify-center gap-1 text-xs",
-              active ? "font-bold text-ink" : "font-medium text-ink-faint",
-            )}
-          >
-            <span
-              className={cn(
-                "relative grid h-8 w-14 place-items-center rounded-full transition-colors",
-                active && "bg-surface-pressed",
-              )}
-            >
-              <Icon aria-hidden className="size-6" strokeWidth={active ? 2.5 : 2} />
-              {id === "orders" && waiting > 0 && (
-                <span className="absolute -top-1 right-1 grid h-5 min-w-5 place-items-center rounded-full bg-accent px-1 text-xs font-bold text-accent-ink">
-                  {waiting}
-                </span>
-              )}
-            </span>
-            {text.tabs[id]}
-          </button>
-        );
-      })}
+    <nav className="pb-safe absolute inset-x-0 bottom-0 z-30 grid grid-cols-5 border-t border-border bg-surface/90 pt-2 backdrop-blur">
+      {button("home")}
+      {button("collect")}
+      <div className="flex -translate-y-6 justify-center">{mic}</div>
+      {button("stock")}
+      {button("bank")}
     </nav>
   );
 }

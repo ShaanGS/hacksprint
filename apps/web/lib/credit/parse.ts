@@ -1,5 +1,3 @@
-import type { CreditDraft } from "@/lib/credit/types";
-
 // "Ramesh 200 on account" (spec D1, parse_credit_entry). The amount is read by code from the
 // words heard, never by a model (rule 1): digits, or number words in Tamil, Hindi, Kannada or
 // English. The name is matched against the shop's customers; if no single one fits, the owner
@@ -128,15 +126,4 @@ export function matchCustomer(heard: string, customers: NamedCustomer[]): string
   const best = Math.max(0, ...scored.map((entry) => entry.score));
   const winners = scored.filter((entry) => entry.score === best && best > 0);
   return winners.length === 1 ? winners[0].customer.id : null;
-}
-
-/** "Ramesh 200 on account", read by code into an entry for the owner to confirm. */
-export function draftSpokenCredit(heard: string, customers: NamedCustomer[]): CreditDraft {
-  const rupees = parseRupees(heard);
-  return {
-    heard,
-    amountPaise: rupees === null || rupees <= 0 ? null : rupees * 100,
-    customerId: matchCustomer(heard, customers),
-    customers,
-  };
 }

@@ -2,7 +2,6 @@ import type { Decision } from "@/lib/owner/approval";
 import type { Lang } from "@/lib/i18n/languages";
 import type { ProductUnit } from "@/lib/orders/quantity";
 import type { RejectReason } from "@/lib/orders/state";
-import type { HomeSourceKind } from "@/lib/sources/types";
 
 // The owner app's words. The owner reads and hears the shop in their own language (spec A2),
 // whatever language the customer ordered in. Tamil is checked by a native speaker before the demo.
@@ -54,15 +53,11 @@ export type OwnerText = {
   delivered: string;
   rejected: string;
   items: (count: number) => string;
-  tabs: { orders: string; stock: string; credit: string; home: string };
-  stockSummary: (count: number, low: number, out: number) => string;
-  filters: { all: string; low: string; out: string };
-  runningLow: string;
-  outOfStock: string;
   left: (qty: number, unit: ProductUnit) => string;
   scanTitle: string;
   scanText: string;
   takePhoto: string;
+  choosePhoto: string;
   readingBill: string;
   billUnreadable: string;
   retakePhoto: string;
@@ -88,32 +83,10 @@ export type OwnerText = {
   allCame: string;
   stockNow: (added: string, now: string) => string;
   done: string;
-  savedTitle: string;
-  savedText: (count: number) => string;
-  seeWhere: string;
-  collectedToday: string;
-  owedToShop: string;
-  owedByShop: string;
-  sourceTitles: Record<HomeSourceKind, string>;
-  addsUpTo: string;
-  due: (date: string) => string;
-  reference: (ref: string) => string;
   priceTitle: string;
   priceOnBill: (mrp: string) => string;
   youPaid: (cost: string) => string;
   noBill: string;
-  nothingYet: string;
-  owedToYou: string;
-  customersOnAccount: (count: number) => string;
-  sayCredit: string;
-  creditDraftTitle: string;
-  sayAmountAgain: string;
-  whoseAccount: string;
-  addCredit: (amount: string, name: string) => string;
-  creditAdded: (amount: string, name: string) => string;
-  nobodyOwes: string;
-  lastOn: (date: string) => string;
-  entryKinds: { credit_sale: string; repayment: string };
   marginsTitle: string;
   marginsSummary: (cheaper: number) => string;
   profit: (amount: string, percent: number) => string;
@@ -180,11 +153,6 @@ const en: OwnerText = {
   delivered: "Delivered",
   rejected: "Rejected",
   items: (count) => (count === 1 ? "1 item" : `${count} items`),
-  tabs: { orders: "Orders", stock: "Stock", credit: "Credit", home: "Home" },
-  stockSummary: (count, low, out) => `${count} products · ${low} running low · ${out} out`,
-  filters: { all: "All", low: "Running low", out: "Out" },
-  runningLow: "Running low",
-  outOfStock: "Out of stock",
   left: (qty, unit) =>
     unit === "kg" || unit === "litre"
       ? `${qty} ${unit} left`
@@ -192,6 +160,7 @@ const en: OwnerText = {
   scanTitle: "Today's delivery",
   scanText: "Photograph the bill. Stock, prices and what you owe update themselves.",
   takePhoto: "Take a photo of the bill",
+  choosePhoto: "Choose a photo already taken",
   readingBill: "Reading the bill…",
   billUnreadable: "The bill could not be read. Take the photo again with the whole bill in view.",
   retakePhoto: "Take another photo",
@@ -218,39 +187,10 @@ const en: OwnerText = {
   allCame: "Everything you ordered came, at the same price.",
   stockNow: (added, now) => `+${added}, now ${now}`,
   done: "Done",
-  savedTitle: "Saved while you were busy",
-  savedText: (count) =>
-    count === 1 ? "1 order taken by voice today" : `${count} orders taken by voice today`,
-  seeWhere: "Tap a number to see where it comes from",
-  collectedToday: "Collected today",
-  owedToShop: "Customers owe you",
-  owedByShop: "You owe distributors",
-  sourceTitles: {
-    orders: "Orders taken today",
-    collected: "Payments today",
-    "owed-to-shop": "Who owes you",
-    "owed-by-shop": "Bills to pay",
-  },
-  addsUpTo: "Adds up to",
-  due: (date) => `Due ${date}`,
-  reference: (ref) => `Ref ${ref}`,
   priceTitle: "Where this price comes from",
   priceOnBill: (mrp) => `${mrp} is the MRP printed on this bill`,
   youPaid: (cost) => `You paid ${cost}`,
   noBill: "No bill has set this price yet.",
-  nothingYet: "Nothing yet today.",
-  owedToYou: "Owed to you",
-  customersOnAccount: (count) =>
-    count === 1 ? "1 customer on account" : `${count} customers on account`,
-  sayCredit: 'Hold and say "Ramesh 200 on account"',
-  creditDraftTitle: "Add to the credit book",
-  sayAmountAgain: "No amount was heard. Hold the mic and say it again.",
-  whoseAccount: "Whose account?",
-  addCredit: (amount, name) => `Add ${amount} to ${name}`,
-  creditAdded: (amount, name) => `Added ${amount} to ${name}`,
-  nobodyOwes: "Nobody owes anything.",
-  lastOn: (date) => `Last on ${date}`,
-  entryKinds: { credit_sale: "On account", repayment: "Paid back" },
   marginsTitle: "Profit on each item",
   marginsSummary: (cheaper) =>
     cheaper === 0
@@ -323,11 +263,6 @@ const ta: OwnerText = {
   delivered: "டெலிவரி ஆனது",
   rejected: "மறுக்கப்பட்டது",
   items: (count) => (count === 1 ? "1 பொருள்" : `${count} பொருட்கள்`),
-  tabs: { orders: "ஆர்டர்கள்", stock: "சரக்கு", credit: "கடன்", home: "முகப்பு" },
-  stockSummary: (count, low, out) => `${count} பொருட்கள் · ${low} குறைவு · ${out} தீர்ந்தது`,
-  filters: { all: "அனைத்தும்", low: "குறைவு", out: "தீர்ந்தது" },
-  runningLow: "குறைவாக உள்ளது",
-  outOfStock: "தீர்ந்துவிட்டது",
   left: (qty, unit) =>
     unit === "kg"
       ? `${qty} கிலோ மீதம்`
@@ -337,6 +272,7 @@ const ta: OwnerText = {
   scanTitle: "இன்றைய டெலிவரி",
   scanText: "பில்லை போட்டோ எடுங்கள். சரக்கு, விலை, கொடுக்க வேண்டியது தானாக மாறும்.",
   takePhoto: "பில்லை போட்டோ எடுங்கள்",
+  choosePhoto: "எடுத்த போட்டோவைத் தேர்வு செய்யுங்கள்",
   readingBill: "பில்லைப் படிக்கிறது…",
   billUnreadable: "பில்லைப் படிக்க முடியவில்லை. முழு பில்லும் தெரியும்படி மீண்டும் எடுங்கள்.",
   retakePhoto: "மீண்டும் போட்டோ எடுங்கள்",
@@ -363,37 +299,10 @@ const ta: OwnerText = {
   allCame: "ஆர்டர் செய்த அனைத்தும் அதே விலையில் வந்தது.",
   stockNow: (added, now) => `+${added}, இப்போது ${now}`,
   done: "முடிந்தது",
-  savedTitle: "நீங்கள் பிஸியாக இருந்தபோது வந்தவை",
-  savedText: (count) => `இன்று குரலில் வந்த ${count} ஆர்டர்கள்`,
-  seeWhere: "எண்ணைத் தட்டினால் அது எங்கிருந்து வந்தது என்று தெரியும்",
-  collectedToday: "இன்று வசூல்",
-  owedToShop: "வர வேண்டியது",
-  owedByShop: "கொடுக்க வேண்டியது",
-  sourceTitles: {
-    orders: "இன்றைய ஆர்டர்கள்",
-    collected: "இன்று வந்த பணம்",
-    "owed-to-shop": "யார் தர வேண்டும்",
-    "owed-by-shop": "செலுத்த வேண்டிய பில்கள்",
-  },
-  addsUpTo: "மொத்தம்",
-  due: (date) => `கடைசி நாள் ${date}`,
-  reference: (ref) => `குறிப்பு ${ref}`,
   priceTitle: "இந்த விலை எங்கிருந்து",
   priceOnBill: (mrp) => `${mrp} — இந்த பில்லில் அச்சிட்ட MRP`,
   youPaid: (cost) => `நீங்கள் கொடுத்தது ${cost}`,
   noBill: "இந்த விலைக்கு இன்னும் பில் இல்லை.",
-  nothingYet: "இன்று இதுவரை எதுவும் இல்லை.",
-  owedToYou: "உங்களுக்கு வர வேண்டியது",
-  customersOnAccount: (count) => `${count} பேர் கணக்கில்`,
-  sayCredit: "அழுத்திப் பிடித்து “ரமேஷ் 200 கணக்கில்” சொல்லுங்கள்",
-  creditDraftTitle: "கடன் புத்தகத்தில் சேர்",
-  sayAmountAgain: "தொகை கேட்கவில்லை. மைக்கைப் பிடித்து மீண்டும் சொல்லுங்கள்.",
-  whoseAccount: "யார் கணக்கில்?",
-  addCredit: (amount, name) => `${name} கணக்கில் ${amount} சேர்`,
-  creditAdded: (amount, name) => `${name} கணக்கில் ${amount} சேர்க்கப்பட்டது`,
-  nobodyOwes: "யாரும் தர வேண்டியதில்லை.",
-  lastOn: (date) => `கடைசியாக ${date}`,
-  entryKinds: { credit_sale: "கணக்கில்", repayment: "திருப்பிக் கொடுத்தது" },
   marginsTitle: "ஒவ்வொரு பொருளிலும் லாபம்",
   marginsSummary: (cheaper) =>
     cheaper === 0
