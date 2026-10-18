@@ -5,16 +5,18 @@ import { billLimitFacts } from "@/lib/planner/bill-limit";
 import { plannerFacts, summaryOf, type PlannerFacts } from "@/lib/planner/facts";
 import { rulesPlan } from "@/lib/planner/fallback";
 import { geminiPlanner } from "@/lib/planner/gemini";
-import { checkPlan, planResponse, type PlanResponse, type RawPlan } from "@/lib/planner/plan";
+import { stop, type Fixed } from "@/lib/planner/guardrails";
+import { checkPlan, planResponse, type PlanResponse } from "@/lib/planner/plan";
 import { finishRun, lastPlan, startRun, stepRecorder } from "@/lib/planner/record";
-import { runPlanner, type Generate } from "@/lib/planner/run";
+import { runPlanner, type Generate, type PlannerOutcome } from "@/lib/planner/run";
 import { nothingSeen, runPlannerTool, type Seen } from "@/lib/planner/tools";
 import { loadFestivalOrder } from "@/lib/rotation/festival";
 import { loadShopData } from "@/lib/rotation/load";
 import type { Shop } from "@/lib/shop";
 
 // One planning run, start to end: read the shop once, save the run, let the model plan over
-// the tools (or the rules when it cannot), check the plan, and stream each step as it happens.
+// the tools (or the rules when it cannot), pass the plan through the guardrails, and stream each
+// step as it happens. The run record keeps what the model proposed next to what passed.
 
 /** Model calls in a run and the tokens they used, summed. */
 export type RunUsage = {
@@ -70,35 +72,66 @@ export async function planWeek(
 
     // What the run cost in context: every model call's tokens, saved and summed for the screen.
     const usage: RunUsage = { calls: 0, input_tokens: 0, output_tokens: 0, thought_tokens: 0 };
+    const runFixes: Fixed[] = [];
     let seen = nothingSeen();
     const model = await modelPlan(facts, seen, goal, async (event) => {
-      if (event.kind === "model_call") {
-        usage.calls += 1;
-        usage.input_tokens += event.usage?.inputTokens ?? 0;
-        usage.output_tokens += event.usage?.outputTokens ?? 0;
-        usage.thought_tokens += event.usage?.thoughtTokens ?? 0;
-        await record("note", "model_call", { call: event.call, ...event.usage });
-      } else if (event.kind === "tool_call") await record("tool_call", event.name, {});
-      else await shown(event.name, event.result);
+      switch (event.kind) {
+        case "model_call":
+          usage.calls += 1;
+          usage.input_tokens += event.usage?.inputTokens ?? 0;
+          usage.output_tokens += event.usage?.outputTokens ?? 0;
+          usage.thought_tokens += event.usage?.thoughtTokens ?? 0;
+          await record("note", "model_call", { call: event.call, ...event.usage });
+          break;
+        case "tool_call":
+          await record("tool_call", event.name, {});
+          break;
+        case "tool_result":
+          await shown(event.name, event.result);
+          break;
+        case "proposed":
+          await record("note", "proposed", event.plan);
+          break;
+        case "guardrail":
+          runFixes.push(event.fix);
+          await record("note", "guardrail", event.fix);
+          break;
+      }
     });
-    let plan = model.plan;
-    let checked = plan ? checkPlan(plan, facts, seen) : null;
-    const usable = plan && checked && (checked.steps.length > 0 || plan.steps.length === 0);
+    const fromModel = model.plan ? checkPlan(model.plan, facts, seen) : null;
+    const usable =
+      model.plan !== null &&
+      fromModel !== null &&
+      (fromModel.steps.length > 0 || model.plan.steps.length === 0);
+    let checked = fromModel ?? { steps: [], dropped: [], fixed: [] };
+    // What the guardrails stopped stays on the record, even when the rules plan instead.
+    const modelStops = usable
+      ? []
+      : [...(model.offSchema ? [stop(null, "off_schema")] : []), ...(fromModel?.dropped ?? [])];
     if (!usable) {
       await record("note", "rules", {
-        why: model.problem ?? "the model's plan pointed at nothing",
+        why: model.problem ?? "every step the model planned broke a guardrail",
       });
       // The rules read every tool, and the rail shows them doing it.
       seen = nothingSeen();
       for (const name of readTools) await shown(name, runPlannerTool(facts, seen, name));
-      plan = rulesPlan(facts);
-      checked = checkPlan(plan, facts, seen);
+      checked = checkPlan(rulesPlan(facts), facts, seen);
     }
     const plannedBy = usable ? "model" : "rules";
+    const guarded = {
+      ...checked,
+      dropped: [...modelStops, ...checked.dropped],
+      fixed: [...runFixes, ...checked.fixed],
+    };
     const response = {
-      ...planResponse(checked ?? { steps: [], dropped: [] }, facts, { id: runId, plannedBy }),
+      ...planResponse(guarded, facts, {
+        id: runId,
+        plannedBy,
+        rulesBecause: model.plan || model.offSchema ? "plan_blocked" : "no_answer",
+      }),
       usage,
     };
+    await record("note", "guardrails", response.guardrails);
     await record("plan", "plan", response);
     await finishRun(db, runId, { status: "done", plannedBy });
     await audit(db, shop.id, [
@@ -107,7 +140,13 @@ export async function planWeek(
         action: "planner.plan",
         entityType: "agent_run",
         entityId: runId,
-        payload: { planned_by: plannedBy, actions: response.steps.map((s) => s.action), usage },
+        payload: {
+          planned_by: plannedBy,
+          actions: response.steps.map((s) => s.action),
+          blocked: response.dropped.map((d) => d.why),
+          fixed: response.fixed.map((f) => f.what),
+          usage,
+        },
       },
     ]);
     send({ type: "plan", ...response });
@@ -122,7 +161,7 @@ async function modelPlan(
   seen: Seen,
   goal: string,
   onEvent: Parameters<typeof runPlanner>[0]["onEvent"],
-): Promise<{ plan: RawPlan | null; problem?: string }> {
+): Promise<PlannerOutcome> {
   let generate: Generate;
   try {
     generate = geminiPlanner();

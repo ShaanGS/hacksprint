@@ -1,4 +1,5 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
+import { audit } from "@/lib/audit";
 import { billPayDecisions } from "@/lib/bill-pay/decide";
 import { HttpError } from "@/lib/http";
 import { markPayablePaid } from "@/lib/payables";
@@ -30,6 +31,16 @@ export async function billPaid(
   const { decisions } = await billPayDecisions(db, shopId, data);
   const decision = decisions.find((d) => d.payableId === input.payableId);
   if (decision?.decision !== "pay") {
+    // A refusal is a guardrail decision too, so it goes on the record with the rule's reason.
+    await audit(db, shopId, [
+      {
+        actor: "agent",
+        action: "bill_pay.refused",
+        entityType: "payable",
+        entityId: input.payableId,
+        payload: { agentRunId: input.runId, reason: decision?.reason ?? "not_listed" },
+      },
+    ]);
     throw new HttpError(409, "This bill can no longer be paid inside your limit. Look again.");
   }
   await markPayablePaid(db, shopId, input.payableId, "upi", input.runId);

@@ -21,6 +21,9 @@ export type AgentWords = {
   received: (amount: Money) => string;
   waiting: string;
   verifiedBy: (paytm: boolean) => string;
+  showQr: string;
+  scanToPay: (amount: Money) => string;
+  qrNote: (provider: "paytm" | "razorpay" | "test") => string;
   letAgentReorder: string;
   reorderTitle: string;
   reorderSteps: { shelf: string; skipped: string; bills: string; approve: string; sent: string };
@@ -67,6 +70,15 @@ const en: AgentWords = {
   waiting: "Waiting for the first payment",
   verifiedBy: (paytm) =>
     paytm ? "A payment counts once Paytm confirms it." : "A payment counts once its link is paid.",
+  showQr: "Show the QR to pay",
+  scanToPay: (amount) => `Scan to pay ${amount}`,
+  qrNote: (provider) =>
+    ({
+      paytm: "Pays the shop through Paytm. The agent marks it the moment it lands.",
+      razorpay:
+        "Razorpay test mode: pay with a test UPI id or test card. No real money moves. The agent marks it the moment it lands.",
+      test: "Test mode: no real money moves. The agent marks it the moment it lands.",
+    })[provider],
   letAgentReorder: "Let the agent reorder",
   reorderTitle: "Ordering for you",
   reorderSteps: {
@@ -127,6 +139,15 @@ const ta: AgentWords = {
     paytm
       ? "Paytm உறுதி செய்த பிறகே பணம் கணக்கில் வரும்."
       : "லிங்க் மூலம் செலுத்தியதும் பணம் கணக்கில் வரும்.",
+  showQr: "செலுத்த QR காட்டு",
+  scanToPay: (amount) => `${amount} செலுத்த ஸ்கேன் செய்யுங்கள்`,
+  qrNote: (provider) =>
+    ({
+      paytm: "Paytm மூலம் கடைக்குப் பணம் வரும். வந்ததும் முகவர் குறித்துக்கொள்ளும்.",
+      razorpay:
+        "Razorpay சோதனை முறை: சோதனை UPI ஐடி அல்லது சோதனை கார்டில் செலுத்துங்கள். உண்மையான பணம் நகராது. வந்ததும் முகவர் குறித்துக்கொள்ளும்.",
+      test: "சோதனை முறை: உண்மையான பணம் நகராது. செலுத்தியதும் முகவர் குறித்துக்கொள்ளும்.",
+    })[provider],
   letAgentReorder: "முகவர் ஆர்டர் செய்யட்டும்",
   reorderTitle: "உங்களுக்காக ஆர்டர் செய்கிறது",
   reorderSteps: {

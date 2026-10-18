@@ -1,12 +1,18 @@
 import type { FunctionDeclaration } from "@google/genai";
 import type { PlannerFacts } from "@/lib/planner/facts";
-import { planActions } from "@/lib/rotation/plan-effects";
+import { cleanText } from "@/lib/planner/guardrails";
+import { planActions, type PlanAction } from "@/lib/rotation/plan-effects";
 
 // The planner's tools. Each answers from the run's facts in a few hundred tokens at most:
 // amounts in whole paise with their source labels, ids to refer back to, at most five rows.
 // What a tool showed is remembered, so the plan can only point at things the model has seen.
+// Customers go out as ids and amounts only: the model needs no name to plan, and code puts the
+// names back on the owner's screen. Names and bill numbers that came from outside (a bill
+// photo, the owner's words) go through cleanText, so none can carry a line of instructions.
 
 const MAX_ROWS = 5;
+const NAME_CHARS = 60;
+const text = (value: string) => cleanText(value, NAME_CHARS);
 
 export const planReasons = [
   "late_payers_first",
@@ -20,7 +26,7 @@ export const planReasons = [
 
 const noArgs = { type: "object", properties: {} };
 
-export const plannerTools: FunctionDeclaration[] = [
+const readTools: FunctionDeclaration[] = [
   {
     name: "look_at_week",
     description: "This week's money: needed against likely, the gap, money in hand, late money.",
@@ -54,36 +60,64 @@ export const plannerTools: FunctionDeclaration[] = [
       "The owner's weekly limit for bills the agent may pay: the bills it can pay now, the bills it could pay once the late payers pay, and the bills on hold with the reason.",
     parametersJsonSchema: noArgs,
   },
-  {
-    name: "finish_plan",
-    description:
-      "The plan, in the order the owner should do it. Use only ids that a tool returned. Never write amounts: code works them out.",
-    parametersJsonSchema: {
-      type: "object",
-      properties: {
-        steps: {
-          type: "array",
-          maxItems: 5,
-          items: {
-            type: "object",
-            properties: {
-              action: { type: "string", enum: [...planActions] },
-              ids: {
-                type: "array",
-                items: { type: "string" },
-                description:
-                  "collect: customer ids; pay_bills: payable ids; reorder: distributor ids; move_festival_order: its payable id; check_loan: none",
-              },
-              reason: { type: "string", enum: [...planReasons] },
+];
+
+const finishPlan = (actions: readonly PlanAction[]): FunctionDeclaration => ({
+  name: "finish_plan",
+  description:
+    "The plan, in the order the owner should do it. Use only ids that a tool returned. Never write amounts: code works them out.",
+  parametersJsonSchema: {
+    type: "object",
+    properties: {
+      steps: {
+        type: "array",
+        // A week with nothing to act on can only finish with no steps.
+        maxItems: actions.length > 0 ? 5 : 0,
+        items: {
+          type: "object",
+          properties: {
+            // The schema needs one allowed value even when no step may be planned.
+            action: { type: "string", enum: actions.length > 0 ? [...actions] : [...planActions] },
+            ids: {
+              type: "array",
+              items: { type: "string" },
+              description:
+                "collect: customer ids; pay_bills: payable ids; reorder: distributor ids; move_festival_order: its payable id; check_loan: none",
             },
-            required: ["action", "reason"],
+            reason: { type: "string", enum: [...planReasons] },
           },
+          required: ["action", "reason"],
         },
       },
-      required: ["steps"],
     },
+    required: ["steps"],
   },
-];
+});
+
+/**
+ * The actions this week gives something to act on. An action with nothing behind it (paying when
+ * no bill fits the owner's limit, collecting when nobody is late) is not offered to the model at
+ * all; checkPlan still stands behind this.
+ */
+export function actionsFor(facts: PlannerFacts): PlanAction[] {
+  const limit = facts.billLimit;
+  const late = facts.latePayers.length > 0;
+  const open: Record<PlanAction, boolean> = {
+    collect: late,
+    pay_bills:
+      (limit?.decisions ?? []).some((row) => row.decision === "pay") ||
+      (late && (limit?.ifCollected ?? []).some((row) => row.decision === "pay")),
+    reorder: facts.reorder.length > 0,
+    move_festival_order: facts.loan.festival !== null,
+    check_loan: facts.loan.loanNeededPaise > 0,
+  };
+  return planActions.filter((action) => open[action]);
+}
+
+/** The read tools, and finish_plan offering only this week's actions. */
+export function plannerToolsFor(facts: PlannerFacts): FunctionDeclaration[] {
+  return [...readTools, finishPlan(actionsFor(facts))];
+}
 
 /** The ids each tool has shown the model in this run. */
 export type Seen = {
@@ -132,7 +166,6 @@ export function runPlannerTool(
       return {
         customers: rows.map((row) => ({
           id: row.customerId,
-          name: row.name,
           owes_paise: row.owesPaise,
           usual_days: row.usualDays,
           days_late: row.daysLate,
@@ -146,8 +179,8 @@ export function runPlannerTool(
       // reach the plan only through check_bill_limit, which applies the owner's own limit.
       return {
         bills: facts.bills.slice(0, MAX_ROWS).map((bill) => ({
-          distributor: bill.distributor,
-          bill_number: bill.billNumber,
+          distributor: text(bill.distributor),
+          bill_number: bill.billNumber === null ? null : text(bill.billNumber),
           amount_paise: bill.amountPaise,
           due_in_days: bill.dueInDays,
           overdue_days: bill.overdueDays,
@@ -160,13 +193,13 @@ export function runPlannerTool(
       groups.forEach((group) => seen.distributors.add(group.distributorId));
       return {
         running_out: facts.low.slice(0, MAX_ROWS).map((item) => ({
-          name: item.name,
+          name: text(item.name),
           days_left: item.daysLeft,
           label: "estimate",
         })),
         reorder: groups.map((group) => ({
           distributor_id: group.distributorId,
-          distributor: group.distributor,
+          distributor: text(group.distributor),
           total_paise: group.totalPaise,
           lines: group.lines,
           label: "supplier_bill",
@@ -181,8 +214,8 @@ export function runPlannerTool(
         festival_order: festival
           ? {
               id: festival.payableId,
-              festival: festival.festival,
-              distributor: festival.distributor,
+              festival: text(festival.festival),
+              distributor: text(festival.distributor),
               total_paise: festival.totalPaise,
               due_this_week: festival.dueThisWeek,
             }
@@ -208,7 +241,7 @@ export function runPlannerTool(
       payLater.forEach((r) => seen.payablesIfCollected.add(r.payableId));
       const payable = (r: (typeof now)[number]) => ({
         payable_id: r.payableId,
-        distributor: r.distributor,
+        distributor: text(r.distributor),
         amount_paise: r.amountPaise,
       });
       return {
@@ -228,7 +261,7 @@ export function runPlannerTool(
             (r) => r.decision === "hold" && !payLater.some((p) => p.payableId === r.payableId),
           )
           .map((r) => ({
-            distributor: r.distributor,
+            distributor: text(r.distributor),
             amount_paise: r.amountPaise,
             reason: r.reason,
             needs_more_paise: r.needsMorePaise,

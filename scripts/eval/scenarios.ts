@@ -5,7 +5,7 @@ import type { checkPlan } from "@/lib/planner/plan";
 // late payers, a ₹25,000 bill limit, the Deepavali order) and changes one thing, with the
 // behaviour the plan must show. Amounts are paise, as everywhere.
 
-type Checked = ReturnType<typeof checkPlan>;
+export type Checked = ReturnType<typeof checkPlan>;
 export type Scenario = {
   name: string;
   goal: string;
@@ -13,7 +13,7 @@ export type Scenario = {
   checks: { name: string; pass: (plan: Checked) => boolean }[];
 };
 
-const late = [
+export const late = [
   {
     customerId: "c1",
     name: "Arjun Reddy",
@@ -39,7 +39,12 @@ const late = [
     label: "owner_said" as const,
   },
 ];
-const hold = (id: string, distributor: string, amountPaise: number, needsMorePaise: number) => ({
+export const hold = (
+  id: string,
+  distributor: string,
+  amountPaise: number,
+  needsMorePaise: number,
+) => ({
   payableId: id,
   distributor,
   amountPaise,
@@ -47,7 +52,7 @@ const hold = (id: string, distributor: string, amountPaise: number, needsMorePai
   reason: "not_enough_in_hand",
   needsMorePaise,
 });
-const pay = (id: string, distributor: string, amountPaise: number) => ({
+export const pay = (id: string, distributor: string, amountPaise: number) => ({
   payableId: id,
   distributor,
   amountPaise,
@@ -56,7 +61,7 @@ const pay = (id: string, distributor: string, amountPaise: number) => ({
   needsMorePaise: 0,
 });
 
-const demo: PlannerFacts = {
+export const demo: PlannerFacts = {
   asOf: "2026-10-18T10:00:00+05:30",
   today: "2026-10-18",
   week: {

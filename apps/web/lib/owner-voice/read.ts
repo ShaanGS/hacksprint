@@ -2,6 +2,7 @@ import { FunctionCallingConfigMode, ThinkingLevel, type FunctionDeclaration } fr
 import { matchCustomer } from "@/lib/credit/parse";
 import { createGemini } from "@/lib/gemini/client";
 import { wasSaid } from "@/lib/owner-voice/numbers";
+import { cleanText } from "@/lib/planner/guardrails";
 import {
   questionTopics,
   type Named,
@@ -121,7 +122,8 @@ function instructions(customers: Named[], products: (Named & { code: string })[]
     "no number, leave it out. If nothing fits, call no function.",
     "",
     "Customers:",
-    ...customers.map((c) => `- ${c.name}`),
+    // Customers type their own names, so each is one clean line: a name cannot add instructions.
+    ...customers.map((c) => `- ${cleanText(c.name, 60)}`),
     "",
     "Products (code: name):",
     ...products.map((p) => `- ${p.code}: ${p.name}`),

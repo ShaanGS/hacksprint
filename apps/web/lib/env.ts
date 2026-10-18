@@ -54,6 +54,13 @@ const paytmSchema = z.object({
   PAYTM_MERCHANT_KEY: text().length(16, "must be 16 characters (the merchant key, not the MID)"),
 });
 
+// Razorpay's test keys (decision of Oct 18): payment links that open Razorpay's own sandbox
+// checkout. The prefix catches the secret pasted where the key id goes.
+const razorpaySchema = z.object({
+  RAZORPAY_KEY_ID: text().startsWith("rzp_", "must start with rzp_ (the key id, not the secret)"),
+  RAZORPAY_KEY_SECRET: text(),
+});
+
 // The reorder workflow's webhook, and the secret its first step checks in the x-munim-secret header.
 const n8nSchema = z.object({
   N8N_WEBHOOK_URL: httpUrl(),
@@ -74,6 +81,7 @@ export const geminiEnv = () => parse("Gemini", geminiSchema);
 export const sarvamEnv = () => parse("Sarvam", sarvamSchema);
 // Paytm and n8n are checked on first use: Paytm keys may arrive late, n8n only for reorders.
 export const paytmEnv = () => parse("Paytm", paytmSchema);
+export const razorpayEnv = () => parse("Razorpay", razorpaySchema);
 export const n8nEnv = () => parse("n8n", n8nSchema);
 
 // The keys that connect the app to its services. With none of them set, the app runs as a
@@ -93,6 +101,16 @@ export function demoMode(): boolean {
 /** The Paytm keys are in, so payment links go to Paytm (staging keys give its test mode). */
 export function paytmConfigured(): boolean {
   return paytmSchema.safeParse(process.env).success;
+}
+
+/** Razorpay's keys are in, so payment links can go to Razorpay (test keys give its sandbox). */
+export function razorpayConfigured(): boolean {
+  return razorpaySchema.safeParse(process.env).success;
+}
+
+/** The apply agent may open a real browser here: on the shop's own computer, never the live site. */
+export function localBrowserAgent(): boolean {
+  return process.env.LOCAL_BROWSER_AGENT === "true";
 }
 
 /** In the demo, the late payer's reminder goes to a teammate's real WhatsApp number. */

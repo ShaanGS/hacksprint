@@ -26,7 +26,8 @@ const average = (values: number[]) =>
     ? 0
     : Math.round(values.reduce((sum, v) => sum + v, 0) / values.length / 100) * 100;
 
-export async function applicationDraft(db: SupabaseClient, shop: Shop, loanRequestId: string) {
+/** The application as his records fill it in. The browser agent types from this (no audit here). */
+export async function loadApplication(db: SupabaseClient, shop: Shop, loanRequestId: string) {
   const { data, error } = await db
     .from("loan_requests")
     .select("id, loan_needed_paise, purpose, purchase_order_id")
@@ -45,14 +46,6 @@ export async function applicationDraft(db: SupabaseClient, shop: Shop, loanReque
   ]);
   const { blocks } = statementPayload(shop, shopData);
   const band = mudraBand(request.loan_needed_paise, profile.repaidTarunBefore);
-  await audit(db, shop.id, [
-    {
-      actor: "agent",
-      action: "loan.apply_simulated",
-      entityType: "loan_request",
-      entityId: request.id,
-    },
-  ]);
   return {
     simulated: true,
     shop: shop.name,
@@ -69,4 +62,19 @@ export async function applicationDraft(db: SupabaseClient, shop: Shop, loanReque
     documents: checklist(profile, request.purchase_order_id !== null),
     registration: registrationStep(profile),
   };
+}
+
+export type Application = Awaited<ReturnType<typeof loadApplication>>;
+
+export async function applicationDraft(db: SupabaseClient, shop: Shop, loanRequestId: string) {
+  const application = await loadApplication(db, shop, loanRequestId);
+  await audit(db, shop.id, [
+    {
+      actor: "agent",
+      action: "loan.apply_simulated",
+      entityType: "loan_request",
+      entityId: loanRequestId,
+    },
+  ]);
+  return application;
 }

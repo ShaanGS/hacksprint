@@ -2,14 +2,16 @@ import { randomUUID } from "node:crypto";
 import type { SupabaseClient } from "@supabase/supabase-js";
 import { z } from "zod";
 import { audit } from "@/lib/audit";
-import { appEnv } from "@/lib/env";
+import { appEnv, razorpayConfigured } from "@/lib/env";
 import { transition, type Actor } from "@/lib/orders/state";
 import { createPaymentLink } from "@/lib/paytm/client";
+import { createRazorpayLink } from "@/lib/razorpay/client";
 import { broadcastChanged } from "@/lib/realtime";
 import type { Shop } from "@/lib/shop";
 
 // Payment links (spec A4) and the one way a payment becomes paid (A5). The shop's payment
-// mode picks the provider: Paytm when its keys are in, otherwise our own test payment page. A
+// mode picks the provider: Paytm when its keys are in, Razorpay's test mode when its keys are in
+// (decision of Oct 18), otherwise our own test payment page. A
 // paid credit link writes a verified repayment; a paid order link moves the (frozen) order; a
 // paid stock-order link (test mode) is only recorded.
 // markPaid only moves a payment still waiting, so a repeated callback or a double tap changes
@@ -64,6 +66,25 @@ async function createLink(
     return { id: z.object({ id: z.string() }).parse(data).id, url: paytm.shortUrl };
   }
   const id = randomUUID();
+  // A shop switched to Razorpay on a server without its keys still gets a working test link.
+  if (shop.paymentMode === "razorpay" && razorpayConfigured()) {
+    const razorpay = await createRazorpayLink({
+      amountPaise: link.amountPaise,
+      description: link.description,
+      referenceId: id,
+    });
+    const { error } = await db.from("payments").insert({
+      ...link.row,
+      id,
+      shop_id: shop.id,
+      provider: "razorpay",
+      provider_link_id: razorpay.id,
+      link_url: razorpay.shortUrl,
+      amount_paise: link.amountPaise,
+    });
+    if (error) throw new Error(`Could not save the Razorpay link: ${error.message}`);
+    return { id, url: razorpay.shortUrl };
+  }
   const url = `${appEnv().APP_URL}/pay/${id}`;
   const { error } = await db.from("payments").insert({
     ...link.row,
