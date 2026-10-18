@@ -5,41 +5,8 @@
 // and costs a few calls per week. `pnpm eval:planner "good week"` runs only the weeks whose name
 // has that text.
 import { geminiPlanner } from "@/lib/planner/gemini";
-import { checkPlan } from "@/lib/planner/plan";
-import { runPlanner, type Generate, type Usage } from "@/lib/planner/run";
-import { nothingSeen } from "@/lib/planner/tools";
-import { scenarios, type Scenario } from "./scenarios";
-
-const MAX_CALLS = 5;
-// The free tier allows 15 calls a minute and a week can take 5, so weeks are spaced out, and a
-// week that hit the limit is run once more after Gemini's minute is up.
-const PAUSE_MS = 15_000;
-const RATE_LIMIT_WAIT_MS = 60_000;
-
-const sleep = (ms: number) => new Promise((done) => setTimeout(done, ms));
-
-async function runWeek(generate: Generate, scenario: Scenario) {
-  const seen = nothingSeen();
-  const usage: Usage = { inputTokens: 0, outputTokens: 0, thoughtTokens: 0 };
-  const tools: string[] = [];
-  let calls = 0;
-  const started = Date.now();
-  const outcome = await runPlanner(
-    {
-      generate,
-      onEvent: async (event) => {
-        if (event.kind === "tool_call") tools.push(event.name);
-        if (event.kind !== "model_call") return;
-        calls += 1;
-        usage.inputTokens += event.usage?.inputTokens ?? 0;
-        usage.outputTokens += event.usage?.outputTokens ?? 0;
-      },
-    },
-    { facts: scenario.facts, seen, goal: scenario.goal },
-  );
-  const plan = outcome.plan ? checkPlan(outcome.plan, scenario.facts, seen) : null;
-  return { outcome, plan, tools, calls, usage, ms: Date.now() - started };
-}
+import { MAX_CALLS, PAUSE_MS, runWeek, sleep } from "./run-week";
+import { scenarios } from "./scenarios";
 
 async function main() {
   try {
@@ -54,12 +21,7 @@ async function main() {
   const only = process.argv[2] ?? "";
   for (const [index, scenario] of scenarios.filter((s) => s.name.includes(only)).entries()) {
     if (index > 0) await sleep(PAUSE_MS);
-    let week = await runWeek(generate, scenario);
-    if (week.outcome.problem?.includes("429")) {
-      await sleep(RATE_LIMIT_WAIT_MS);
-      week = await runWeek(generate, scenario);
-    }
-    const { outcome, plan, tools, calls, usage, ms } = week;
+    const { outcome, plan, tools, calls, usage, ms } = await runWeek(generate, scenario);
     const results = [
       { name: "the model answered", pass: plan !== null },
       { name: "grounded: nothing dropped", pass: plan !== null && plan.dropped.length === 0 },
