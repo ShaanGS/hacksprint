@@ -1,12 +1,18 @@
 import type { FunctionDeclaration } from "@google/genai";
 import type { PlannerFacts } from "@/lib/planner/facts";
+import { cleanText } from "@/lib/planner/guardrails";
 import { planActions } from "@/lib/rotation/plan-effects";
 
 // The planner's tools. Each answers from the run's facts in a few hundred tokens at most:
 // amounts in whole paise with their source labels, ids to refer back to, at most five rows.
 // What a tool showed is remembered, so the plan can only point at things the model has seen.
+// Customers go out as ids and amounts only: the model needs no name to plan, and code puts the
+// names back on the owner's screen. Names and bill numbers that came from outside (a bill
+// photo, the owner's words) go through cleanText, so none can carry a line of instructions.
 
 const MAX_ROWS = 5;
+const NAME_CHARS = 60;
+const text = (value: string) => cleanText(value, NAME_CHARS);
 
 export const planReasons = [
   "late_payers_first",
@@ -132,7 +138,6 @@ export function runPlannerTool(
       return {
         customers: rows.map((row) => ({
           id: row.customerId,
-          name: row.name,
           owes_paise: row.owesPaise,
           usual_days: row.usualDays,
           days_late: row.daysLate,
@@ -146,8 +151,8 @@ export function runPlannerTool(
       // reach the plan only through check_bill_limit, which applies the owner's own limit.
       return {
         bills: facts.bills.slice(0, MAX_ROWS).map((bill) => ({
-          distributor: bill.distributor,
-          bill_number: bill.billNumber,
+          distributor: text(bill.distributor),
+          bill_number: bill.billNumber === null ? null : text(bill.billNumber),
           amount_paise: bill.amountPaise,
           due_in_days: bill.dueInDays,
           overdue_days: bill.overdueDays,
@@ -160,13 +165,13 @@ export function runPlannerTool(
       groups.forEach((group) => seen.distributors.add(group.distributorId));
       return {
         running_out: facts.low.slice(0, MAX_ROWS).map((item) => ({
-          name: item.name,
+          name: text(item.name),
           days_left: item.daysLeft,
           label: "estimate",
         })),
         reorder: groups.map((group) => ({
           distributor_id: group.distributorId,
-          distributor: group.distributor,
+          distributor: text(group.distributor),
           total_paise: group.totalPaise,
           lines: group.lines,
           label: "supplier_bill",
@@ -181,8 +186,8 @@ export function runPlannerTool(
         festival_order: festival
           ? {
               id: festival.payableId,
-              festival: festival.festival,
-              distributor: festival.distributor,
+              festival: text(festival.festival),
+              distributor: text(festival.distributor),
               total_paise: festival.totalPaise,
               due_this_week: festival.dueThisWeek,
             }
@@ -208,7 +213,7 @@ export function runPlannerTool(
       payLater.forEach((r) => seen.payablesIfCollected.add(r.payableId));
       const payable = (r: (typeof now)[number]) => ({
         payable_id: r.payableId,
-        distributor: r.distributor,
+        distributor: text(r.distributor),
         amount_paise: r.amountPaise,
       });
       return {
@@ -228,7 +233,7 @@ export function runPlannerTool(
             (r) => r.decision === "hold" && !payLater.some((p) => p.payableId === r.payableId),
           )
           .map((r) => ({
-            distributor: r.distributor,
+            distributor: text(r.distributor),
             amount_paise: r.amountPaise,
             reason: r.reason,
             needs_more_paise: r.needsMorePaise,

@@ -2,10 +2,12 @@
 
 import { useEffect, useState } from "react";
 import { useOwnerLanguage } from "@/components/owner/owner-language";
+import { PlanGuardrails } from "@/components/owner/plan-guardrails";
 import { SourceBadge } from "@/components/owner/source-badge";
 import { Button } from "@/components/ui/button";
 import { Sheet } from "@/components/ui/sheet";
 import { Steps, type Step } from "@/components/ui/steps";
+import { guardrailWordsFor } from "@/lib/i18n/guardrails";
 import { plannerWordsFor, type PlannerWords } from "@/lib/i18n/planner";
 import { formatMoney } from "@/lib/money";
 import { streamPlan, type PlanResult } from "@/lib/owner/planner-api";
@@ -52,6 +54,7 @@ export function PlanAgent({
 function Planning({ goal, onOpen }: { goal: string; onOpen: (target: PlanTarget) => void }) {
   const { lang, text } = useOwnerLanguage();
   const words = plannerWordsFor(lang);
+  const guard = guardrailWordsFor(lang);
   const [rail, setRail] = useState<RailEntry[]>([]);
   const [plan, setPlan] = useState<PlanResult | null>(null);
   const [failed, setFailed] = useState(false);
@@ -79,6 +82,17 @@ function Planning({ goal, onOpen }: { goal: string; onOpen: (target: PlanTarget)
       state: plan || index < rail.length - 1 ? "done" : "current",
     })),
     { title: words.ordering, state: plan ? "done" : "todo" },
+    {
+      title: guard.checked,
+      meta: plan
+        ? guard.railMeta(
+            plan.guardrails.rules.length,
+            plan.guardrails.blocked,
+            plan.guardrails.fixed,
+          )
+        : null,
+      state: plan ? "done" : "todo",
+    },
   ];
 
   return (
@@ -119,11 +133,16 @@ function Planning({ goal, onOpen }: { goal: string; onOpen: (target: PlanTarget)
           ))}
         </ol>
       )}
+      {plan && <PlanGuardrails plan={plan} />}
       {plan && (
         <p className="mt-5 text-sm text-night-muted">
-          {plan.planned_by === "model" ? words.byModel : words.byRules}{" "}
+          {plan.planned_by === "model"
+            ? words.byModel
+            : plan.rules_because === "plan_blocked"
+              ? guard.byRulesBlocked
+              : words.byRules}{" "}
           {plan.usage.calls > 0 &&
-            `${words.usage(plan.usage.calls, plan.usage.input_tokens.toLocaleString("en-IN"))} `}
+            `${words.usage(plan.usage.calls, plan.usage.input_tokens.toLocaleString("en-IN"))} ${guard.privacy} `}
           <a
             className="underline underline-offset-2"
             href={`/api/agent/runs/${plan.run_id}`}

@@ -474,7 +474,9 @@ come first, the biggest saving first; the rest follow, lowest margin first.
 
 The collection agent uses the routes above: `GET /api/rotation/collect` for the late payers in
 collect order, `POST /api/credit/{customerId}/remind` for each, then `POST
-/api/payments/{paymentId}/check` while it watches. The owner sends each message himself.
+/api/payments/{paymentId}/check` while it watches. The owner sends each message himself. The same
+link also shows as a QR on the owner's screen, so someone at the counter can scan it and pay; the
+agent watches that payment the same way.
 
 ### GET /api/reorder
 
@@ -534,6 +536,97 @@ lands in a test account, not the distributor's; the payment is kept apart
 ```json
 { "payment_id": "…", "url": "https://…", "amount_paise": 73200, "paid": false }
 ```
+
+## Planner agent (decision of Oct 18)
+
+Gemini plans the week over read-only tools (`lib/planner`); the plan holds only actions, ids and
+reason codes, and every amount on it comes from code. See `docs/agent-system.md`.
+
+### POST /api/agent/plan
+
+Request: `{ "goal": "…" }` (optional, the owner's spoken question, at most 300 characters). The
+answer is a stream of JSON lines (`application/x-ndjson`), one per event, as it happens:
+
+- `{ "type": "step", "name": "list_late_payers", "meta": { "count": 3 } }`: a tool the agent used.
+- `{ "type": "plan", … }`: the checked plan, last.
+- `{ "type": "error" }`: the run failed.
+
+The plan line:
+
+```json
+{
+  "type": "plan",
+  "run_id": "…",
+  "planned_by": "model",
+  "rules_because": null,
+  "as_of": "2026-10-18T10:00:00+05:30",
+  "week": { "state": "short", "gap_paise": -3650000, "label": "owner_said" },
+  "mudra_band": "shishu",
+  "steps": [
+    {
+      "action": "collect",
+      "reason": "late_payers_first",
+      "ids": ["…"],
+      "names": ["Arjun Reddy", "Meena Krishnan", "Rahul Sharma"],
+      "amount_paise": 960000,
+      "label": "owner_said",
+      "after_label": "owner_said",
+      "gap_after_paise": -2690000,
+      "in_hand_after_paise": 1680000,
+      "opens": "collect"
+    }
+  ],
+  "guardrails": {
+    "rules": [{ "rule": "within_owner_limit", "status": "blocked", "count": 1 }],
+    "blocked": 1,
+    "fixed": 0,
+    "removed": 1
+  },
+  "dropped": [
+    {
+      "action": "pay_bills",
+      "why": "no_bill_fits_limit",
+      "rule": "within_owner_limit",
+      "held": [
+        {
+          "distributor": "Sri Balaji Agencies",
+          "amount_paise": 2150000,
+          "reason": "not_enough_in_hand",
+          "needs_more_paise": 1630000,
+          "due_in_days": 0,
+          "keep_paise": 200000,
+          "festival": "Deepavali"
+        }
+      ]
+    }
+  ],
+  "fixed": [{ "what": "personal_data_removed", "rule": "no_personal_data", "count": 1 }],
+  "usage": { "calls": 2, "input_tokens": 3291, "output_tokens": 215, "thought_tokens": 0 }
+}
+```
+
+- `guardrails.rules` lists all 8 rules with `passed`, `blocked` or `fixed` (shortened above).
+- `dropped` is every step a guardrail stopped, with its rule; a held bill carries the numbers
+  that explain it.
+- `fixed` is what code changed instead: collecting moved first, personal data removed before it
+  reached the model, or a run stopped at its token budget.
+- `planned_by` is `rules` when the model could not answer (`rules_because` `no_answer`) or when
+  its plan broke the rules (`plan_blocked`).
+
+Audited as `planner.plan` with the actions, the blocked reasons, the fixes and the token use.
+
+### GET /api/agent/runs/{runId}
+
+One saved run, planner or bill-pay, with every step in order:
+- the summary;
+- each model call's tokens (`note/model_call`);
+- each tool call and result;
+- the model's raw plan (`note/proposed`);
+- each guardrail fix (`note/guardrail`);
+- the guardrail report (`note/guardrails`);
+- the plan.
+
+`404` for an unknown run.
 
 ## Bill-pay agent (decision of Oct 18)
 
@@ -628,7 +721,8 @@ Request: `{ "run_id": "…" }`. The owner paid this bill from his UPI app and sa
 decide again first: `409` "This bill can no longer be paid inside your limit. Look again." unless
 the bill is still `pay`; `404` for an unknown run. The bill is marked paid by `upi` (his word,
 `owner_said`, never `verified_payment`) with the run on it (`payables.agent_run_id`), which counts
-it against the limit. Audited as `bill_pay.paid`; broadcasts `rotation`.
+it against the limit. Audited as `bill_pay.paid`; broadcasts `rotation`. A refusal is audited too,
+as `bill_pay.refused` with the rule's reason.
 
 ```json
 { "payable_id": "…", "amount_paise": 1400000, "paid_via": "upi", "label": "owner_said" }
