@@ -1,10 +1,11 @@
 "use client";
 
-import { MessageCircle } from "lucide-react";
+import { MessageCircle, QrCode } from "lucide-react";
 import { useEffect, useState } from "react";
 import { useLive } from "@/components/owner/live";
 import { useOwnerLanguage } from "@/components/owner/owner-language";
 import { useOwnerScreen } from "@/components/owner/owner-screen";
+import { PayQr } from "@/components/owner/pay-qr";
 import { Badge } from "@/components/ui/badge";
 import { Button, LinkButton } from "@/components/ui/button";
 import { Monogram } from "@/components/ui/monogram";
@@ -59,6 +60,8 @@ function Collecting() {
   const [late, setLate] = useState<CustomerRow[] | null>(null);
   const [jobs, setJobs] = useState<Job[]>([]);
   const [sent, setSent] = useState<ReadonlySet<string>>(new Set());
+  // The one customer whose payment QR is on screen, if any.
+  const [qrFor, setQrFor] = useState<string | null>(null);
   const live = useLive(loadNow, ["credit", "rotation"]);
 
   useEffect(() => {
@@ -155,42 +158,63 @@ function Collecting() {
             const id = job.customer.customer_id;
             const paid = paidOf(job);
             return (
-              <li key={id} className="flex items-center gap-3 py-3">
-                <Monogram name={job.customer.name} />
-                <div className="min-w-0 flex-1">
-                  <p className="truncate text-lg font-bold">{job.customer.name}</p>
-                  <p className="text-sm text-night-muted">
-                    {formatMoney(job.reminder.amount_paise)} ·{" "}
-                    {langInfo[job.customer.lang ?? "ta"].name}
-                  </p>
-                  {demo && paid === 0 && (
-                    <button
-                      type="button"
-                      className="mt-1 text-sm font-semibold text-night-muted underline"
-                      onClick={() =>
-                        ownerApi
-                          .markPaid(job.reminder.payment_id)
-                          .then(reload, () => notify(text.failed))
-                      }
-                    >
-                      {text.markPaid}
-                    </button>
-                  )}
+              <li key={id} className="py-3">
+                <div className="flex items-center gap-3">
+                  <Monogram name={job.customer.name} />
+                  <div className="min-w-0 flex-1">
+                    <p className="truncate text-lg font-bold">{job.customer.name}</p>
+                    <p className="text-sm text-night-muted">
+                      {formatMoney(job.reminder.amount_paise)} ·{" "}
+                      {langInfo[job.customer.lang ?? "ta"].name}
+                    </p>
+                  </div>
+                  {paid > 0 && <Badge tone="yellow">{words.paid(formatMoney(paid))}</Badge>}
                 </div>
-                {paid > 0 ? (
-                  <Badge tone="yellow">{words.paid(formatMoney(paid))}</Badge>
-                ) : (
-                  <LinkButton
-                    variant={sent.has(id) ? "night" : "yellow"}
-                    href={job.reminder.whatsapp_url}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="min-h-11 shrink-0 px-4"
-                    onClick={() => setSent((before) => new Set(before).add(id))}
-                  >
-                    <MessageCircle aria-hidden className="size-5" />
-                    {sent.has(id) ? words.sent : words.send}
-                  </LinkButton>
+                {paid === 0 && (
+                  <div className="mt-2 flex flex-wrap items-center gap-2 pl-14">
+                    <LinkButton
+                      variant={sent.has(id) ? "night" : "yellow"}
+                      href={job.reminder.whatsapp_url}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="min-h-11 px-4"
+                      onClick={() => setSent((before) => new Set(before).add(id))}
+                    >
+                      <MessageCircle aria-hidden className="size-5" />
+                      {sent.has(id) ? words.sent : words.send}
+                    </LinkButton>
+                    <Button
+                      variant={qrFor === id ? "yellow" : "night"}
+                      aria-label={words.showQr}
+                      aria-pressed={qrFor === id}
+                      className="min-h-11 px-4"
+                      onClick={() => setQrFor((open) => (open === id ? null : id))}
+                    >
+                      <QrCode aria-hidden className="size-5" />
+                      QR
+                    </Button>
+                    {demo && (
+                      <button
+                        type="button"
+                        className="min-h-11 px-2 text-sm font-semibold text-night-muted underline"
+                        onClick={() =>
+                          ownerApi
+                            .markPaid(job.reminder.payment_id)
+                            .then(reload, () => notify(text.failed))
+                        }
+                      >
+                        {text.markPaid}
+                      </button>
+                    )}
+                  </div>
+                )}
+                {qrFor === id && (
+                  <PayQr
+                    url={job.reminder.payment_link_url}
+                    title={words.scanToPay(formatMoney(job.reminder.amount_paise))}
+                    note={words.qrNote(job.reminder.payment_link_url.includes("paytm"))}
+                    paidLine={paid > 0 ? words.paid(formatMoney(paid)) : null}
+                  />
                 )}
               </li>
             );

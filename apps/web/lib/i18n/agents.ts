@@ -21,6 +21,9 @@ export type AgentWords = {
   received: (amount: Money) => string;
   waiting: string;
   verifiedBy: (paytm: boolean) => string;
+  showQr: string;
+  scanToPay: (amount: Money) => string;
+  qrNote: (paytm: boolean) => string;
   letAgentReorder: string;
   reorderTitle: string;
   reorderSteps: { shelf: string; skipped: string; bills: string; approve: string; sent: string };
@@ -67,6 +70,12 @@ const en: AgentWords = {
   waiting: "Waiting for the first payment",
   verifiedBy: (paytm) =>
     paytm ? "A payment counts once Paytm confirms it." : "A payment counts once its link is paid.",
+  showQr: "Show the QR to pay",
+  scanToPay: (amount) => `Scan to pay ${amount}`,
+  qrNote: (paytm) =>
+    paytm
+      ? "Pays the shop through Paytm. The agent marks it the moment it lands."
+      : "Test mode: no real money moves. The agent marks it the moment it lands.",
   letAgentReorder: "Let the agent reorder",
   reorderTitle: "Ordering for you",
   reorderSteps: {
@@ -127,6 +136,12 @@ const ta: AgentWords = {
     paytm
       ? "Paytm உறுதி செய்த பிறகே பணம் கணக்கில் வரும்."
       : "லிங்க் மூலம் செலுத்தியதும் பணம் கணக்கில் வரும்.",
+  showQr: "செலுத்த QR காட்டு",
+  scanToPay: (amount) => `${amount} செலுத்த ஸ்கேன் செய்யுங்கள்`,
+  qrNote: (paytm) =>
+    paytm
+      ? "Paytm மூலம் கடைக்குப் பணம் வரும். வந்ததும் முகவர் குறித்துக்கொள்ளும்."
+      : "சோதனை முறை: உண்மையான பணம் நகராது. செலுத்தியதும் முகவர் குறித்துக்கொள்ளும்.",
   letAgentReorder: "முகவர் ஆர்டர் செய்யட்டும்",
   reorderTitle: "உங்களுக்காக ஆர்டர் செய்கிறது",
   reorderSteps: {
