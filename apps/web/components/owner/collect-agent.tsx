@@ -21,6 +21,14 @@ const CHECK_MS = 5_000;
 
 type Job = { customer: CustomerRow; reminder: Reminder };
 
+// Which gateway a reminder's link goes to, from its address.
+const providerOf = (url: string) =>
+  url.includes("paytm")
+    ? "paytm"
+    : url.includes("rzp.io") || url.includes("razorpay")
+      ? "razorpay"
+      : "test";
+
 const loadNow = () =>
   Promise.all([ownerApi.collect(), ownerApi.rotation()]).then(([collect, rotation]) => ({
     collect,
@@ -212,7 +220,7 @@ function Collecting() {
                   <PayQr
                     url={job.reminder.payment_link_url}
                     title={words.scanToPay(formatMoney(job.reminder.amount_paise))}
-                    note={words.qrNote(job.reminder.payment_link_url.includes("paytm"))}
+                    note={words.qrNote(providerOf(job.reminder.payment_link_url))}
                     paidLine={paid > 0 ? words.paid(formatMoney(paid)) : null}
                   />
                 )}

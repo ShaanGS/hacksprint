@@ -210,12 +210,25 @@ webhook. `200 {"paid": true, "already_paid": false}`.
 
 ### POST /api/pay/{id}
 
-The button on our own test payment page, `/pay/{id}`. Without Paytm keys the shop is in test
-mode, and every payment link points at that page instead of Paytm. Only while `DEMO_MODE` is on
+The button on our own test payment page, `/pay/{id}`. Without Paytm or Razorpay keys the shop is
+in test mode, and every payment link points at that page instead. Only while `DEMO_MODE` is on
 (404 otherwise), and only for a test payment: a Paytm link gives `404` and is paid on Paytm. No
 sign-in, as with a Paytm link: whoever has the link can pay it. The same idempotent path as the
 webhook, so a paid reminder link settles the credit and broadcasts. No body.
 `200 {"paid": true, "alreadyPaid": false}`.
+
+### Razorpay test mode (decision of Oct 18)
+
+With Razorpay's test keys in (and no Paytm keys), a demo reset puts the shop in `razorpay` mode.
+Every payment link is then a Razorpay Payment Link (`POST /v1/payment_links`): the whole amount,
+no customer details and no messages from Razorpay. Its `rzp.io` link opens Razorpay's own sandbox
+checkout, where a test UPI id or test card pays it.
+
+`POST /api/payments/{paymentId}/check` asks Razorpay about a waiting link with our secret key.
+Once Razorpay has captured the full amount, the payment goes through the same idempotent
+`markPaid` as the webhook: a `verified_payment` repayment, with a broadcast. A shop in `razorpay`
+mode on a server without the keys still gets a test-page link. No Razorpay webhook yet; the
+collection agent checks every 5 s while it watches.
 
 ## Talk and snap (B1 to B4, B7)
 

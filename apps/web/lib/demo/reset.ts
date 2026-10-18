@@ -1,6 +1,6 @@
 import type { SupabaseClient } from "@supabase/supabase-js";
 import { z } from "zod";
-import { demoPayerPhone, paytmConfigured } from "@/lib/env";
+import { demoPayerPhone, paytmConfigured, razorpayConfigured } from "@/lib/env";
 import { broadcastChanged } from "@/lib/realtime";
 
 // The demo shop, restored in one database call with dates relative to now (spec section 16).
@@ -19,10 +19,12 @@ export async function resetDemo(db: SupabaseClient) {
   const shop = await db.from("shops").select("id").limit(1).single();
   if (shop.error) throw new Error(`Could not read the shop: ${shop.error.message}`);
   const shopId = z.object({ id: z.string() }).parse(shop.data).id;
-  // The reset recreates the shop on our test payment page; with Paytm keys in, links go to Paytm.
-  if (paytmConfigured()) {
-    const { error } = await db.from("shops").update({ payment_mode: "paytm" }).eq("id", shopId);
-    if (error) throw new Error(`Could not switch the shop to Paytm: ${error.message}`);
+  // The reset recreates the shop on our test payment page. With Paytm keys in, links go to
+  // Paytm (the sponsor); else with Razorpay's test keys, to Razorpay's sandbox checkout.
+  const mode = paytmConfigured() ? "paytm" : razorpayConfigured() ? "razorpay" : null;
+  if (mode) {
+    const { error } = await db.from("shops").update({ payment_mode: mode }).eq("id", shopId);
+    if (error) throw new Error(`Could not switch the shop to ${mode}: ${error.message}`);
   }
   await broadcastChanged(db, shopId, ["rotation", "credit", "stock"]);
 }

@@ -249,7 +249,7 @@ different tools on different runs. What it reasons over is our own engine (`lib/
 - stock estimates;
 - loan sizing against Mudra bands.
 
-All of it is in integer paise with 215 unit tests. The model can choose; it cannot change a
+All of it is in integer paise with 231 unit tests. The model can choose; it cannot change a
 number.
 
 **What if the model plans something wrong?**

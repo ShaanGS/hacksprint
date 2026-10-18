@@ -7,7 +7,7 @@ const shopRow = z.object({
   name: z.string(),
   owner_name: z.string(),
   owner_language: z.string(),
-  payment_mode: z.enum(["test", "paytm"]),
+  payment_mode: z.enum(["test", "paytm", "razorpay"]),
 });
 
 export type Shop = {
@@ -16,7 +16,7 @@ export type Shop = {
   ownerName: string;
   /** The language the owner reads and hears the app in. */
   ownerLang: Lang;
-  paymentMode: "test" | "paytm";
+  paymentMode: "test" | "paytm" | "razorpay";
 };
 
 /**

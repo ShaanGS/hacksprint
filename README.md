@@ -13,7 +13,7 @@
 <p align="center">
   <a href="https://github.com/ShaanGS/hacksprint/actions/workflows/ci.yml"><img alt="CI" src="https://github.com/ShaanGS/hacksprint/actions/workflows/ci.yml/badge.svg?branch=main"></a>
   <a href="LICENSE"><img alt="MIT licence" src="https://img.shields.io/badge/licence-MIT-111111"></a>
-  <img alt="215 unit tests" src="https://img.shields.io/badge/unit_tests-215-1a7f4b">
+  <img alt="231 unit tests" src="https://img.shields.io/badge/unit_tests-231-1a7f4b">
   <img alt="Next.js 16" src="https://img.shields.io/badge/Next.js-16-000000?logo=nextdotjs&logoColor=white">
   <img alt="TypeScript strict" src="https://img.shields.io/badge/TypeScript-strict-3178C6?logo=typescript&logoColor=white">
   <img alt="Supabase" src="https://img.shields.io/badge/Supabase-Postgres%20%C2%B7%20Realtime-3FCF8E?logo=supabase&logoColor=white">
@@ -230,6 +230,7 @@ The twelve rules are [spec section 15](docs/spec.md#15-trust-privacy-and-lending
 We would rather say it plainly than have a judge find it.
 
 - **Paytm runs in test mode.** The integration is written in full (payment links, checksum, webhook, transaction check), but Paytm's dashboard did not issue our test keys in time. Without keys the shop runs in test mode: reminder links open the app's own test checkout ([`app/(phone)/pay/[id]`](<apps/web/app/(phone)/pay/[id]/page.tsx>)), which plays Paytm's part. A repayment made there is recorded as `verified_payment`, as Paytm's would be; its payment row keeps the provider `test`, and the checkout works only in demo mode.
+- **Razorpay runs in its sandbox.** With Razorpay's test keys in, each reminder's link (and the QR the collection agent shows for it) is a real Razorpay Payment Link in test mode ([`lib/razorpay/client.ts`](apps/web/lib/razorpay/client.ts)). It is paid on Razorpay's own checkout with a test UPI id or test card, so no money moves. The agent checks the link at Razorpay with our secret key and counts the payment once Razorpay has captured the full amount. No webhook yet.
 - **The bill-pay agent pays from the owner's own UPI app.** In the shop it opens his UPI app with the payee and amount filled in, and he pays with his PIN. In demo mode a stand-in sheet takes that step, because the demo distributors' UPI ids are not real.
 - **The loan application agent is a simulation.** It sends nothing to any portal or lender, by design (rule 8).
 - **The reorder test payment** opens a Paytm test checkout and is never counted as sales or cash.
@@ -260,6 +261,7 @@ Then open http://localhost:3000 (the front page), http://localhost:3000/owner (t
 | `GEMINI_API_KEY`, `GEMINI_MODEL`                                                          | Voice entries and bill reading                                                            |
 | `SARVAM_API_KEY`, `SARVAM_STT_MODEL`, `SARVAM_TTS_MODEL`                                  | Speech to text                                                                            |
 | `PAYTM_BASE_URL`, `PAYTM_MID`, `PAYTM_MERCHANT_KEY`                                       | Paytm payment links (optional; test mode without them)                                    |
+| `RAZORPAY_KEY_ID`, `RAZORPAY_KEY_SECRET`                                                  | Razorpay payment links in its test mode (optional; used when Paytm's keys are not in)     |
 | `N8N_WEBHOOK_URL`, `N8N_WEBHOOK_SECRET`                                                   | The reorder email (optional)                                                              |
 
 Every variable is described in [`apps/web/.env.example`](apps/web/.env.example), and the app checks them with Zod at startup ([`lib/env.ts`](apps/web/lib/env.ts)).
@@ -270,7 +272,7 @@ Every variable is described in [`apps/web/.env.example`](apps/web/.env.example),
 | ------------- | ------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | Lint          | `pnpm lint`         | ESLint with zero warnings, and Prettier                                                                                                                                                                                                                                                                                 |
 | Types         | `pnpm typecheck`    | Next.js route types, then TypeScript in strict mode, with no `any`                                                                                                                                                                                                                                                      |
-| Unit tests    | `pnpm test`         | 215 Vitest tests in [`tests/unit`](tests/unit): the weekly forecast, credit habits, stock, loan bands, statements, reorder, the bill-pay mandate, the planner's plan checks and loop, voice numbers, bill checks, Paytm checksums, sessions and more                                                                    |
+| Unit tests    | `pnpm test`         | 231 Vitest tests in [`tests/unit`](tests/unit): the weekly forecast, credit habits, stock, loan bands, statements, reorder, the bill-pay mandate, the planner's plan checks and loop, voice numbers, bill checks, Paytm checksums, sessions and more                                                                    |
 | End to end    | `pnpm test:e2e`     | Playwright against the running app ([`tests/e2e`](tests/e2e)): it boots, the owner signs in with the PIN, Home opens, and the week from `/api/rotation` adds up in whole paise with a source label on every part                                                                                                        |
 | Demo story    | `pnpm demo:check`   | Six assertions on the seeded shop: a normal week is fine, this week is short, three late payers close only part of the gap, the loan lands in Shishu                                                                                                                                                                    |
 | Agent evals   | `pnpm eval:planner` | The live Gemini planner on 6 fixed weeks, scored on grounding, the call budget and behaviour: collect before borrowing, never pay a held bill, no loan in a good week, honour "no loan". The last run passed 29 of 29 ([`scripts/eval`](scripts/eval), results in [`docs/agent-system.md`](docs/agent-system.md#evals)) |
