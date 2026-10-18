@@ -38,21 +38,24 @@ const READ_PAGE = `(() => {
   return { origin: location.origin, title, fields, buttons };
 })()`;
 
-const HIGHLIGHT = `(el) => { el.style.outline = "4px solid gold"; }`;
-
 function pageBrowser(page: Page): Browser {
   return {
     view: () => page.evaluate<PageView>(READ_PAGE),
     fill: async (id, value) => {
       const field = page.locator(`[id="${id}"]`);
       await field.scrollIntoViewIfNeeded();
-      await field.evaluate(HIGHLIGHT);
+      // An anonymous arrow: tsx adds no helpers to it, so it runs in the page as written.
+      await field.evaluate((el) => {
+        (el as HTMLElement).style.outline = "4px solid gold";
+      });
       await field.fill("");
       await field.pressSequentially(value, { delay: 70 });
     },
     choose: async (id, option) => {
       const field = page.locator(`[id="${id}"]`);
-      await field.evaluate(HIGHLIGHT);
+      await field.evaluate((el) => {
+        (el as HTMLElement).style.outline = "4px solid gold";
+      });
       await field.selectOption({ label: option });
       await page.waitForTimeout(400);
     },
