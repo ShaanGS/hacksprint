@@ -39,6 +39,8 @@ const supabaseSchema = z.object({
 const geminiSchema = z.object({
   GEMINI_API_KEY: text(),
   GEMINI_MODEL: text(),
+  // A second key that takes over when the first is rate-limited or refused (decision of Oct 18).
+  GEMINI_FALLBACK_API_KEY: z.string().min(1).optional(),
 });
 
 const sarvamSchema = z.object({
