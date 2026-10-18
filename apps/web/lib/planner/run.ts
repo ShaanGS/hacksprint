@@ -11,7 +11,7 @@ import { summaryOf } from "@/lib/planner/facts";
 import { cleanText, fix, scrubPersonalData, type Fixed } from "@/lib/planner/guardrails";
 import { rawPlan, type RawPlan } from "@/lib/planner/plan";
 import { plannerPrompt } from "@/lib/planner/prompt";
-import { plannerTools, runPlannerTool, type Seen } from "@/lib/planner/tools";
+import { plannerToolsFor, runPlannerTool, type Seen } from "@/lib/planner/tools";
 
 // The planner loop: the model reads the summary, calls read tools for the detail it wants, and
 // must finish with finish_plan. Every call is allowed only to call a tool (mode ANY), so it
@@ -51,7 +51,7 @@ export async function runPlanner(
 ): Promise<PlannerOutcome> {
   const base: GenerateContentConfig = {
     systemInstruction: plannerPrompt,
-    tools: [{ functionDeclarations: plannerTools }],
+    tools: [{ functionDeclarations: plannerToolsFor(input.facts) }],
     // We run the tools ourselves; the SDK must never call them.
     automaticFunctionCalling: { disable: true },
     thinkingConfig: { thinkingLevel: ThinkingLevel.LOW },

@@ -1,7 +1,7 @@
 import type { FunctionDeclaration } from "@google/genai";
 import type { PlannerFacts } from "@/lib/planner/facts";
 import { cleanText } from "@/lib/planner/guardrails";
-import { planActions } from "@/lib/rotation/plan-effects";
+import { planActions, type PlanAction } from "@/lib/rotation/plan-effects";
 
 // The planner's tools. Each answers from the run's facts in a few hundred tokens at most:
 // amounts in whole paise with their source labels, ids to refer back to, at most five rows.
@@ -26,7 +26,7 @@ export const planReasons = [
 
 const noArgs = { type: "object", properties: {} };
 
-export const plannerTools: FunctionDeclaration[] = [
+const readTools: FunctionDeclaration[] = [
   {
     name: "look_at_week",
     description: "This week's money: needed against likely, the gap, money in hand, late money.",
@@ -60,36 +60,64 @@ export const plannerTools: FunctionDeclaration[] = [
       "The owner's weekly limit for bills the agent may pay: the bills it can pay now, the bills it could pay once the late payers pay, and the bills on hold with the reason.",
     parametersJsonSchema: noArgs,
   },
-  {
-    name: "finish_plan",
-    description:
-      "The plan, in the order the owner should do it. Use only ids that a tool returned. Never write amounts: code works them out.",
-    parametersJsonSchema: {
-      type: "object",
-      properties: {
-        steps: {
-          type: "array",
-          maxItems: 5,
-          items: {
-            type: "object",
-            properties: {
-              action: { type: "string", enum: [...planActions] },
-              ids: {
-                type: "array",
-                items: { type: "string" },
-                description:
-                  "collect: customer ids; pay_bills: payable ids; reorder: distributor ids; move_festival_order: its payable id; check_loan: none",
-              },
-              reason: { type: "string", enum: [...planReasons] },
+];
+
+const finishPlan = (actions: readonly PlanAction[]): FunctionDeclaration => ({
+  name: "finish_plan",
+  description:
+    "The plan, in the order the owner should do it. Use only ids that a tool returned. Never write amounts: code works them out.",
+  parametersJsonSchema: {
+    type: "object",
+    properties: {
+      steps: {
+        type: "array",
+        // A week with nothing to act on can only finish with no steps.
+        maxItems: actions.length > 0 ? 5 : 0,
+        items: {
+          type: "object",
+          properties: {
+            // The schema needs one allowed value even when no step may be planned.
+            action: { type: "string", enum: actions.length > 0 ? [...actions] : [...planActions] },
+            ids: {
+              type: "array",
+              items: { type: "string" },
+              description:
+                "collect: customer ids; pay_bills: payable ids; reorder: distributor ids; move_festival_order: its payable id; check_loan: none",
             },
-            required: ["action", "reason"],
+            reason: { type: "string", enum: [...planReasons] },
           },
+          required: ["action", "reason"],
         },
       },
-      required: ["steps"],
     },
+    required: ["steps"],
   },
-];
+});
+
+/**
+ * The actions this week gives something to act on. An action with nothing behind it (paying when
+ * no bill fits the owner's limit, collecting when nobody is late) is not offered to the model at
+ * all; checkPlan still stands behind this.
+ */
+export function actionsFor(facts: PlannerFacts): PlanAction[] {
+  const limit = facts.billLimit;
+  const late = facts.latePayers.length > 0;
+  const open: Record<PlanAction, boolean> = {
+    collect: late,
+    pay_bills:
+      (limit?.decisions ?? []).some((row) => row.decision === "pay") ||
+      (late && (limit?.ifCollected ?? []).some((row) => row.decision === "pay")),
+    reorder: facts.reorder.length > 0,
+    move_festival_order: facts.loan.festival !== null,
+    check_loan: facts.loan.loanNeededPaise > 0,
+  };
+  return planActions.filter((action) => open[action]);
+}
+
+/** The read tools, and finish_plan offering only this week's actions. */
+export function plannerToolsFor(facts: PlannerFacts): FunctionDeclaration[] {
+  return [...readTools, finishPlan(actionsFor(facts))];
+}
 
 /** The ids each tool has shown the model in this run. */
 export type Seen = {

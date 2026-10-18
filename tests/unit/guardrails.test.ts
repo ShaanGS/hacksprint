@@ -11,7 +11,7 @@ import {
 } from "@/lib/planner/guardrails";
 import { checkPlan } from "@/lib/planner/plan";
 import { runPlanner, type Generate } from "@/lib/planner/run";
-import { nothingSeen, runPlannerTool } from "@/lib/planner/tools";
+import { actionsFor, nothingSeen, plannerToolsFor, runPlannerTool } from "@/lib/planner/tools";
 import { facts } from "./planner-fixture";
 
 describe("scrubPersonalData", () => {
@@ -85,6 +85,26 @@ describe("the plan guardrails", () => {
     }
     return seen;
   };
+
+  it("offers the model only the actions this week has something to act on", () => {
+    expect(actionsFor(facts)).toEqual([
+      "collect",
+      "pay_bills",
+      "reorder",
+      "move_festival_order",
+      "check_loan",
+    ]);
+    const goodWeek = { ...facts, latePayers: [], reorder: [] };
+    // Nobody is late, so collecting is off, and no bill fits the limit without that money.
+    expect(actionsFor(goodWeek)).toEqual(["move_festival_order", "check_loan"]);
+    const nothingToDo = {
+      ...goodWeek,
+      loan: { ...facts.loan, festival: null, loanNeededPaise: 0 },
+    };
+    expect(actionsFor(nothingToDo)).toEqual([]);
+    const finish = plannerToolsFor(nothingToDo).find((tool) => tool.name === "finish_plan");
+    expect(JSON.stringify(finish?.parametersJsonSchema)).toContain('"maxItems":0');
+  });
 
   it("never sends a customer's name to the model", () => {
     const result = runPlannerTool(facts, nothingSeen(), "list_late_payers");
