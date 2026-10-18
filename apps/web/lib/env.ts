@@ -108,6 +108,11 @@ export function razorpayConfigured(): boolean {
   return razorpaySchema.safeParse(process.env).success;
 }
 
+/** The apply agent may open a real browser here: on the shop's own computer, never the live site. */
+export function localBrowserAgent(): boolean {
+  return process.env.LOCAL_BROWSER_AGENT === "true";
+}
+
 /** In the demo, the late payer's reminder goes to a teammate's real WhatsApp number. */
 export function demoPayerPhone(): string | null {
   return process.env.DEMO_PAYER_PHONE || null;

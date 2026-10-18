@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { ApplyBrowser } from "@/components/owner/apply-browser";
 import { useOwnerLanguage } from "@/components/owner/owner-language";
 import { useOwnerScreen } from "@/components/owner/owner-screen";
 import { Art } from "@/components/ui/art";
@@ -135,6 +136,7 @@ export function ApplyAgent({
               {text.agentSimulated}
             </p>
           )}
+          {done >= STEP_COUNT && loanRequestId && <ApplyBrowser loanRequestId={loanRequestId} />}
         </div>
       )}
     </Sheet>
