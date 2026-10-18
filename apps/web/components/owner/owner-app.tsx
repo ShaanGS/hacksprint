@@ -23,6 +23,7 @@ import { useNotice } from "@/components/owner/use-notice";
 import type { OwnerVoice } from "@/components/owner/use-owner-voice";
 import { VoiceSheet } from "@/components/owner/voice-sheet";
 import { HoldMic } from "@/components/ui/hold-mic";
+import { micProblem } from "@/lib/audio/recorder";
 import { ownerApi, type VoiceCard } from "@/lib/owner/api";
 
 /**
@@ -66,15 +67,27 @@ export function OwnerApp({
       setTab("bank");
     } else setAgent(target);
   }, []);
+  /** When the phone did not open the microphone: say why, and what to do about it. */
+  async function micRefused() {
+    const problem = await micProblem();
+    notify(
+      problem === "not_secure"
+        ? text.micNotSecure
+        : problem === "blocked"
+          ? text.micBlocked
+          : text.micAllow,
+    );
+  }
   const hold = useHoldToTalk({
     askMicrophone: voice.askMicrophone,
     onTooShort: () => notify(text.holdLonger),
-    onMicBlocked: () => notify(text.micAllow),
+    onMicBlocked: () => void micRefused(),
   });
 
   /** A tap that asks for the microphone, so the phone shows its permission prompt. */
   async function turnOnMic() {
-    notify((await voice.askMicrophone()) ? text.micReady : text.micAllow);
+    if (await voice.askMicrophone()) notify(text.micReady);
+    else await micRefused();
   }
 
   async function hear(audio: Blob) {

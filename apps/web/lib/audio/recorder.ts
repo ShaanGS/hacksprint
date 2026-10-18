@@ -10,6 +10,21 @@ export type Recorder = {
   stop(): Promise<Blob | null>;
 };
 
+/**
+ * Why the phone cannot show its microphone prompt, if it cannot. Browsers ask only on a secure
+ * page, so a phone that opened the laptop's plain http address, or a browser inside another app,
+ * never asks; and a site the owner blocked once is never asked about again.
+ */
+export async function micProblem(): Promise<"not_secure" | "blocked" | null> {
+  if (!window.isSecureContext || !navigator.mediaDevices?.getUserMedia) return "not_secure";
+  try {
+    const status = await navigator.permissions?.query({ name: "microphone" as PermissionName });
+    return status?.state === "denied" ? "blocked" : null;
+  } catch {
+    return null;
+  }
+}
+
 /** Asks for the microphone. Call it from a tap; rejects if the customer says no. */
 export async function openMicrophone(): Promise<MediaStream> {
   return navigator.mediaDevices.getUserMedia({

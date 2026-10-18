@@ -26,6 +26,8 @@ export type MoneyText = {
   holdAndSpeak: string;
   holdLonger: string;
   micAllow: string;
+  micNotSecure: string;
+  micBlocked: string;
   micTurnOn: string;
   micReady: string;
   // The voice card (B1)
@@ -202,6 +204,10 @@ const en: MoneyText = {
   holdAndSpeak: "Hold and speak",
   holdLonger: "Hold the mic while you speak",
   micAllow: "Allow the microphone to speak your entries",
+  micNotSecure:
+    "Voice needs the app's https link in Chrome. Open it there, not from the laptop's address or inside another app.",
+  micBlocked:
+    "The microphone is blocked for this site. In Chrome, tap the icon by the address, then Permissions, then allow the microphone.",
   micTurnOn: "Tap to turn on the microphone",
   micReady: "Microphone on. Hold the button and speak.",
   entryTitles: {
@@ -445,6 +451,10 @@ const ta: MoneyText = {
   holdAndSpeak: "பிடித்துப் பேசுங்கள்",
   holdLonger: "பேசும்போது மைக்கைப் பிடித்தே இருங்கள்",
   micAllow: "குரலில் சொல்ல, மைக்கை அனுமதியுங்கள்",
+  micNotSecure:
+    "குரலுக்கு ஆப்பின் https இணைப்பை Chrome-இல் திறக்க வேண்டும். லேப்டாப் முகவரியிலோ வேறு ஆப்பின் உள்ளேயோ வேண்டாம்.",
+  micBlocked:
+    "இந்தத் தளத்துக்கு மைக் தடுக்கப்பட்டுள்ளது. Chrome-இல் முகவரி அருகே உள்ள குறியைத் தட்டி, அனுமதிகளில் மைக்கை அனுமதியுங்கள்.",
   micTurnOn: "மைக்கை இயக்க இங்கே தட்டுங்கள்",
   micReady: "மைக் தயார். பட்டனைப் பிடித்துப் பேசுங்கள்.",
   entryTitles: {
