@@ -239,6 +239,27 @@ We would rather say it plainly than have a judge find it.
 - **Not built yet** (P1 in the spec): the morning alert, the nightly summary, notebook import, voice setup of weekly costs (seeded for now), an offline queue, and the micro-enterprise credit card step.
 - **Customer voice ordering** (`/order`, `/qr`) was our first idea. Its code and tests are kept, frozen and out of the navigation; the owner app is the product.
 
+## From sandbox to production
+
+Every sandboxed part sits behind a switch we built for it, so going live is keys, compliance and onboarding, not a rewrite.
+
+| Sandboxed today                                                    | What production needs                                                                                                                                                                                                                                                                                                                                                       |
+| ------------------------------------------------------------------ | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Customer payments run in Razorpay's sandbox or our own test page   | The shop activates its own Razorpay or Paytm merchant account (KYC) and its keys go in; the provider is already a per-shop setting (`shops.payment_mode`). Add the payment-link webhook with its signature check; payments are already verified by asking the gateway with our secret key. Money settles into the shop's own account; we never hold it.                     |
+| Bill-pay shows a UPI stand-in on stage                             | It already builds a real UPI intent that opens the owner's own UPI app. Production needs only the distributors' real UPI ids. Next: NPCI's agent payments (UPI Reserve Pay), so small bills inside his limit go without a PIN each time.                                                                                                                                    |
+| The loan agent fills a sandbox lender portal                       | We stay out of lending by design (rule 8). The two production paths: partner with a bank or NBFC as a registered lending service provider under RBI's digital lending rules, or let the owner share his verified statement through an Account Aggregator or RBI's Unified Lending Interface, with his consent. Until then he takes the loan pack to his bank or JanSamarth. |
+| One demo shop, one owner PIN, one database shared with development | Phone-OTP sign-in and row-level security per shop; a separate production database in the Mumbai region, so the data stays in India (DPDP Act); backups.                                                                                                                                                                                                                     |
+| Gemini on the free tier (with a second key as fallback)            | A paid tier with per-shop rate limits and a daily budget; the behaviour and attack evals run in CI on every change.                                                                                                                                                                                                                                                         |
+| Known hardening gaps                                               | Listed in [Before real shops](docs/agent-system.md#before-real-shops): the PIN lock, security headers, webhook checks, reorder idempotency.                                                                                                                                                                                                                                 |
+
+**The first proof:** a 4-week pilot with 10 to 20 kiranas in Bengaluru, measuring the shortfalls we predicted against what happened, the late money recovered, and the loans his statement unlocked.
+
+## What comes next
+
+- **Next 3 months:** the pilot, live payments, UPI agent payments for bill-pay, and owner screens in Hindi and Kannada (reminders already go out in both).
+- **6 to 12 months:** with his consent, his verified cash-flow history reaches lenders through an Account Aggregator, so Mudra and working capital come faster and cheaper; festival stock credit is planned weeks ahead.
+- **Long term:** every kirana has a voice-first finance assistant whose agents act only inside limits the owner sets, with distributors and lenders connected through consent-based APIs, under the same guardrails.
+
 ## Run it locally
 
 You need Node 24, pnpm 11, a Supabase project, and keys for Gemini and Sarvam. Paytm (staging) and n8n are optional.
@@ -250,7 +271,7 @@ pnpm db:reset                                  # migrations plus the demo shop (
 pnpm dev
 ```
 
-Then open http://localhost:3000 (the front page), http://localhost:3000/owner (the owner app; the PIN is `OWNER_PIN`) and http://localhost:3000/demo (the judges' screen). `pnpm demo:reset` restores the demo shop at any time, with dates relative to now.
+Then open http://localhost:3000 (the front page), http://localhost:3000/owner (the owner app; the PIN is `OWNER_PIN`) and http://localhost:3000/demo (the judges' screen). `pnpm demo:reset` restores the demo shop at any time, with dates relative to now. To try bill reading, scan or upload the sample supplier bill at http://localhost:3000/demo/sample-bill.png ([file](apps/web/public/demo/sample-bill.png)); the app reads all six lines, matches each to the shop's products and checks every amount.
 
 | Variable                                                                                  | Needed for                                                                                |
 | ----------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------- |
@@ -259,10 +280,12 @@ Then open http://localhost:3000 (the front page), http://localhost:3000/owner (t
 | `DEMO_MODE`, `DEMO_PAYER_PHONE`                                                           | The demo label, demo reset and the stage fallbacks; a real phone for the first late payer |
 | `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY`, `SUPABASE_SECRET_KEY` | The database, Realtime and Storage                                                        |
 | `GEMINI_API_KEY`, `GEMINI_MODEL`                                                          | Voice entries and bill reading                                                            |
+| `GEMINI_FALLBACK_API_KEY`                                                                 | A second Gemini key, used only when the first is rate-limited or refused (optional)       |
 | `SARVAM_API_KEY`, `SARVAM_STT_MODEL`, `SARVAM_TTS_MODEL`                                  | Speech to text                                                                            |
 | `PAYTM_BASE_URL`, `PAYTM_MID`, `PAYTM_MERCHANT_KEY`                                       | Paytm payment links (optional; test mode without them)                                    |
 | `RAZORPAY_KEY_ID`, `RAZORPAY_KEY_SECRET`                                                  | Razorpay payment links in its test mode (optional; used when Paytm's keys are not in)     |
 | `N8N_WEBHOOK_URL`, `N8N_WEBHOOK_SECRET`                                                   | The reorder email (optional)                                                              |
+| `LOCAL_BROWSER_AGENT`                                                                     | `true` on the shop's own computer only: the apply agent may open a real browser           |
 
 Every variable is described in [`apps/web/.env.example`](apps/web/.env.example), and the app checks them with Zod at startup ([`lib/env.ts`](apps/web/lib/env.ts)).
 
