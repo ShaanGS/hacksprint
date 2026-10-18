@@ -830,6 +830,38 @@ that found a loan is needed.
 }
 ```
 
+### GET and POST /api/loan-apply/browser
+
+The apply agent in a real browser (decision of Oct 18), only on the shop's own computer:
+`DEMO_MODE` and `LOCAL_BROWSER_AGENT=true` must be on, and the live site never sets the second,
+so there both answer `404`.
+
+- `GET` says whether this computer can open the agent: `{ "available": true }`.
+- `POST` takes `{ "loan_request_id": uuid }` and starts `pnpm agent:apply`, which opens Chrome on
+  the sandbox lender portal (`/sandbox/lender`, ours, labelled as a sandbox).
+
+The answer streams one JSON line per step:
+
+```json
+{"type":"step","kind":"filled","field":"Loan amount required (₹)","fact":"loan_amount"}
+```
+
+Step kinds:
+- `page`;
+- `model_call`;
+- `filled` and `chosen` (a fact typed or an option picked);
+- `left` (left for the owner);
+- `blocked` (a guardrail refused it);
+- `pressed`;
+- `stopped`, with `otp`, `consent`, `submit`, `budget`, `stuck`, `model_failed` or
+  `left_portal`.
+
+The stream ends with `{"type":"done"}`, and the window stays open for him. The model picks only
+which of his facts goes in which field; code types the value. Identity, contact, bank and
+consent fields are never filled, and only Next or Continue is ever pressed. Nothing reaches a
+real lender (rule 8). Audited as `loan.apply_browser` with the facts used and the fields left
+for him.
+
 ### POST /api/loan-pack
 
 Request: `{ "loan_request_id": "…" }`. `409` when no loan is needed.

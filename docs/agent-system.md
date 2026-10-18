@@ -18,7 +18,7 @@ The model never computes or invents a number (rule 1):
 | Collection       | Who is late, against each customer's own habit (rules)        | Writes each reminder with a payment link, then watches for the payments  | Sends each message from his own WhatsApp    | [`collect-agent.tsx`](../apps/web/components/owner/collect-agent.tsx), [`lib/reminders`](../apps/web/lib/reminders)                                                                        |
 | Bill-pay         | Which due bills fit inside his mandate and money in hand      | Prepares each payment from his own UPI app                               | Authorises with his UPI PIN, then confirms  | [`lib/rotation/mandate.ts`](../apps/web/lib/rotation/mandate.ts), [`lib/bill-pay`](../apps/web/lib/bill-pay), [`pay-agent.tsx`](../apps/web/components/owner/pay-agent.tsx)               |
 | Reorder          | What runs out this week, at the last bill's quantity and price | Emails the order to the distributor through n8n                          | Taps Send                                   | [`lib/reorder`](../apps/web/lib/reorder), [`n8n/`](../n8n)                                                                                                                                 |
-| Loan application | Nothing: a labelled simulation                                | Fills the application from his records and stops at his Aadhaar OTP      | Applies himself, at his bank or JanSamarth  | [`apply-agent.tsx`](../apps/web/components/owner/apply-agent.tsx), [`lib/loans/application.ts`](../apps/web/lib/loans/application.ts)                                                      |
+| Loan application | Which of his records answers each field of a lender's form (Gemini, in a real browser on his computer) | Fills the sandbox lender portal, leaves identity and consent, stops at the OTP | Enters his Aadhaar and OTP himself, at his bank or JanSamarth | [`apply-agent.tsx`](../apps/web/components/owner/apply-agent.tsx), [`lib/loans/application.ts`](../apps/web/lib/loans/application.ts)                                                      |
 
 ## How the planner works
 
@@ -343,8 +343,12 @@ the week look better than it is.
 - **The demo shop's UPI step.** In demo mode the UPI step is a stand-in sheet ("Your UPI app
   opens here. Demo: no money moves"), because the demo distributors' UPI ids are not real.
 - **Paytm.** It runs in test mode until live keys are issued; see the README.
-- **The loan application agent.** It is a simulation by design, so we never act as a lending
-  service provider.
+- **The loan application agent.** On the shop's own computer it really drives a browser, but
+  only on our sandbox lender portal (`/sandbox/lender`): it reads the page, types his facts,
+  leaves identity, contact and consent, and stops at the OTP
+  ([`lib/apply-browser`](../apps/web/lib/apply-browser), `pnpm agent:apply`). It never applies to a
+  real lender, so we never act as a lending service provider (rule 8). On the live site the
+  screen shows the same application as a labelled simulation.
 
 ## Questions we expect
 
@@ -358,7 +362,7 @@ different tools on different runs. What it reasons over is our own engine (`lib/
 - stock estimates;
 - loan sizing against Mudra bands.
 
-All of it is in integer paise with 231 unit tests. The model can choose; it cannot change a
+All of it is in integer paise with 236 unit tests. The model can choose; it cannot change a
 number.
 
 **What if the model plans something wrong?**
